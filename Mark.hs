@@ -4,14 +4,14 @@ type Key = String
 type Value = String
 type Mark = (Key, Value)
 
-markListSet :: [Mark] -> Key -> Value -> [Mark]
-markListSet [] key value = [(key, value)]
-markListSet (m@(key', value'):ms) key value
+marksSet :: [Mark] -> Key -> Value -> [Mark]
+marksSet [] key value = [(key, value)]
+marksSet (m@(key', value'):ms) key value
   | key' == key = (key', value):ms
-  | key' /= key = m:(markListSet ms key value)
+  | key' /= key = m:(marksSet ms key value)
 
-markListGet :: [Mark] -> Key -> Maybe Value
-markListGet [] key = Nothing
-markListGet (m@(key', value):ms) key
+marksGet :: [Mark] -> Key -> Maybe Value
+marksGet [] key = Nothing
+marksGet (m@(key', value):ms) key
   | key' == key = Just value
-  | key' /= key = markListGet ms key
+  | key' /= key = marksGet ms key
