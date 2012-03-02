@@ -20,4 +20,7 @@ ccm (_, cms) key = [ value | (key', value) <- cms, key' == key ]
 --return x = cmmReturn x
 --x >>= f = cmmBind x f
 
-main = print (cmmReturn 5)
+main = print (wcm (cmmReturn 5) "type" "number")
+
+f :: CCM Int -> ...
+f (x, cms) = let types = ccm cms "type" in 

@@ -1,11 +1,18 @@
 -- ListMonad
 
-fold :: (b -> a -> a) -> a -> [b] -> a
-fold f acc [] = acc
-fold f acc (x:xs) = f x (fold f acc xs)
-
 append :: [[a]] -> [a]
-append xs = fold (++) [] xs
+append xs = foldr (++) [] xs
+
+listMonadReturn :: a -> [a]
+listMonadReturn x = [x]
+
+listMonadBind :: a -> (a -> [b]) -> [b]
+listMonadBind xs f = append (map f xs)
+
+instance Monad [] where
+
+return x = listMonadReturn x
+xs >>= f = listMonadBind xs f
 
 myReturn :: a -> [a]
 myReturn x = [x]
