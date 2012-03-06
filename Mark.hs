@@ -1,8 +1,8 @@
 module Mark where
 
+type Mark = (Key, Value)
 type Key = String
 type Value = String
-type Mark = (Key, Value)
 
 marksSet :: [Mark] -> Key -> Value -> [Mark]
 marksSet [] key value = [(key, value)]
