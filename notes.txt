@@ -1,0 +1,78 @@
+/*
+fact_tr 0 acc = do {
+--	cms <- ccm "fact";
+	return (cms, acc)
+}
+
+fact_tr n acc = do {
+--	wcm "fact" (show n);
+	fact_tr (n - 1) (n * acc);
+}
+
+fact_tr 2 1 = do {
+	wcm "fact" (show 2);
+	do {
+		wcm "fact" (show 1);
+		do {
+			cms <- ccm "fact";
+			return (cms, acc)
+		}
+	}
+}
+
+fact_tr 2 1 = do {
+	wcm "fact" (show 2);
+	wcm "fact" (show 1);
+	do {
+		cms <- ccm "fact";
+		return (cms, acc)
+	}
+}
+
+fact_tr 2 1 = do {
+	frames <- wcm "fact" (show 2);
+	frames <- wcm "fact" (show 1);
+	cms <- ccm frames "fact";
+	return (cms, acc)
+}
+
+type CM a = ([Frame], a)
+
+cmReturn :: a -> CM a
+cmReturn x = ([(Frame [])], x)
+
+--cmBind :: CM a -> (a -> CM b) -> CM b
+--cmBind (f:fs, x) g = 
+
+wcm :: CM a -> Key -> Value -> CM a
+wcm (f:fs, x) key value = ((frameSet f key value):fs, x)
+
+ccm :: CM a -> Key -> [Value]
+ccm ([], _) key = []
+ccm (f:fs, _) key = case (frameGet f key) of
+	Nothing -> ccm fs key
+	Just cm -> cm:(ccm fs key)
+
+
+
+// suppose the empty monad is an empty frame
+// then the above is
+
+(hole) >>= \frame ->
+	wcm "fact" (show n) >>= \frame ->
+		wcm "fact" (show n-1)
+
+fact 0 = do {
+	cms <- ccm "fact";
+	return (cms, 1)
+}
+
+fact n = do {
+	wcm "fact" (show n);
+	return n * fact (n - 1)
+}
+
+fact 2 = do {
+	wcm "fact" (show 2);
+	return 2 * fact 1
+*/
