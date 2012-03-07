@@ -32,3 +32,23 @@ trfactorial n
 [1] >>= \x ->
 	[2] >>= \y ->
 		(x,y)
+
+
+
+fact 0
+	ccm "fact"
+	1
+
+fact n
+	wcm "fact" (show n)
+	n * fact (n - 1)
+
+fact-tr 0 a
+	ccm "fact"
+	a
+
+fact-tr n a
+	wcm "fact" (show n)
+	fact-tr (n - 1) (n * a)
+
+add a frame when there is a multiplication
