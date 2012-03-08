@@ -13,8 +13,8 @@ cmReturn x = CM ([(Frame [])], x)
 cmBind :: CM a -> (a -> CM b) -> CM b
 cmBind (CM (fs, x)) g = let CM (new_fs, y) = g x in CM (new_fs++fs, y)
 
-wcm :: CM a -> Key -> Value -> CM a
-wcm (CM (f:fs, x)) key value = CM ((frameSet f key value):fs, x)
+wcm :: CM a -> Key -> Value -> (CM a -> CM b) -> CM b
+wcm (CM (f:fs, x)) key value g = g (CM ((frameSet f key value):fs, x))
 
 ccm :: CM a -> Key -> [Value]
 ccm (CM ([], _)) key = []
