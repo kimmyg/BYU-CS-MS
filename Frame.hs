@@ -2,6 +2,7 @@ module Frame where
 import Mark
 
 data Frame = Frame [Mark]
+    deriving Show
 
 frameSet :: Frame -> Key -> Value -> Frame
 frameSet (Frame ms) key value = Frame $ marksSet ms key value
