@@ -2,14 +2,37 @@ module Main where
 import Mark
 import Frame
 import Stack
-import ContinuationMarkMonad
+import Control.Monad
 
-fact :: (Stack Frame) -> Int -> ([Value], Int)
-fact frames 0 = ((ccm frames "fact"), 1)
-fact frames n = wcm frames "fact" (show n) (\frames -> let (ms, acc) = (fact (push frames) (n - 1)) in (ms, n * acc))
+instance Monad ((->) e) where
+  return x = \e -> x
+  r >>= f = \e -> f (r e) e
 
-fact_tr :: (Stack Frame) -> Int -> Int -> ([Value], Int)
-fact_tr frames 0 acc = ((ccm frames "fact"), acc)
-fact_tr frames n acc = wcm frames "fact" (show n) (\frames -> fact_tr frames (n - 1) (n * acc))
+ask :: e -> e
+ask = id
 
-main = print $ let (ms, v) = (fact_tr [] 5 1) in v
+local :: (e -> e) -> (e -> t) -> e -> t
+local f c = \e -> c (f e)
+
+push :: (Stack Frame) -> (Stack Frame)
+push fs = (Frame []):fs
+
+ccm :: (Stack Frame) -> Key -> [Value]
+ccm []     k = []
+ccm (f:fs) k = case (frameGet f k) of
+  Nothing -> ccm fs k
+  Just v  -> v:(ccm fs k)
+
+fact :: Int -> (Stack Frame) -> ([Value], Int)
+fact 0 fs = (ccm fs "fact", 1)
+fact n fs = 
+
+{-
+fact n fs = do {
+	c <- get;
+	local push;
+	return
+}
+-}
+
+main = print $ fact 0 [(Frame [])]
