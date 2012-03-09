@@ -2,8 +2,9 @@ module ContinuationMarkMonad where
 import Mark
 import Frame
 import Stack
-import Control.Monad
+--import Control.Monad
 
+{-
 data CM a = CM ([Frame], a)
     deriving Show
 
@@ -19,10 +20,23 @@ wcm (CM (f:fs, x)) key value g = g (CM ((frameSet f key value):fs, x))
 ccm :: CM a -> Key -> [Value]
 ccm (CM ([], _)) key = []
 ccm (CM (f:fs, x)) key = case (frameGet f key) of
-	Nothing -> ccm (CM (fs, x)) key
-	Just cm -> cm:(ccm (CM (fs, x)) key)
+  Nothing -> ccm (CM (fs, x)) key
+  Just cm -> cm:(ccm (CM (fs, x)) key)
 
 instance Monad CM where
   return x = cmReturn x
   m >>= f = cmBind m f
-  
+-}
+
+wcm :: (Stack Frame) -> Key -> Value -> ((Stack Frame) -> a) -> a
+wcm [] key value g = g [(Frame [(key, value)])]
+wcm (f:fs) key value g = g ((frameSet f key value):fs)
+
+ccm :: (Stack Frame) -> Key -> [Value]
+ccm [] key = []
+ccm (f:fs) key = case (frameGet f key) of
+  Nothing -> ccm fs key
+  Just cm -> cm:(ccm fs key)
+
+push :: (Stack Frame) -> (Stack Frame)
+push fs = (Frame []):fs
