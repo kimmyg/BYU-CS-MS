@@ -5,8 +5,8 @@ import Frame
 import Stack
 
 instance Monad ((->) a) where
-return x = \_ -> x
-r >>= f = \e -> f (r e) e
+  return x = \_ -> x
+  r >>= f = \e -> f (r e) e
 
 call :: ((Stack Frame) -> a) -> (Stack Frame) -> a
 call r fs = r ((Frame []):fs)
