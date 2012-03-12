@@ -4,7 +4,9 @@ import Mark
 import Frame
 import Stack
 
-instance Monad ((->) a) where
+type CM k v a = (Stack (Frame [(k,v)])) -> a
+
+instance Monad (CM k v) where
   return x = \_ -> x
   r >>= f = \e -> f (r e) e
 
@@ -16,11 +18,11 @@ call r fs = r ((Frame []):fs)
 wcm :: Key -> Value -> (CM -> a) -> CM -> a
 wcm k v r (f:fs) = r ((frameSet f k v):fs)
 
-ccm :: CM -> Key -> [Value]
-ccm []     k = []
-ccm (f:fs) k = case (frameGet f k) of
-  Nothing -> ccm fs k
-  Just v  -> v:(ccm fs k)
+ccm :: Key -> CM -> [Value]
+ccm k []     = []
+ccm k (f:fs) = case (frameGet f k) of
+  Nothing -> ccm k fs
+  Just v  -> v:(ccm k fs)
 
 getCM :: CM
 getCM = [(Frame [])]
