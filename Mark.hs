@@ -1,16 +1,14 @@
 module Mark where
 
-type Mark = (Key, Value)
-type Key = String
-type Value = String
+type Mark k v = (k, v)
 
-marksSet :: [Mark] -> Key -> Value -> [Mark]
+marksSet :: (Eq k) => [(Mark k v)] -> k -> v -> [(Mark k v)]
 marksSet [] key value = [(key, value)]
 marksSet (m@(key', value'):ms) key value
   | key' == key = (key', value):ms
   | key' /= key = m:(marksSet ms key value)
 
-marksGet :: [Mark] -> Key -> Maybe Value
+marksGet :: (Eq k) => [(Mark k v)] -> k -> Maybe v
 marksGet [] key = Nothing
 marksGet (m@(key', value):ms) key
   | key' == key = Just value
