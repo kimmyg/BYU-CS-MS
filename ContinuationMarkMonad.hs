@@ -1,26 +1,30 @@
 module ContinuationMarkMonad where
 import Control.Monad
-import Mark
-import Frame
+import Data.Map
 import Stack
 
-type CM k v = Stack (Frame k v)
+the bind function adds or replaces 
 
-instance Monad ((->) [[(k, v)]]) where
+wcm :: k -> v -> (CM -> a) -> a
+wcm k v f = 
+
+type CM k v = Stack (Map k v)
+
+instance Monad ((->) (Stack (Map k v))) where
   return x = (\_ -> x)
   r >>= f = (\fs -> f (r fs) fs)
 
-call :: ((Stack (Frame k v)) -> a) -> (Stack (Frame k v)) -> a
-call r fs = r ([]:fs)
+call :: ((Stack (Map k v)) -> a) -> (Stack (Map k v)) -> a
+call r fs = r (empty:fs)
 
-wcm :: (Eq k) => k -> v -> ((Stack (Frame k v)) -> a) -> (Stack (Frame k v)) -> a
-wcm k v r (f:fs) = r ((frameSet f k v):fs)
+wcm :: (Ord k) => k -> v -> ((Stack (Map k v)) -> a) -> (Stack (Map k v)) -> a
+wcm k v r (f:fs) = r ((insert k v f):fs)
 
-ccm :: (Eq k) => k -> (Stack (Frame k v)) -> [v]
+ccm :: (Ord k) => k -> (Stack (Map k v)) -> [v]
 ccm k []     = []
-ccm k (f:fs) = case (frameGet f k) of
+ccm k (f:fs) = case (Data.Map.lookup k f) of
   Nothing -> ccm k fs
   Just v  -> v:(ccm k fs)
 
-getCM :: Stack (Frame k v)
-getCM = [[]]
+getCM :: Stack (Map k v)
+getCM = [empty]

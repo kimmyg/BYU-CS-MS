@@ -1,6 +1,5 @@
 module Main where
 import ContinuationMarkMonad
-import Mark
 
 test1 :: CM String String -> [String]
 test1 fs = (do {
