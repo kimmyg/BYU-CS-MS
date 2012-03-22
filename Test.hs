@@ -1,18 +1,16 @@
 module Main where
 import ContinuationMarkMonad
 
-test1 :: CM String String -> [String]
-test1 fs = (do {
-  ccm "test"
-}) fs
+test1 :: [String]
+test1 fs = do
+  ccm "test" (return 0)
 
 test1correct :: [String]
 test1correct = []
 
 test2 :: CM String String -> [String]
-test2 fs = (do {
+test2 fs = do
   wcm "test" "value" test1
-}) fs
 
 test2correct :: [String]
 test2correct = ["value"]
@@ -25,6 +23,16 @@ test3 fs = (do {
 
 test3correct :: [String]
 test3correct = []
+
+fact :: Int -> CM String String Int
+fact 0 = return 1
+fact n = wcm "fact" (show n) (do
+  acc <- fact (n - 1)
+  return (n * acc))
+
+fact_tr :: Int -> Int -> CM String String Int
+fact_tr 0 acc = return acc
+fact_tr n acc = wcm "fact" (show n) (fact_tr (n - 1) (n * acc))
 
 test :: [((CM String String) -> [String], [String])] -> [Bool]
 test [] = []

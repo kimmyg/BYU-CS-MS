@@ -3,28 +3,27 @@ import Control.Monad
 import Data.Map
 import Stack
 
-the bind function adds or replaces 
+data CM k v a = CM ((Stack (Map k v)), a)
+  deriving Show
 
-wcm :: k -> v -> (CM -> a) -> a
-wcm k v f = 
+instance Monad (CM k v) where
+  return x = CM ([empty], x)
+  (CM (ms, x)) >>= f = let (CM (ms', x')) = f x in CM (ms ++ ms', x')
 
-type CM k v = Stack (Map k v)
+wcm :: Ord k => k -> v -> CM k v a -> CM k v a
+--wcm k v (CM ([],   x)) = CM ([singleton k v], x)
+wcm k v (CM (m:ms, x)) = CM ((insert k v m):ms, x)
 
-instance Monad ((->) (Stack (Map k v))) where
-  return x = (\_ -> x)
-  r >>= f = (\fs -> f (r fs) fs)
+wcm :: Ord k => k -> v -> (a -> CM k v b) -> CM k v b
 
-call :: ((Stack (Map k v)) -> a) -> (Stack (Map k v)) -> a
-call r fs = r (empty:fs)
+frameMarks :: Ord k => [k] -> Map k v -> [(k, v)]
+frameMarks []     _   = []
+frameMarks (k:ks) m = case Data.Map.lookup k m of
+  Just v  -> (k, v):(frameMarks ks m)
+  Nothing -> frameMarks ks m
 
-wcm :: (Ord k) => k -> v -> ((Stack (Map k v)) -> a) -> (Stack (Map k v)) -> a
-wcm k v r (f:fs) = r ((insert k v f):fs)
+ccms :: Ord k => [k] -> CM k v a -> [[(k, v)]]
+ccms ks (CM (fs, _)) = Prelude.map (\f -> frameMarks ks f) fs
 
-ccm :: (Ord k) => k -> (Stack (Map k v)) -> [v]
-ccm k []     = []
-ccm k (f:fs) = case (Data.Map.lookup k f) of
-  Nothing -> ccm k fs
-  Just v  -> v:(ccm k fs)
-
-getCM :: Stack (Map k v)
-getCM = [empty]
+ccm :: Ord k => k -> CM k v a -> [v]
+ccm k cm = Prelude.map (\[(_, v)] -> v) (ccms [k] cm)

@@ -1,0 +1,65 @@
+wcm "fact" (show n) (n * fact (n - 1))
+
+acc <- wcm "fact" (show n) (fact (n - 1))
+return n * acc
+
+wcm "fact" (show 1) (fact 0)
+wcm "fact" (show 1) (return 1)
+wcm "fact" (show 1) (CM (empty, 1))
+(CM ([("fact", "1")], 1)
+
+wcm "fact" (show 2)
+
+wcm "fact" (show 2) \m ->
+  wcm "fact" (show 1)
+    return 1
+
+the continuation mark needs to be added to the frames before the 
+expression is called
+
+fact n = wcm "fact" (show n)
+  acc <- fact (n - 1) [1,2,...,n-1]
+  return (n * acc) [1,2,....,n-1,n]
+
+wcm :: Ord k => k -> v -> CM k v a -> (a -> CM k v b) -> a -> CM k v b
+
+
+fact :: Int -> CM String String Int
+fact 0 = return 1
+fact n = wcm "fact" (show n) fact (n - 1)
+
+use the environment strategy?
+
+wcm should thread the frames invisibly
+
+f()
+x
+
+f is not in tail position
+
+x
+f()
+
+f is in tail position
+
+wcm k v (do
+  x
+  f())
+
+f = wcm k v' (return 5)
+
+in f, ccm should be [v'], not [v', v]
+
+acc <- fact (n - 1)
+return (n * acc)
+
+fact 0 acc = return acc
+fact n acc = wcm "fact" (show n)
+
+return represents the start of a computation, not the end
+we should be able to "return" a new context and join up contexts
+for instance,
+
+return 5 --> ([empty], 5)
+
+
