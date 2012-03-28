@@ -11,4 +11,4 @@ fact_tr :: Int -> Int -> CM String String Int
 fact_tr 0 acc = return acc
 fact_tr n acc = wcm "fact" (show n) (fact_tr (n - 1) (n * acc))
 
-main = print $ ccm "fact" $ fact_tr 5 1
+main = print $ runCM $ ccms ["fact"] $ fact_tr 5 1
