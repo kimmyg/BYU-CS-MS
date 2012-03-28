@@ -63,3 +63,116 @@ for instance,
 return 5 --> ([empty], 5)
 
 
+fact :: Int -> CM String String Int
+fact 0 = return 1
+fact n = wcm "fact" (show n) (do
+  acc <- fact (n - 1)
+  return (n * acc))
+
+fact :: Int -> Int -> CM String String Int
+fact 0 acc = return acc
+fact n acc = wcm "fact" (show n) (fact (n - 1) (n * acc))
+
+wcm "fact" (show n) (expression)
+ccm "fact"
+
+x <- fact 5;
+
+
+return 5 :: CM String String Int
+
+fact n = wcm "fact" (show n) (do
+  acc <- fact (n - 1);
+  return (n * acc))
+
+wcm :: Ord k => k -> v -> 
+a continuation--as in, the rest of the computation--has a type.
+
+for instance (even? <expr>) has a boolean type but the continuation of 
+<expr> has a nat type. we can view even as this type:
+(CM k v Nat) -> (CM k v Bool)
+compare this to the type of the lower order even? :: Nat -> Bool
+runContinuation
+
+fact :: Int -> CM String String (Int, String)
+fact 0 = do
+  ms <- ccm "fact";
+  return (1,ms)
+
+fact n = wcm "fact" (show n) (do
+  acc <- fact (n - 1);
+  ms <- ccm "fact";
+  return 
+
+fact_cm = wcm "fact" (show n) (fact_cm (n - 1))
+CM String String -> [String]
+
+a = do
+  x <- return 2;
+  y <- return 5;
+  wcm "sum" (x + y)
+
+continuation marks keep track, in a way, of calling contexts. a 
+computation should not care what its calling context is.
+
+[[[[ [inner contexts] ]]]]
+
+[fact:5 [fact:4 [fact:3 [fact:2 [fact:1 [1] ] ] ] ] ]
+
+the monad should closely mirror the continuation monad. if we choose to 
+
+
+runCM $ ccms ["test"] $ wcm "test" "hello" (return 1)
+runCM $ ccms ["test"] $ wcm "test" "hello" (CM (\_ -> 1))
+runCM $ ccms ["test"] $ CM (\(f:fs) -> (\_ -> 1) ((insert k v f):fs))
+runCM $ CM (\fs -> Prelude.map (\f-> frameMarks ks f) fs)
+
+
+fact :: Int -> CM String String Int
+
+fact 0 = do
+  cms <- ccm "fact"
+  return 1
+
+fact n = wcm "fact" (show n) $ do
+  acc <- fact (n - 1)
+  return (n * acc)
+
+fact 2 = wcm "fact" (show 2) $ do
+  fact 1 >>= \acc ->
+    return (2 * acc)
+
+fact 2 = wcm "fact" (show 2)
+  fact 1 >>= \acc ->
+    return (2 * acc)
+
+fact 2 = wcm "fact" (show 2)
+  (wcm "fact" (show 1)
+    ((ccms ["fact"] >>= \cms ->
+        return 1) >>= \acc ->
+          return (1 * acc))) >>= \acc ->
+            return (2 * acc)
+
+fact 2 = wcm "fact" (show 2)
+  (wcm "fact" (show 1)
+    ((ccms ["fact"] >>= \cms ->
+        \_ -> 1) >>= \acc ->
+          \_ -> (1 * acc))) >>= \acc ->
+            \_ -> (2 * acc)
+
+suppose CM a = f -> a
+
+return x = \_ -> x
+m >>= f = \fs -> f (m (empty:fs)) fs
+
+fact :: Int -> CM Int
+fact 0 = return 1
+fact n = wcm 'fact n (fact (n - 1) >>= \acc -> return n * acc)
+
+fact 2 = wcm 'fact 2 ((wcm 'fact 1 (fact 0 >>= \acc -> return 1 * acc)) >>= \acc -> return 2 * acc)
+
+fact 2 = wcm 'fact 2 ((wcm 'fact 1 ((return 1) >>= \acc -> return 1 * acc)) >>= \acc -> return 2 * acc)
+fact 2 = wcm 'fact 2 ((wcm 'fact 1 (\fs -> 1  >>= \acc -> \fs -> 1 * acc)) >>= \acc -> return 2 * acc)
+
+\fs -> 1 >>= \acc -> \fs -> 1 * acc
+\fs -> (\acc -> \fs -> 1 * acc) ((\fs -> 1) (empty:fs))
