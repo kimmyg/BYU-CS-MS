@@ -120,7 +120,16 @@ Thesis: Continuation marks are amenable to a monadic semantics.
 This statement may bear some elaboration. 
 
 % talk more about how they are useful here, elaboration will be below
-Continuation marks are a language feature that provides a mechanism to annotate the dynamic context of a program. This feature allows the association of arbitrary metadata with statically specified keys for the dynamic extent of an execution context and the inquiry of currently defined values of pending contexts for a given set of keys. Two surface level syntactic forms establish an interface into these abilities: \emph{with-continuation-mark} and \emph{current-continuation-marks}.
+Continuation marks are a language feature that provides a mechanism to annotate 
+the dynamic context of a program. This is useful for programs that 
+require dynamic information about a program execution such as 
+debuggers, profilers, and steppers.
+%elaborate!
+This feature allows the association of 
+arbitrary metadata with statically specified keys for the dynamic extent of an 
+execution context and the inquiry of currently defined values of pending 
+contexts for a given set of keys. Two surface level syntactic forms establish 
+an interface into these abilities: \emph{with-continuation-mark} and \emph{current-continuation-marks}.
 
 Monadic semantics originate from Moggi (cite) wherein they were termed categorical semantics in reference to their category theoretic construction (wc). Monadic semantics describe the meaning of computational models such as partial computability, side-effectfulness, and non-determinism. The appeal of using monads to specify semantics is significant: it allows one to work with a pure computational logic, such as the lambda calculus, with a particular model of computation in isolation, insulating the interactions between different models. There are at least two direct benefits to this: First, it helps one get at what the model is fundamentally, in the absence of ... . This [is helpful] in the reasoning process. Second, it helps one demarcate what the model is fundamentally, in the absence of ... . This [is helpful] in the defining process.
 
@@ -130,6 +139,34 @@ Monadic semantics originate from Moggi (cite) wherein they were termed categoric
 
 Thus, to state that continuation marks are amenable to a monadic semantics means that ... what does it actually mean? if we can show it satisfies the mono requirement, is it a computational model?
 % we can describe what they are at the core and also how they interact with other computational models
+
+Haskell (cite something) is a lazy, purely functional programming 
+language. As a purely functional language, all side effects are 
+explicit. This is a great boon when reasoning about a function 
+because distant, implicit effects are impossible in this environment. In 
+other words, a function will \emph{always} produce the same output given 
+the same input.
+This property facilitates a bottom-up approach to program testing and validation. all its e 
+Because of this, functions can be analyzed singly and then 
+composed in a way which removes none of the guarantees attained in 
+isolation. (We will see that this is one of the useful characteristics 
+of monads also.)
+Another consequence of this is that input and output are not expressible 
+as simple functions. Each of these exhibit non-local effects and it is 
+therefore impossible to realize them as such. In order to perform a 
+computation with I/O, we must model a computation with I/O which is done 
+by a properly crafted monad. The \texttt{IO} monad is Haskell is the 
+correct and endorsed method to perform I/O in a computation. Haskell 
+has many other regularly-used monads modelling computations with 
+state, non-determinism, continuations and exceptions, etc. Haskell is 
+then a natural choice to implement and verify a monad which models 
+computations with continuation marks.
+
+are local 
+Because 
+Haskell is 
+pure, input and 
+output cannot be expressed
 
 \section{Related Work}
 
@@ -143,7 +180,8 @@ A monad is an endofunctor in the category of monoids.
 
 There are many tools which require information about the dynamic context of a program: steppers, debuggers, profilers, etc. Traditionally, these tools are developed at the same level as the language implementation precisely because that implementation specifies the details that enable these tools to function. This is problematic: it couples the implementation of the tool with the implementation of the language, which increases the cost to port to other platforms. Additionally, if users become dependent upon these tools, it can stall the advancement of the language and the adoption of new language features.
 
-It is desirable to implement such tools at the same level as the language, removing dependency upon the implementation. Continuation marks are a language-level feature that provide the information necessary for these tools to function. Furthermore, languages which require stack inspection to enforce security policies (Java, C#) or support aspect oriented programming (Aspect J or whatever) can be defined in terms of a simpler language with continuation marks.
+It is desirable to implement such tools at the same level as the 
+language, removing dependency upon the implementation. Continuation marks are a language-level feature that provide the information necessary for these tools to function. Furthermore, languages which require stack inspection to enforce security policies (Java, C\#) or support aspect oriented programming (Aspect J or whatever) can be defined in terms of a simpler language with continuation marks.
 
 % talk about how a compiler doesn't respect what a debugger does so the program one debugs is different than the program one compiles (with optimizations and such) defining these tools at the language level allows us to rely on invariants
 
@@ -168,13 +206,35 @@ Importantly, the result of this invocation provides no evidence of any portion o
 
 The canonical example to illustrate the behavior of continuation marks in the presence and absence of tail recursion is the factorial function.
 
+Figure \ref{fac-rec} illustrates the definitional recursive 
+implementation (wc) of the factorial function. In this 
+[representation/expression], a cascade of multiplication operations 
+builds as the recursive calls are made. Each multiplication is 
+computation that must be performed after the recursive call of which the 
+machine must keep track.
+
+
+\begin{figure}
+\figure{fac-rec}
 \begin{verbatim}
 (define (fact n)
     (if (= n 0)
         1
         (* n (fact (- n 1))))
 \end{verbatim}
+\end{figure}
 
+Figure \ref{fac-tail-rec} illustrates the tail recursive manifestation 
+(wc?) of the factorial function. In contrast to the function in figure 
+\ref{fac-rec}, this formulation performs the multiplication before 
+the recursive call. Because no computation is performed after the 
+evaluation of the recursive call, that call is said to be in tail 
+position. Because the machine does not have to keep track of any pending 
+computations, it is unnecessary to create an additional execution 
+context.
+
+\begin{figure}
+\label{fac-tail-rec}
 \begin{verbatim}
 (define (fact-tr n)
   (let ((fact-tr-sub n acc)
@@ -183,10 +243,30 @@ The canonical example to illustrate the behavior of continuation marks in the pr
               (fact-tr (- n 1) (* n acc))))
     (fact-tr-sub n 1))
 \end{verbatim}
-
+\end{figure}
 Moggi (cite) introduces monads as a categorical semantics of computational models and provides the following category theoretic definition: for a category $\mathcal{C}$, a \emph{monad} is a triple $(T,\eta,\mu)$ where $T:\mathcal{C}\rightarrow\mathcal{C}$, $\eta:Id_{\mathcal{C}}\rightarrow T$, and $\mu:T^{2}\rightarrow T$ are natural transformations and the following equations hold... keep going?
 
+what this means for continuation marks in the face of such behavior. 
+First, it may be useful to determine exactly to what the term 
+\emph{continuation} refers. According to ..., a continuation is simply 
+``the rest of the computation''. Consider the following versions [wc] of 
+the previous functions enhanced with continuation marks.
 
+\begin{figure}
+\label{fac-rec-cm}
+\begin{verbatim}
+...
+\end{verbatim}
+\end{figure}
+
+% and the other
+
+We would expect that, in the regular recursive variant, [the addition of 
+new contexts implies that each annotation is applied to a new context 
+and so all the annotations are preserved since each represents future 
+computation to be performed.] In the tail-recursive variant, there is no 
+pending computation [and so we should expect that our previous 
+annotation be overwritten in some sense--replaced].
 
 
 %explain continuation marks at a high level \cite{clements2006portable}
