@@ -108,57 +108,23 @@
 % Put your content here %
 %%%%%%%%%%%%%%%%%%%%%%%%%
 
-Continuation marks are amenable to a monadic semantics. This is a cryptic statement. This statement may bear some elaboration. 
+%\abstract{}
 
-Continuation marks
+\section{Introduction}
 
-The semantics of programming languages used to be specified denotationally. In a denotational semantics, the syntax of an expression is mapped to an abstract value. While this form of semantics is precise, it has shortcomings.  but is neither modular nor extensible.
+Continuation marks are amenable to a monadic semantics. This statement may bear some elaboration. 
+
+Continuation marks are a language feature that provides a mechanism to annotate the dynamic context of a program. This feature allows the association of arbitrary metadata with statically specified keys for the dynamic extent of an execution context and the inquiry of currently defined values of pending contexts for a given set of keys. Two surface level syntactic forms establish an interface into these abilities: \emph{with-continuation-mark} and \emph{current-continuation-marks}.
+
+Monadic semantics originate from Moggi (cite) wherein they were termed categorical semantics in reference to their category theoretic construction (wc). Monadic semantics describe the meaning of computational models such as partial computability, side-effectfulness, and non-determinism. The appeal of using monads to specify semantics is significant: it allows one to work with a pure computational logic, such as the lambda calculus, with a particular model of computation in isolation, insulating the interactions between different models. There are at least two direct benefits to this: First, it helps one get at what the model is fundamentally, in the absence of ... . This [is helpful] in the reasoning process. Second, it helps one demarcate what the model is fundamentally, in the absence of ... . This [is helpful] in the defining process.
+
+Thus, to state that continuation marks are amenable to a monadic semantics means that ... what does it actually mean? if we can show it satisfies the mono requirement, is it a computational model?
+
+\section{Related Work}
 
 A denotational semantics of a language provides a precise definition of the meaning of expressions in that language. However useful, the denotational approach is not modular in that the addition of a language construct often requires global changes to the definition. For this reason, denotational semantics are often eschewed in favor of a more tractable approach. Monadic semantics provide a modular approach to specifying language meaning and also have the virtue of precision. [rearrange last sentence]
 
 A monad is an endofunctor in the category of monoids.
-
-Moggi (cite) introduces monads as a categorical semantics of computational models and provides the following category theoretic definition: for a category $\mathcal{C}$, a \emph{monad} is a triple $(T,\eta,\mu)$ where $T:\mathcal{C}\rightarrow\mathcal{C}$, $\eta:Id_{\mathcal{C}}\rightarrow T$, and $\mu:T^{2}\rightarrow T$ are natural transformations and the following equations hold... keep going?
-
-ABSTRACT
-
-INTRODUCTION
-
-Continuation marks are amenable to a monadic semantics.
-
-The feature of continuation marks provides a mechanism to annotate the dynamic  context of a program. It allows the association of arbitrary metadata with statically specified keys for the dynamic extent of an execution context and the inquiry of currently defined values of pending contexts for a given set of keys. Two surface level syntactic forms establish an interface into these abilities.
-
-Monadic semantics originate from Moggi (cite) wherein they were termed categorical semantics in reference to their category theoretic construction (wc). Monadic semantics describe the meaning of computational models such as partial computability, side-effectfulness, and non-determinism. The appeal of using monads to specify semantics is significant: it allows one to work with a pure computational logic, such as the lambda calculus, with a particular model of computation in isolation, insulating the interactions between different models.
-
-
-explain continuation marks at a high level \cite{clements2006portable}
-explain monadic semantics at a high level
-
-explain thesis statement at a high level
-
-RELATED WORK
-
-explain continuation marks in depth with copious references
-explain monadic semantics (and monads to an extent) with copious references
-
-PROJECT DESCRIPTION
-
-
-VALIDATION
-
-It may be the case that we have something that \emph{appears} to be a continuation mark monad but is not actually. In order to verify that our construct is a genuine continuation mark monad, we must do the following things:
-
-First, we must show that it actually models continuation marks. Continuation marks already have a denotational semantics defined. We can use equational reasoning/algebraically compare the semantics of the monad against the denotation semantics. What's more, if we express them in a suitable language, we can run our research.
-
-Second, we must show that it actually is a monad. We can verify the construct satisfies the three monad laws algebraically.
-
-explain what is necessary to show that what we have are continuation marks and what we have is a monad
-
-monadic semantics accomplish [their purpose] by providing an abstraction barrier which hides irrelevant...
-
-
-
-something about real programs?
 
 There are many tools which require information about the dynamic context of a program: steppers, debuggers, profilers, etc. Traditionally, these tools are developed at the same level as the language implementation precisely because that implementation specifies the details that enable these tools to function. This is problematic: it couples the implementation of the tool with the implementation of the language, which increases the cost to port to other platforms. Additionally, if users become dependent upon these tools, it can stall the advancement of the language and the adoption of new language features.
 
@@ -168,27 +134,84 @@ That's enough about what continuation marks allow one to do. The feature of cont
 
 \emph{with-continuation-mark} has three parameters: a key identifying the nature of the continuation mark, a value associated with this key, and an expression within the dynamic extent of which a continuation mark will exist with this key. In a Scheme-like syntax, it appears as so:
 
-(with-continuation-mark key-expression value-expression expression)
+\begin{verbatim}
+(with-continuation-mark /key/ /value-expression/ /expression/)
+\end{verbatim}
 
 \emph{current-continuation-marks} has one parameter, a set of keys, and returns a list of all the associated values set within the dynamic context of the invocation. Scheme-like, it looks like this:
 
-(current-continuation-marks key-expression)
+\begin{verbatim}
+(current-continuation-marks /key-set/)
+\end{verbatim}
 
 Importantly, the result of this invocation provides no evidence of any portion of the dynamic context lacking continuation marks with the specified keys. This preserves the ability to perform optimizations without exposing details which would render the optimizations unsound. This also requires special consideration of a language that supports tail call optimization which is not an optimization in the above sense since the behavior of which is present in the semantic definition of the language. In fact, in a language supporting tail calls, it is useful [probably change to necessary] to define <<expression>> to be in tail position.
 
 The canonical example to illustrate the behavior of continuation marks in the presence and absence of tail recursion is the factorial function.
 
+\begin{verbatim}
 (define (fact n)
     (if (= n 0)
         1
         (* n (fact (- n 1))))
-        
+\end{verbatim}
+
+\begin{verbatim}
 (define (fact-tr n)
   (let ((fact-tr-sub n acc)
           (if (= n 0)
               acc
               (fact-tr (- n 1) (* n acc))))
     (fact-tr-sub n 1))
+\end{verbatim}
+
+Moggi (cite) introduces monads as a categorical semantics of computational models and provides the following category theoretic definition: for a category $\mathcal{C}$, a \emph{monad} is a triple $(T,\eta,\mu)$ where $T:\mathcal{C}\rightarrow\mathcal{C}$, $\eta:Id_{\mathcal{C}}\rightarrow T$, and $\mu:T^{2}\rightarrow T$ are natural transformations and the following equations hold... keep going?
+
+
+
+
+%explain continuation marks at a high level \cite{clements2006portable}
+%explain monadic semantics at a high level
+
+%explain thesis statement at a high level
+
+
+%explain continuation marks in depth with copious references
+%explain monadic semantics (and monads to an extent) with copious references
+
+\section{Project Description}
+
+produce and provide haskell implementation of a continuation mark monad
+produce and provide haskell implementation of continuation marks according to formal semantics
+show algebraically (i.e., solely through symbolic manipulation) that provided is a monad
+show in the same way that what it models and what the semantics describe are equivalent
+profit
+
+\section{Validation}
+
+% it is intended that this section answer "how can we show this is a good solution?" this is the hardest of sciences and so it is implied that any proposed solution we provide will be accompanied by formal proof and we have stated we will supply it. that makes this section out-of-place.
+
+In order to show that our construct is indeed a monad for continuation marks, we must show that we our construct is a genuine monad and that it actually models continuation marks.
+
+The mathematical basis of a monad lends a simple way three laws ... we can verify algebraically.
+
+Continuation marks themselves already have a formal semantics specified. To verify that our monad models continuation marks, we will show that our monad is equivalent to the accepted semantic definition. ... also algebraically
+
+
+%It may be the case that we have something that \emph{appears} to be a continuation mark monad but is not actually. In order to verify that our construct is a genuine continuation mark monad, we must do the following things:
+
+%First, we must show that it actually models continuation marks. Continuation marks already have a denotational semantics defined. We can use equational reasoning/algebraically compare the semantics of the monad against the denotation semantics. What's more, if we express them in a suitable language, we can run our research.
+
+%Second, we must show that it actually is a monad. We can verify the construct satisfies the three monad laws algebraically.
+
+%explain what is necessary to show that what we have are continuation marks and what we have is a monad
+
+%monadic semantics accomplish [their purpose] by providing an abstraction barrier which hides irrelevant...
+
+
+
+%something about real programs?
+
+
     
     
 THESIS SCHEDULE
