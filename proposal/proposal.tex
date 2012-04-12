@@ -118,10 +118,7 @@ Thesis: Continuation marks are amenable to a monadic semantics.
 This statement may bear some elaboration. 
 
 % talk more about how they are useful here, elaboration will be below
-Continuation marks are a language feature that provides a mechanism to annotate the dynamic context of a program. This is useful for programs that require dynamic information about a program execution such as debuggers, profilers, and steppers.
-%elaborate!
-This feature allows the association of arbitrary metadata with statically specified keys for the dynamic extent of an execution context and the inquiry of currently defined values of pending contexts for a given set of keys. Two surface level syntactic forms establish 
-an interface into these abilities: \emph{with-continuation-mark} and \emph{current-continuation-marks}.
+Continuation marks are a language feature that provides a mechanism to annotate the dynamic context of a program. This feature allows the association of arbitrary metadata with statically specified keys for the dynamic extent of an execution context and the inquiry of currently defined values of pending contexts for a given set of keys. This is advantageous for programs that require dynamic information about a program execution such as debuggers, profilers, and steppers because it allows them to be defined at the same level as the language as opposed to some level below.
 
 Monadic semantics originate from Moggi \cite{moggi1989computational} wherein they were termed categorical semantics in reference to their category theoretic construction (wc). Monadic semantics describe the meaning of computational models such as partial computability, side-effectfulness, and non-determinism. The appeal of using monads to specify semantics is significant: it allows one to work with a pure computational logic, such as the lambda calculus, with a particular model of computation in isolation, insulating the interactions between different models. There are at least three direct benefits to this: First, it helps one get at what the model is fundamentally, in the absence of other language features. This aids the reasoning process. Second, it helps one demarcate what the model is fundamentally, in the absence of ... . This [is helpful] in the defining process.
 
@@ -157,17 +154,14 @@ Moggi \cite{moggi1989computational} introduces monads as a categorical semantics
 
 % use this as a jumping off point to talk about what monads are
 
-There are many tools which require information about the dynamic context of a program: steppers, debuggers, profilers, etc. Traditionally, these tools are developed at the same level as the language implementation precisely because that implementation specifies the details that enable these tools to function. This is problematic: it couples the implementation of the tool with the implementation of the language, which increases the cost to port to other platforms. Additionally, if users become dependent upon these tools, it can stall the advancement of the language and the adoption of new language features.
+There are many tools which require information about the dynamic context of a program: steppers, debuggers, profilers, etc. Traditionally, these tools are developed at the same level as the language implementation precisely because that implementation specifies the details that enable these tools to function. This is problematic for at least two reasons. First, it couples the implementation of the tool with the implementation of the language, which increases the cost to port to other platforms. If users become dependent upon these tools, it can stall the advancement of the language and the adoption of new language features. Second and more critical, it makes these tools unsound. For instance, debuggers typically examine programs which have been compiled without optimizations. %is this correct and, if so, for what reason?
+This means that, without costly equivalence guarantees (necessary?), the debugged program  is different than the deployed program. This is undesirable.
 
-It is desirable to implement such tools at the same level as the 
-language, removing dependency upon the implementation. Continuation marks are a language-level feature that provide the information necessary for these tools to function. Furthermore, languages which require stack inspection to enforce security policies (Java, C\#) or support aspect oriented programming (Aspect J or whatever) can be defined in terms of a simpler language with continuation marks.
+It is desirable to implement such tools at the same level as the language, removing dependency upon the implementation an instead relying on definitional and behavioral invariants. Continuation marks are a language-level feature that provide the information necessary for these tools to function. Furthermore, languages which require stack inspection to enforce security policies (\emph{Java}, \emph{C\#}) or support aspect oriented programming (\emph{aspectj}) can be defined in terms of a simpler language with continuation marks.
 
-% talk about how a compiler doesn't respect what a debugger does so the program one debugs is different than the program one compiles (with optimizations and such) defining these tools at the language level allows us to rely on invariants
+The feature of continuation marks itself is accessible via two surface level syntactic forms: \emph{with-continuation-mark} and \emph{current-continuation-marks}.
 
-%below too conversational
-That's enough about what continuation marks allow one to do. The feature of continuation marks is exposed in the language syntax with two constructs (wc): \emph{with-continuation-mark} and \emph{current-continuation-marks}.
-
-\emph{with-continuation-mark} has three parameters: a key identifying the nature of the continuation mark, a value associated with this key, and an expression within the dynamic extent of which a continuation mark will exist with this key. In a Scheme-like syntax, it appears as so:
+\emph{with-continuation-mark} has three parameters: a key identifying the nature of the continuation mark, an expression which value will be associated with this key, and an expression within the dynamic extent of which a continuation mark will exist with this key. In a Scheme-like syntax, it appears as so:
 
 % use slatex
 \begin{verbatim}
