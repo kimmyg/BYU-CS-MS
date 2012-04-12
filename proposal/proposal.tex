@@ -97,16 +97,14 @@
 \usepackage{hypernat}
 
 % Additional packages required for your specific thesis go here. I've left some I use as examples.
-\usepackage{graphicx}
-\usepackage{pdfsync}
+%\usepackage{graphicx}
+%\usepackage{pdfsync}
 
 \begin{document}
 
 % Produce the preamble
 \maketitle
 
-% Put your content here %
-%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %\abstract{}
 
@@ -120,61 +118,42 @@ Thesis: Continuation marks are amenable to a monadic semantics.
 This statement may bear some elaboration. 
 
 % talk more about how they are useful here, elaboration will be below
-Continuation marks are a language feature that provides a mechanism to annotate 
-the dynamic context of a program. This is useful for programs that 
-require dynamic information about a program execution such as 
-debuggers, profilers, and steppers.
+Continuation marks are a language feature that provides a mechanism to annotate the dynamic context of a program. This is useful for programs that require dynamic information about a program execution such as debuggers, profilers, and steppers.
 %elaborate!
-This feature allows the association of 
-arbitrary metadata with statically specified keys for the dynamic extent of an 
-execution context and the inquiry of currently defined values of pending 
-contexts for a given set of keys. Two surface level syntactic forms establish 
+This feature allows the association of arbitrary metadata with statically specified keys for the dynamic extent of an execution context and the inquiry of currently defined values of pending contexts for a given set of keys. Two surface level syntactic forms establish 
 an interface into these abilities: \emph{with-continuation-mark} and \emph{current-continuation-marks}.
 
-Monadic semantics originate from Moggi (cite) wherein they were termed categorical semantics in reference to their category theoretic construction (wc). Monadic semantics describe the meaning of computational models such as partial computability, side-effectfulness, and non-determinism. The appeal of using monads to specify semantics is significant: it allows one to work with a pure computational logic, such as the lambda calculus, with a particular model of computation in isolation, insulating the interactions between different models. There are at least two direct benefits to this: First, it helps one get at what the model is fundamentally, in the absence of ... . This [is helpful] in the reasoning process. Second, it helps one demarcate what the model is fundamentally, in the absence of ... . This [is helpful] in the defining process.
+Monadic semantics originate from Moggi \cite{moggi1989computational} wherein they were termed categorical semantics in reference to their category theoretic construction (wc). Monadic semantics describe the meaning of computational models such as partial computability, side-effectfulness, and non-determinism. The appeal of using monads to specify semantics is significant: it allows one to work with a pure computational logic, such as the lambda calculus, with a particular model of computation in isolation, insulating the interactions between different models. There are at least three direct benefits to this: First, it helps one get at what the model is fundamentally, in the absence of other language features. This aids the reasoning process. Second, it helps one demarcate what the model is fundamentally, in the absence of ... . This [is helpful] in the defining process.
 
 % talk about how they are recognized as a good way to do things.
 % they allow reasoning about a feature or model in isolation but, surprisingly, also are composable
 
 
-Thus, to state that continuation marks are amenable to a monadic semantics means that ... what does it actually mean? if we can show it satisfies the mono requirement, is it a computational model?
+Thus, the statement that continuation marks are amenable to a monadic semantics means that we can characterize them with a monad simultaneously allowing us to specify the essence of continuation marks and reason about their interactions with other computational models.
+%... what does it actually mean? if we can show it satisfies the mono requirement, is it a computational model?
 % we can describe what they are at the core and also how they interact with other computational models
 
-Haskell (cite something) is a lazy, purely functional programming 
-language. As a purely functional language, all side effects are 
-explicit. This is a great boon when reasoning about a function 
-because distant, implicit effects are impossible in this environment. In 
-other words, a function will \emph{always} produce the same output given 
-the same input.
-This property facilitates a bottom-up approach to program testing and validation. all its e 
-Because of this, functions can be analyzed singly and then 
-composed in a way which removes none of the guarantees attained in 
-isolation. (We will see that this is one of the useful characteristics 
-of monads also.)
-Another consequence of this is that input and output are not expressible 
-as simple functions. Each of these exhibit non-local effects and it is 
-therefore impossible to realize them as such. In order to perform a 
-computation with I/O, we must model a computation with I/O which is done 
-by a properly crafted monad. The \texttt{IO} monad is Haskell is the 
-correct and endorsed method to perform I/O in a computation. Haskell 
-has many other regularly-used monads modelling computations with 
-state, non-determinism, continuations and exceptions, etc. Haskell is 
-then a natural choice to implement and verify a monad which models 
-computations with continuation marks.
+Haskell \cite{hudak1992report} is a lazy, purely functional programming language. As a purely functional language, all side effects are explicit. This is a great boon when reasoning about a function because distant, implicit effects are impossible in this environment. In 
+other words, a function will \emph{always} produce the same output given the same input.
+%This property facilitates a bottom-up approach to program testing and validation. all its e 
+Because of this, functions can be analyzed singly and then composed in a way which removes none of the guarantees attained in isolation. (We will see that this is one of the useful characteristics of monads also.)
 
-are local 
-Because 
-Haskell is 
-pure, input and 
-output cannot be expressed
+Another consequence of this is that input and output are not expressible as simple functions. Each of these exhibit non-local effects and it is therefore impossible to realize them as such. In order to perform a computation with I/O, we must model a computation with I/O which is done by a properly crafted monad. The \texttt{IO} monad is Haskell is the correct and endorsed method to perform I/O in a computation. Haskell has many other regularly-used monads modelling computations with state, non-determinism, continuations and exceptions, etc. Haskell is then a natural choice to implement and verify a monad which models computations with continuation marks.
 
 \section{Related Work}
 
-A denotational semantics of a language provides a precise definition of the meaning of expressions in that language. However useful, the denotational approach is not modular in that the addition of a language construct often requires global changes to the definition. For this reason, denotational semantics are often eschewed in favor of a more tractable approach. Monadic semantics provide a modular approach to specifying language meaning and also have the virtue of precision. [rearrange last sentence]
+A denotational semantics of a language provides a precise definition of the meaning of expressions in that language. However useful, the denotational approach is not modular in that the addition of a language construct often requires global changes to the definition \cite{liang2009modular}. For this reason, denotational semantics are often eschewed in favor of a more tractable approach.
 
-% talk about denotational -> behavioral (operational) -> monadic
+Behavioral semantics were developed in part to mitigate this problem.
+% I need a good source to learn about behavioral semantics and operational semantics.
+% also look into monadic denotational and monadic behavioral
+
+Monadic semantics provide a truly modular approach to specifying language meaning and can do so with precision.
+
 
 A monad is an endofunctor in the category of monoids.
+
+Moggi \cite{moggi1989computational} introduces monads as a categorical semantics of computational models and provides the following category theoretic definition: for a category $\mathcal{C}$, a \emph{monad} is a triple $(T,\eta,\mu)$ where $T:\mathcal{C}\rightarrow\mathcal{C}$, $\eta:Id_{\mathcal{C}}\rightarrow T$, and $\mu:T^{2}\rightarrow T$ are natural transformations and the following equations hold... keep going?
 
 % use this as a jumping off point to talk about what monads are
 
@@ -206,12 +185,7 @@ Importantly, the result of this invocation provides no evidence of any portion o
 
 The canonical example to illustrate the behavior of continuation marks in the presence and absence of tail recursion is the factorial function.
 
-Figure \ref{fac-rec} illustrates the definitional recursive 
-implementation (wc) of the factorial function. In this 
-[representation/expression], a cascade of multiplication operations 
-builds as the recursive calls are made. Each multiplication is 
-computation that must be performed after the recursive call of which the 
-machine must keep track.
+Figure \ref{fac-rec} illustrates the definitional recursive implementation (wc) of the factorial function. In this [representation/expression], a cascade of multiplication operations builds as the recursive calls are made. Each multiplication is computation that must be performed after the recursive call of which the machine must keep track.
 
 
 \begin{figure}
@@ -224,14 +198,7 @@ machine must keep track.
 \end{verbatim}
 \end{figure}
 
-Figure \ref{fac-tail-rec} illustrates the tail recursive manifestation 
-(wc?) of the factorial function. In contrast to the function in figure 
-\ref{fac-rec}, this formulation performs the multiplication before 
-the recursive call. Because no computation is performed after the 
-evaluation of the recursive call, that call is said to be in tail 
-position. Because the machine does not have to keep track of any pending 
-computations, it is unnecessary to create an additional execution 
-context.
+Figure \ref{fac-tail-rec} illustrates the tail recursive manifestation (wc?) of the factorial function. In contrast to the function in figure \ref{fac-rec}, this formulation performs the multiplication before the recursive call. Because no computation is performed after the evaluation of the recursive call, that call is said to be in tail position. Because the machine does not have to keep track of any pending computations, it is unnecessary to create an additional execution context.
 
 \begin{figure}
 \label{fac-tail-rec}
@@ -244,7 +211,6 @@ context.
     (fact-tr-sub n 1))
 \end{verbatim}
 \end{figure}
-Moggi (cite) introduces monads as a categorical semantics of computational models and provides the following category theoretic definition: for a category $\mathcal{C}$, a \emph{monad} is a triple $(T,\eta,\mu)$ where $T:\mathcal{C}\rightarrow\mathcal{C}$, $\eta:Id_{\mathcal{C}}\rightarrow T$, and $\mu:T^{2}\rightarrow T$ are natural transformations and the following equations hold... keep going?
 
 what this means for continuation marks in the face of such behavior. 
 First, it may be useful to determine exactly to what the term 
@@ -261,12 +227,7 @@ the previous functions enhanced with continuation marks.
 
 % and the other
 
-We would expect that, in the regular recursive variant, [the addition of 
-new contexts implies that each annotation is applied to a new context 
-and so all the annotations are preserved since each represents future 
-computation to be performed.] In the tail-recursive variant, there is no 
-pending computation [and so we should expect that our previous 
-annotation be overwritten in some sense--replaced].
+We would expect that, in the regular recursive variant, [the addition of new contexts implies that each annotation is applied to a new context and so all the annotations are preserved since each represents future computation to be performed.] In the tail-recursive variant, there is no pending computation [and so we should expect that our previous annotation be overwritten in some sense--replaced].
 
 
 %explain continuation marks at a high level \cite{clements2006portable}
