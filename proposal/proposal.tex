@@ -1,305 +1,374 @@
-\documentclass[ms]{byuprop}
-% Options for this class include the following (* indicates default):
-%
-%   10pt -- 10 point font size
-%   11pt -- 11 point font size
-%   12pt (*) -- 12 point font size
-%
-%   ms -- produce a thesis proposal (off)
-%   areaexam -- produce a research area overview (off)
-%   phd -- produce a dissertation proposal (off)
-%   
-%   layout -- show layout lines on the pages, helps with overfull boxes (off)
-%   grid -- show a half-inch grid on every page, helps with printing (off)
+\documentclass[ms]{byuprop} % Options for this class include the following (* indicates
+default): % %   10pt -- 10 point font size %   11pt -- 11 point font size %   12pt (*) --
+12 point font size % %   ms -- produce a thesis proposal (off) %   areaexam -- produce a
+research area overview (off) %   phd -- produce a dissertation proposal (off) % %   layout
+-- show layout lines on the pages, helps with overfull boxes (off) %   grid -- show a
+half-inch grid on every page, helps with printing (off)
 
 
-% This command fixes my particular printer, which starts 0.03 inches too low,
-% shifting the whole page down by that amount.  This shifts the document
-% content up so that it comes out right when printed.
-%
-% Discovering this sort of behavior is best done by specifying the ``grid''
-% option in the class parameters above.  It prints a 1/2 inch grid on every
-% page.  You can then use a ruler to determine exactly what the printer is
-% doing.
-%
-% Uncomment to shift content up (accounting for printer problems)
+% This command fixes my particular printer, which starts 0.03 inches too low, % shifting
+the whole page down by that amount.  This shifts the document % content up so that it
+comes out right when printed. % % Discovering this sort of behavior is best done by
+specifying the ``grid'' % option in the class parameters above.  It prints a 1/2 inch grid
+on every % page.  You can then use a ruler to determine exactly what the printer is %
+doing. % % Uncomment to shift content up (accounting for printer problems)
 %\setlength{\voffset}{-.03in}
 
-% Here we set things up for invisible hyperlinks in the document.  This makes
-% the electronic version clickable without changing the way that the document
-% prints.  It's useful, but optional.  Note that if you use pdflatex, you
-% should change "ps2pdf" to "pdftex".
-\usepackage[
-    ps2pdf,
-    bookmarks=true,
-    breaklinks=true,
-    raiselinks=true,
-    pdfborder={0 0 0},
-    colorlinks=false,
-    ]{hyperref}
+% Here we set things up for invisible hyperlinks in the document.  This makes % the
+electronic version clickable without changing the way that the document % prints.  It's
+useful, but optional.  Note that if you use pdflatex, you % should change "ps2pdf" to
+"pdftex". \usepackage[ ps2pdf, bookmarks=true, breaklinks=true, raiselinks=true,
+pdfborder={0 0 0}, colorlinks=false, ]{hyperref}
 
-% Rewrite the itemize, description, and enumerate environments to have more
-% reasonable spacing:
-\newcommand{\ItemSep}{\itemsep 0pt}
-\let\oldenum=\enumerate
-\renewcommand{\enumerate}{\oldenum \ItemSep}
-\let\olditem=\itemize
-\renewcommand{\itemize}{\olditem \ItemSep}
-\let\olddesc=\description
+% Rewrite the itemize, description, and enumerate environments to have more % reasonable
+spacing: \newcommand{\ItemSep}{\itemsep 0pt} \let\oldenum=\enumerate
+\renewcommand{\enumerate}{\oldenum \ItemSep} \let\olditem=\itemize
+\renewcommand{\itemize}{\olditem \ItemSep} \let\olddesc=\description
 \renewcommand{\description}{\olddesc \ItemSep}
 
-% Get a little less fussy about word spacing on a line.  Sometimes produces
-% ugly results, so keep your eyes peeled.
-\sloppy
+% Get a little less fussy about word spacing on a line.  Sometimes produces % ugly
+results, so keep your eyes peeled. \sloppy
 
 % Important settings for the byuprop class. %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-% Because I use these things in more than one place, I created new commands for
-% them.  I did not use \providecommand because I absolutely want LaTeX to error
-% out if these already exist.
-\newcommand{\Title}{The Monadic Semantics of Continuation Marks}
-\newcommand{\Author}{Kimball R. Germane}
-\newcommand{\SubmissionMonth}{April}
+% Because I use these things in more than one place, I created new commands for % them.  I
+did not use \providecommand because I absolutely want LaTeX to error % out if these
+already exist. \newcommand{\Title}{The Monadic Semantics of Continuation Marks}
+\newcommand{\Author}{Kimball R. Germane} \newcommand{\SubmissionMonth}{April}
 \newcommand{\SubmissionYear}{2012}
 
-% Take these from the commands defined above
-\title{\Title}
-\author{\Author}
-\monthsubmitted{\SubmissionMonth}
-\yearsubmitted{\SubmissionYear}
+% Take these from the commands defined above \title{\Title} \author{\Author}
+\monthsubmitted{\SubmissionMonth} \yearsubmitted{\SubmissionYear}
 
-% Committee members
-\committeechair{Jay McCarthy}
-\committeemembera{}
-\committeememberb{}
-\committeememberc{}
-\committeememberd{}
+% Committee members \committeechair{Jay McCarthy} \committeemembera{} \committeememberb{}
+\committeememberc{} \committeememberd{}
 
-% Department graduate coordinator
-\graduatecoordinator{Dan Ventura}
+% Department graduate coordinator \graduatecoordinator{Dan Ventura}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-% Set up the internal PDF information so that it becomes part of the document
-% metadata.  The pdfinfo command will display this. Be sure to set the document
-% type and add your own keywords.
-\hypersetup{%
-    pdftitle=\Title,%
-    pdfauthor=\Author,%
-    pdfsubject={Document Type, BYU CS Department: %
-                Submitted \SubmissionMonth~\SubmissionYear, Created \today},%
-    pdfkeywords={},%
-}
+% Set up the internal PDF information so that it becomes part of the document % metadata. 
+The pdfinfo command will display this. Be sure to set the document % type and add your own
+keywords. \hypersetup{% pdftitle=\Title,% pdfauthor=\Author,% pdfsubject={Document Type,
+BYU CS Department: % Submitted \SubmissionMonth~\SubmissionYear, Created \today},%
+pdfkeywords={},% }
 
-% These packages allow the bibliography to be sorted alphabetically and allow references to more than one paper to be sorted and compressed (i.e. instead of [5,2,4,6] you get [2,4-6])
-\usepackage[numbers,sort&compress]{natbib}
-\usepackage{hypernat}
+% These packages allow the bibliography to be sorted alphabetically and allow references
+to more than one paper to be sorted and compressed (i.e. instead of [5,2,4,6] you get
+[2,4-6]) \usepackage[numbers,sort&compress]{natbib} \usepackage{hypernat}
 
-% Additional packages required for your specific thesis go here. I've left some I use as examples.
-%\usepackage{graphicx}
-%\usepackage{pdfsync}
+% Additional packages required for your specific thesis go here. I've left some I use as
+examples. %\usepackage{graphicx} %\usepackage{pdfsync}
 
 \begin{document}
 
-% Produce the preamble
-\maketitle
+% Produce the preamble \maketitle
 
 
 %\abstract{}
 
 \section{Introduction}
 
-% remember that the audience in this case actually does not know what these things are
-% so have a clear, useful exposition.
+% remember that the audience in this case actually does not know what these things are %
+so have a clear, useful exposition.
 
 Thesis: Continuation marks are amenable to a monadic semantics.
 
-This statement may bear some elaboration. 
-
 % talk more about how they are useful here, elaboration will be below
-Continuation marks \cite{clements2006portable} are a language feature that provides a mechanism to annotate the dynamic context of a program. This feature allows the association of arbitrary values with arbitrary keys for the dynamic extent of an execution context and the inquiry of currently defined values of pending contexts for a given set of keys.
-For instance, <give a simple, useful, illustrative example here>.
-% later we can talk about continuation marks and continuations, simulating dynamic scope, recursion and tail recursion detection.
-This is advantageous for programs that require dynamic information about a program execution such as debuggers, profilers, and steppers because it allows them to be defined at the same level as the language as opposed to some level below.
 
-Monadic semantics originate from Moggi \cite{moggi1989computational} wherein they were termed categorical semantics in reference to their category theoretic construction (wc). Monadic semantics describe the meaning of computational models such as partial computability, side-effectfulness, and non-determinism. The appeal of using monads to specify semantics is significant: it allows one to work with a pure computational logic, such as the lambda calculus, with a particular model of computation in isolation, insulating the interactions between different models. There are at least three direct benefits to this: First, it helps one get at what the model is fundamentally, in the absence of other language features. This aids the reasoning process. Second, it helps one demarcate what the model is fundamentally, in the absence of ... . This [is helpful] in the defining process.
+There are certain tools that are indispensable to some programmers that concern the
+behavior of their programs: debuggers, profilers, steppers, etc. Without these tools,
+these programmers cannot justify the adoption of a language, however compelling it might
+otherwise be. The nature of these tools typically requires them to be designed and
+implemented in tandem with the language and privy to sometimes transient implementation
+detail. Thus, they are a considerable burden on the language designer or implementor. The
+combination of this dependence and burden can stall language development and proliferation.
+
+Continuation marks \cite{clements2006portable} are a language feature that provides a
+mechanism to annotate the dynamic context of a program. This feature allows the
+association of arbitrary values with arbitrary keys for the dynamic extent of an execution
+context and the inquiry of currently defined values of pending contexts for a given set of
+keys. This is advantageous for programs that require dynamic information about a program
+execution such as debuggers, profilers, and steppers because it allows them to be defined
+at the same level as the language instead of some level below.
+
+%For instance, <give a simple, useful, illustrative example here>. % later we can
+%talk about continuation marks and continuations, simulating dynamic scope, recursion and
+%tail recursion detection. 
+
+% can I use the terms programming language feature and computational model interchangeably?
+
+Monadic semantics originate from Moggi \cite{moggi1989computational} wherein they were
+termed categorical semantics in reference to their category theoretic construction.
+Monadic semantics describe the meaning of computational models such as partial
+computability, side-effectfulness, and non-determinism. The appeal of using monads to
+specify semantics is significant: it allows one to work with a pure computational logic,
+such as the lambda calculus, with a particular model of computation in isolation,
+insulating the interactions between different models. There are at least two direct
+benefits to this: First, it helps one define and reason about a particular computational
+model absent from the noise of other models and practical considerations. Second, no
+language feature is an island and when it becomes necessary to investigate the
+interactions between models, the monadic construction facilitates composition in a simple
+way.
 
 % talk about how they are recognized as a good way to do things.
-% they allow reasoning about a feature or model in isolation but, surprisingly, also are composable
+% they allow reasoning about a feature or model in isolation but, surprisingly, also are 
+% composable
 
+Thus, the statement that continuation marks are amenable to a monadic semantics means
+simply that we can characterize them with a monad, simultaneously allowing us to express
+the essence of continuation marks and reason about its interaction with other
+computational models.
 
-Thus, the statement that continuation marks are amenable to a monadic semantics means simply that we can characterize them with a monad, simultaneously allowing us to express the essence of continuation marks and reason about its interaction with other computational models.
-%... what does it actually mean? if we can show it satisfies the mono requirement, is it a computational model?
-% we can describe what they are at the core and also how they interact with other computational models
-
-Haskell \cite{hudak1992report} is a lazy, purely functional programming language. As a purely functional language, all side effects are explicit. This is a great boon when reasoning about a function because distant, implicit effects are impossible in this environment. In 
-other words, a function will \emph{always} produce the same output given the same input.
-%This property facilitates a bottom-up approach to program testing and validation. all its e 
-Because of this, functions can be analyzed singly and then composed in a way which removes none of the guarantees attained in isolation. (We will see that this is one of the useful characteristics of monads also.)
-
-Another consequence of this is that input and output are not expressible as simple functions. Each of these exhibit non-local effects and it is therefore impossible to realize them as such. In order to perform a computation with I/O, we must model a computation with I/O which is done by a properly crafted monad. The \texttt{IO} monad is Haskell is the correct and endorsed method to perform I/O in a computation. Haskell has many other regularly-used monads modelling computations with state, non-determinism, continuations and exceptions, etc. Haskell is then a natural choice to implement and verify a monad which models computations with continuation marks.
+% ... what does it actually mean? if we can show it satisfies the mono requirement, is it 
+% a computational model?
+% we can describe what they are at the core and also how they interact with other 
+% computational models
 
 \section{Related Work}
 
-A denotational semantics of a language provides a precise definition of the meaning of expressions in that language. However useful, the denotational approach is not modular in that the addition of a language construct often requires global changes to the definition \cite{liang2009modular}. For this reason, denotational semantics are often eschewed in favor of a more tractable approach.
+A denotational semantics of a language provides a precise definition of the meaning of
+expressions in that language. However useful, the denotational approach is not modular in
+that the addition of a language construct often requires global changes to the definition
+\cite{liang2009modular}. For this reason, denotational semantics are often eschewed in
+favor of a more tractable approach.
 
 Behavioral semantics were developed in part to mitigate this problem.
+
 % I need a good source to learn about behavioral semantics and operational semantics.
 % also look into monadic denotational and monadic behavioral
 
-Monadic semantics provide a truly modular approach to specifying language meaning and can do so with precision.
+Monadic semantics provide a truly modular approach to specifying language meaning and can
+do so with precision.
 
 
 A monad is an endofunctor in the category of monoids.
 
-Moggi \cite{moggi1989computational} introduces monads as a categorical semantics of computational models and provides the following category theoretic definition: for a category $\mathcal{C}$, a \emph{monad} is a triple $(T,\eta,\mu)$ where $T:\mathcal{C}\rightarrow\mathcal{C}$, $\eta:Id_{\mathcal{C}}\rightarrow T$, and $\mu:T^{2}\rightarrow T$ are natural transformations and the following equations hold... keep going?
+Moggi \cite{moggi1989computational} introduces monads as a categorical semantics of
+computational models. He provides the following definitions:
+
+Definition 2.1
+
+A \emph{monad} over a category $\mathcal{C}$ is a triple $(T,\eta,\mu)$ where
+$T:\mathcal{C}\rightarrow\mathcal{C}$, $\eta:Id_{\mathcal{C}}\rightarrow T$, and
+$\mu:T^{2}\rightarrow T$ are \emph{natural transformations} and the following equations
+hold:
+
+\[
+\mu_{TA};\mu_{A}=T(\mu_{A});\mu_{A}
+\]
+
+\[
+\eta_{TA};\mu{A}=\id_{TA}=T(\eta_{A});\mu_{A}
+\]
+
+Defintion 2.2
+
+A \emph{Kleisli triple} over $\mathcal{C}$ is a triple $(T,\eta,\_^{*})$, where
+$T:\Obj(\mathcal{C}\rightarrow \Obj(\mathcal{C}$, $\eta_{A}:A\rightarrow TA$,
+$f^{*}:TA\rightarrow TB$ for $f:A\rightarrow TB$ and the following equations hold:
+
+\[
+\eta_{A}^{*}=\id_{TA}
+\]
+
+\[
+eta_{A};f^{*}=f
+\]
+
+\[
+f^{*};g^{*}=(f;g^{*})^{*}
+\]
+
+These equations represent the monadic laws that all alleged monads must preserve. We will
+appeal to them directly in the verification of our candidate monad.
 
 % use this as a jumping off point to talk about what monads are
 
-There are many tools which require information about the dynamic context of a program: steppers, debuggers, profilers, etc. Traditionally, these tools are developed at the same level as the language implementation precisely because that implementation specifies the details that enable these tools to function. This is problematic for at least two reasons. First, it couples the implementation of the tool with the implementation of the language, which increases the cost to port to other platforms. If users become dependent upon these tools, it can stall the advancement of the language and the adoption of new language features. Second and more critical, it makes these tools unsound. For instance, debuggers typically examine programs which have been compiled without optimizations. %is this correct and, if so, for what reason?
-This means that, without costly equivalence guarantees (necessary?), the debugged program  is different than the deployed program. This is undesirable.
+Many tools require information about the dynamic context of a program: steppers,
+debuggers, profilers, etc. Traditionally, these tools are developed at the same level as
+the language implementation precisely because that implementation specifies the details
+that enable these tools to function. This is problematic for at least two reasons. First,
+it couples the implementation of the tool with the implementation of the language, which
+increases the cost to port to other platforms. If users become dependent upon these tools,
+it can stall the advancement of the language and the adoption of new language features.
+Second and more critical, it makes these tools unsound. For instance, debuggers typically
+examine programs which have been compiled without optimizations.
 
-It is desirable to implement such tools at the same level as the language, removing dependency upon the implementation an instead relying on definitional and behavioral invariants. Continuation marks are a language-level feature that provide the information necessary for these tools to function. Furthermore, languages which require stack inspection to enforce security policies (\emph{Java}, \emph{C\#}) or support aspect oriented programming (\emph{aspectj}) can be defined in terms of a simpler language with continuation marks.
+% is this correct and, if so, for what reason?
 
-The feature of continuation marks itself is accessible via two surface level syntactic forms: \emph{with-continuation-mark} and \emph{current-continuation-marks}.
+This means that, without costly equivalence guarantees (necessary?), the debugged program
+is different than the deployed program. This is undesirable.
 
-\emph{with-continuation-mark} has three parameters: a key identifying the nature of the continuation mark, an expression which value will be associated with this key, and an expression within the dynamic extent of which a continuation mark will exist with this key. In a Scheme-like syntax, it appears as so:
+It is desirable to implement such tools at the same level as the language, removing
+dependency upon the implementation an instead relying on definitional and behavioral
+invariants. Continuation marks are a language-level feature that provide the information
+necessary for these tools to function. Furthermore, languages which require stack
+inspection to enforce security policies (\emph{Java}, \emph{C\#}) or support aspect
+oriented programming (\emph{aspectj}) can be defined in terms of a simpler language with
+continuation marks.
 
-% use slatex
-\begin{verbatim}
-(with-continuation-mark /key-expression/ /value-expression/ /expression/)
-\end{verbatim}
+The feature of continuation marks itself is accessible via two surface level syntactic
+forms: \emph{with-continuation-mark} and \emph{current-continuation-marks}.
 
-\emph{current-continuation-marks} has one parameter, a set of keys, and returns a list of all the associated values set within the dynamic context of the invocation. Scheme-like, it looks like this:
+\emph{with-continuation-mark} has three parameters: a key identifying the nature of the
+continuation mark, an expression which value will be associated with this key, and an
+expression within the dynamic extent of which a continuation mark will exist with this
+key. In a Scheme-like syntax, it appears as so:
+
+% use slatex \begin{verbatim} (with-continuation-mark /key-expression/ /value-expression/
+/expression/) \end{verbatim}
+
+\emph{current-continuation-marks} has one parameter, a set of keys, and returns a list of
+all the associated values set within the dynamic context of the invocation. Scheme-like,
+it looks like this:
 
 %look at Clement's dissertation to see the actual characterizations of these
-\begin{verbatim}
-(current-continuation-marks /key-set/)
-\end{verbatim}
+\begin{verbatim} (current-continuation-marks /key-set/) \end{verbatim}
 
-Importantly, the result of this invocation provides no evidence of any portion of the dynamic context lacking continuation marks with the specified keys. This preserves the ability to perform optimizations without exposing details which would render the optimizations unsound. This also requires special consideration of a language that supports tail call optimization which is not an optimization in the above sense since the behavior of which is present in the semantic definition of the language. In fact, in a language supporting tail calls, it is useful [probably change to necessary] to define <<expression>> to be in tail position.
+Importantly, the result of this invocation provides no evidence of any portion of the
+dynamic context lacking continuation marks with the specified keys. This preserves the
+ability to perform optimizations without exposing details which would render the
+optimizations unsound. This also requires special consideration of a language that
+supports tail call optimization which is not an optimization in the above sense since the
+behavior of which is present in the semantic definition of the language. In fact, in a
+language supporting tail calls, it is useful [probably change to necessary] to define
+<<expression>> to be in tail position.
 
-The canonical example to illustrate the behavior of continuation marks in the presence and absence of tail recursion is the factorial function.
+The canonical example to illustrate the behavior of continuation marks in the presence and
+absence of tail recursion is the factorial function.
 
-Figure \ref{fac-rec} illustrates the definitional recursive implementation (wc) of the factorial function. In this [representation/expression], a cascade of multiplication operations builds as the recursive calls are made. Each multiplication is computation that must be performed after the recursive call of which the machine must keep track.
-
-
-\begin{figure}
-\figure{fac-rec}
-\begin{verbatim}
-(define (fact n)
-    (if (= n 0)
-        1
-        (* n (fact (- n 1))))
-\end{verbatim}
-\end{figure}
-
-Figure \ref{fac-tail-rec} illustrates the tail recursive manifestation (wc?) of the factorial function. In contrast to the function in figure \ref{fac-rec}, this formulation performs the multiplication before the recursive call. Because no computation is performed after the evaluation of the recursive call, that call is said to be in tail position. Because the machine does not have to keep track of any pending computations, it is unnecessary to create an additional execution context.
-
-\begin{figure}
-\label{fac-tail-rec}
-\begin{verbatim}
-(define (fact-tr n acc)
-  (if (= n 0)
-       acc
-       (fact-tr (- n 1) (* n acc))))
-\end{verbatim}
-\end{figure}
-
-what this means for continuation marks in the face of such behavior. 
-First, it may be useful to determine exactly to what the term 
-\emph{continuation} refers. According to ..., a continuation is simply 
-``the rest of the computation''. Consider the following versions [wc] of 
-the previous functions enhanced with continuation marks.
-
-\begin{figure}
-\label{fac-rec-cm}
-\begin{verbatim}
-(define (fact n)
-  (if (= n 0)
-      (begin
-        (display (current-continuation-marks 'fact))
-        1)
-      (with-continuation-mark 'fact n (* n (fact (- n 1)))))
-\end{verbatim}
-\end{figure}
-
-\begin{figure}
-\label{fac-tail-rec-cm}
-\begin{verbatim}
-(define (fact-tr n acc)
-  (if (= n 0)
-      (begin
-        (display (current-continuation-marks 'fact))
-        acc)
-      (with-continuation-mark 'fact n (fact-tr (- n 1) (* n acc))))
-\end{verbatim}
-\end{figure}
-
-We would expect that, in the regular recursive variant, [the addition of new contexts implies that each annotation is applied to a new context and so all the annotations are preserved since each represents future computation to be performed.] In the tail-recursive variant, there is no pending computation [and so we should expect that our previous annotation be overwritten in some sense--replaced].
+Figure \ref{fac-rec} illustrates the definitional recursive implementation (wc) of the
+factorial function. In this [representation/expression], a cascade of multiplication
+operations builds as the recursive calls are made. Each multiplication is computation that
+must be performed after the recursive call of which the machine must keep track.
 
 
-%explain continuation marks at a high level \cite{clements2006portable}
-%explain monadic semantics at a high level
+\begin{figure} \figure{fac-rec} \begin{verbatim} (define (fact n) (if (= n 0) 1 (* n (fact
+(- n 1)))) \end{verbatim} \end{figure}
+
+Figure \ref{fac-tail-rec} illustrates the tail recursive manifestation (wc?) of the
+factorial function. In contrast to the function in figure \ref{fac-rec}, this formulation
+performs the multiplication before the recursive call. Because no computation is performed
+after the evaluation of the recursive call, that call is said to be in tail position.
+Because the machine does not have to keep track of any pending computations, it is
+unnecessary to create an additional execution context.
+
+\begin{figure} \label{fac-tail-rec} \begin{verbatim} (define (fact-tr n acc) (if (= n 0)
+acc (fact-tr (- n 1) (* n acc)))) \end{verbatim} \end{figure}
+
+what this means for continuation marks in the face of such behavior. First, it may be
+useful to determine exactly to what the term \emph{continuation} refers. According to ...,
+a continuation is simply ``the rest of the computation''. Consider the following versions
+[wc] of the previous functions enhanced with continuation marks.
+
+\begin{figure} \label{fac-rec-cm} \begin{verbatim} (define (fact n) (if (= n 0) (begin
+(display (current-continuation-marks 'fact)) 1) (with-continuation-mark 'fact n (* n (fact
+(- n 1))))) \end{verbatim} \end{figure}
+
+\begin{figure} \label{fac-tail-rec-cm} \begin{verbatim} (define (fact-tr n acc) (if (= n
+0) (begin (display (current-continuation-marks 'fact)) acc) (with-continuation-mark 'fact
+n (fact-tr (- n 1) (* n acc)))) \end{verbatim} \end{figure}
+
+We would expect that, in the regular recursive variant, [the addition of new contexts
+implies that each annotation is applied to a new context and so all the annotations are
+preserved since each represents future computation to be performed.] In the tail-recursive
+variant, there is no pending computation [and so we should expect that our previous
+annotation be overwritten in some sense--replaced].
+
+
+%explain continuation marks at a high level \cite{clements2006portable} %explain monadic
+semantics at a high level
 
 %explain thesis statement at a high level
 
 
-%explain continuation marks in depth with copious references
-%explain monadic semantics (and monads to an extent) with copious references
+%explain continuation marks in depth with copious references %explain monadic semantics
+(and monads to an extent) with copious references
 
 \section{Project Description}
 
-produce and provide haskell implementation of a continuation mark monad
-produce and provide haskell implementation of continuation marks according to formal semantics
-show algebraically (i.e., solely through symbolic manipulation) that provided is a monad
-show in the same way that what it models and what the semantics describe are equivalent
-profit
+produce and provide haskell implementation of a continuation mark monad produce and
+provide haskell implementation of continuation marks according to formal semantics show
+algebraically (i.e., solely through symbolic manipulation) that provided is a monad show
+in the same way that what it models and what the semantics describe are equivalent profit
+
+Haskell \cite{hudak1992report} is a lazy, purely functional programming language. As a
+purely functional language, all side effects are explicit. This is a great boon when
+reasoning about a function because distant, implicit effects are impossible in this
+environment. In other words, a function will \emph{always} produce the same output given
+the same input. %This property facilitates a bottom-up approach to program testing and
+validation. all its e Because of this, functions can be analyzed singly and then composed
+in a way which removes none of the guarantees attained in isolation. (We will see that
+this is one of the useful characteristics of monads also.)
+
+Another consequence of this is that input and output are not expressible as simple
+functions. Each of these exhibit non-local effects and it is therefore impossible to
+realize them as such. In order to perform a computation with I/O, we must model a
+computation with I/O which is done by a properly crafted monad. The \texttt{IO} monad is
+Haskell is the correct and endorsed method to perform I/O in a computation. Haskell has
+many other regularly-used monads modelling computations with state, non-determinism,
+continuations and exceptions, etc. Haskell is then a natural choice to implement and
+verify a monad which models computations with continuation marks.
 
 \section{Validation}
 
-% it is intended that this section answer "how can we show this is a good solution?" this is the hardest of sciences and so it is implied that any proposed solution we provide will be accompanied by formal proof and we have stated we will supply it. that makes this section out-of-place.
+% it is intended that this section answer "how can we show this is a good solution?" this
+is the hardest of sciences and so it is implied that any proposed solution we provide will
+be accompanied by formal proof and we have stated we will supply it. that makes this
+section out-of-place.
 
-In order to show that our construct is indeed a monad for continuation marks, we must show that we our construct is a genuine monad and that it actually models continuation marks.
+In order to show that our construct is indeed a monad for continuation marks, we must show
+that we our construct is a genuine monad and that it actually models continuation marks.
 
-The mathematical basis of a monad lends a simple way three laws ... we can verify algebraically.
+The mathematical basis of a monad lends a simple way three laws ... we can verify
+algebraically.
 
-Continuation marks themselves already have a formal semantics specified. To verify that our monad models continuation marks, we will show that our monad is equivalent to the accepted semantic definition. ... also algebraically
+Continuation marks themselves already have a formal semantics specified. To verify that
+our monad models continuation marks, we will show that our monad is equivalent to the
+accepted semantic definition. ... also algebraically
 
 
-%It may be the case that we have something that \emph{appears} to be a continuation mark monad but is not actually. In order to verify that our construct is a genuine continuation mark monad, we must do the following things:
+%It may be the case that we have something that \emph{appears} to be a continuation mark
+monad but is not actually. In order to verify that our construct is a genuine continuation
+mark monad, we must do the following things:
 
-%First, we must show that it actually models continuation marks. Continuation marks already have a denotational semantics defined. We can use equational reasoning/algebraically compare the semantics of the monad against the denotation semantics. What's more, if we express them in a suitable language, we can run our research.
+%First, we must show that it actually models continuation marks. Continuation marks
+already have a denotational semantics defined. We can use equational
+reasoning/algebraically compare the semantics of the monad against the denotation
+semantics. What's more, if we express them in a suitable language, we can run our
+research.
 
-%Second, we must show that it actually is a monad. We can verify the construct satisfies the three monad laws algebraically.
+%Second, we must show that it actually is a monad. We can verify the construct satisfies
+the three monad laws algebraically.
 
-%explain what is necessary to show that what we have are continuation marks and what we have is a monad
+%explain what is necessary to show that what we have are continuation marks and what we
+have is a monad
 
-%monadic semantics accomplish [their purpose] by providing an abstraction barrier which hides irrelevant...
+%monadic semantics accomplish [their purpose] by providing an abstraction barrier which
+hides irrelevant...
 
 
 
 %something about real programs?
 
 
-    
-    
+
+
 THESIS SCHEDULE
 
-Abstract – 1 to 2 paragraphs summarizing the proposal.
-Introduction – 1 to 4 pages answering questions 1 and 2 above
-Related Work – 1 to 2 pages answering question 3 above.
+Abstract – 1 to 2 paragraphs summarizing the proposal. Introduction – 1 to 4 pages
+answering questions 1 and 2 above Related Work – 1 to 2 pages answering question 3 above.
 Thesis statement – 1 to 2 sentences stating what is to be demonstrated in your thesis.
-Project Description – 2 to 5 pages answering question 4 above.
-Validation – 1/2 to 2 pages answering question 5 above.
-Thesis Schedule – ¼ to ½ page specifying dates for completion of major milestones.
-Annotated Bibliography – 2 to 5 pages containing references for all work cited.
+Project Description – 2 to 5 pages answering question 4 above. Validation – 1/2 to 2 pages
+answering question 5 above. Thesis Schedule – ¼ to ½ page specifying dates for completion
+of major milestones. Annotated Bibliography – 2 to 5 pages containing references for all
+work cited.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%
 
 % Change these to reflect the bibliography style and bibtex database file you want to use
-\bibliographystyle{default}
-\bibliography{proposal}
+\bibliographystyle{default} \bibliography{proposal}
 
 \end{document}
