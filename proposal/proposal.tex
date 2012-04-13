@@ -28,7 +28,7 @@
 % prints. It's useful, but optional. Note that if you use pdflatex, you 
 % should change "ps2pdf" to "pdftex". 
 \usepackage[
-	ps2pdf,
+	pdftex,
 	bookmarks=true,
 	breaklinks=true,
 	raiselinks=true,
@@ -95,8 +95,8 @@
 % to more than one paper to be sorted and compressed (i.e. instead of [5,2,4,6] you get
 % [2,4-6]) 
 
-\usepackage[numbers,sort&compress]{natbib}
-\usepackage{hypernat}
+%\usepackage[numbers,sort&compress]{natbib}
+%\usepackage{hypernat}
 
 % Additional packages required for your specific thesis go here. I've left some I use as
 % examples. 
@@ -414,14 +414,14 @@ verify that our monad models continuation marks, we will prove that our monad is
 algebraically equivalent to the accepted operational semantic definition.
 
 %It may be the case that we have something that \emph{appears} to be a continuation mark
-monad but is not actually. In order to verify that our construct is a genuine continuation
-mark monad, we must do the following things:
+%monad but is not actually. In order to verify that our construct is a genuine continuation
+%mark monad, we must do the following things:
 
 %First, we must show that it actually models continuation marks. Continuation marks
-already have a denotational semantics defined. We can use equational
-reasoning/algebraically compare the semantics of the monad against the denotation
-semantics. What's more, if we express them in a suitable language, we can run our
-research.
+%already have a denotational semantics defined. We can use equational
+%reasoning/algebraically compare the semantics of the monad against the denotation
+%semantics. What's more, if we express them in a suitable language, we can run our
+%research.
 
 %Second, we must show that it actually is a monad. We can verify the construct satisfies
 %the three monad laws algebraically.
@@ -447,7 +447,7 @@ THESIS SCHEDULE
 %%%%%%%%%%%%%%%%%%%%%%%%%
 
 % Change these to reflect the bibliography style and bibtex database file you want to use
-\bibliographystyle{default}
+\bibliographystyle{amsplain}
 \bibliography{proposal}
 
 \end{document}
