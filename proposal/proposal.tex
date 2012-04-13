@@ -4,15 +4,18 @@
 %   10pt -- 10 point font size 
 %   11pt -- 11 point font size 
 %   12pt (*) -- 12 point font size 
+%
 %   ms -- produce a thesis proposal (off) 
 %   areaexam -- produce a research area overview (off) 
 %   phd -- produce a dissertation proposal (off) 
+%
 %   layout -- show layout lines on the pages, helps with overfull boxes (off) 
 %   grid -- show a half-inch grid on every page, helps with printing (off)
 
 % This command fixes my particular printer, which starts 0.03 inches too low, 
 % shifting the whole page down by that amount. This shifts the document 
 % content up so that it comes out right when printed. 
+%
 % Discovering this sort of behavior is best done by specifying the ``grid'' 
 % option in the class parameters above.  It prints a 1/2 inch grid on every 
 % page. You can then use a ruler to determine exactly what the printer is 
@@ -24,7 +27,14 @@
 % the electronic version clickable without changing the way that the document 
 % prints. It's useful, but optional. Note that if you use pdflatex, you 
 % should change "ps2pdf" to "pdftex". 
-\usepackage[ ps2pdf, bookmarks=true, breaklinks=true, raiselinks=true, pdfborder={0 0 0}, colorlinks=false, ]{hyperref}
+\usepackage[
+	ps2pdf,
+	bookmarks=true,
+	breaklinks=true,
+	raiselinks=true,
+	pdfborder={0 0 0},
+	colorlinks=false,
+	]{hyperref}
 
 % Rewrite the itemize, description, and enumerate environments to have more 
 % reasonable spacing: 
@@ -52,7 +62,9 @@
 \newcommand{\SubmissionMonth}{April}
 \newcommand{\SubmissionYear}{2012}
 
-% Take these from the commands defined above \title{\Title} \author{\Author}
+% Take these from the commands defined above
+\title{\Title}
+\author{\Author}
 \monthsubmitted{\SubmissionMonth} 
 \yearsubmitted{\SubmissionYear}
 
@@ -71,7 +83,13 @@
 % Set up the internal PDF information so that it becomes part of the document 
 % metadata. The pdfinfo command will display this. Be sure to set the document 
 % type and add your own keywords. 
-\hypersetup{% pdftitle=\Title,% pdfauthor=\Author,% pdfsubject={Document Type, BYU CS Department: % Submitted \SubmissionMonth~\SubmissionYear, Created \today},% pdfkeywords={},% }
+\hypersetup{%
+	pdftitle=\Title,%
+	pdfauthor=\Author,%
+	pdfsubject={Document Type, BYU CS Department: %
+				Submitted \SubmissionMonth~\SubmissionYear, Created \today},%
+	pdfkeywords={},%
+}
 
 % These packages allow the bibliography to be sorted alphabetically and allow references
 % to more than one paper to be sorted and compressed (i.e. instead of [5,2,4,6] you get
