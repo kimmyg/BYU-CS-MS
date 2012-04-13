@@ -120,14 +120,6 @@ Thesis: Continuation marks are amenable to a monadic semantics.
 
 % talk more about how they are useful here, elaboration will be below
 
-There are certain tools that are indispensable to some programmers that concern the
-behavior of their programs: debuggers, profilers, steppers, etc. Without these tools,
-these programmers cannot justify the adoption of a language, however compelling it might
-otherwise be. The nature of these tools typically requires them to be designed and
-implemented in tandem with the language and privy to sometimes transient implementation
-detail. Thus, they are a considerable burden on the language designer or implementor. The
-combination of this dependence and burden can stall language development and proliferation.
-
 Continuation marks \cite{clements2006portable} are a language feature that provides a
 mechanism to annotate the dynamic context of a program. This feature allows the
 association of arbitrary values with arbitrary keys for the dynamic extent of an execution
@@ -242,20 +234,19 @@ TA is P(A)
 
 % use this as a jumping off point to talk about what monads are
 
-Many tools require information about the dynamic context of a program: steppers,
-debuggers, profilers, etc. Traditionally, these tools are developed at the same level as
-the language implementation precisely because that implementation specifies the details
-that enable these tools to function. This is problematic for at least two reasons. First,
+There are certain tools that are indispensable to some programmers that concern the
+behavior of their programs: debuggers, profilers, steppers, etc. Without these tools,
+these programmers cannot justify the adoption of a language, however compelling it might
+otherwise be. Traditionally, these tools are developed at the same level as the 
+language, privy to incidental implementation detail, precisely because that detail 
+enables these tools to function. This is problematic for at least two reasons. First, 
 it couples the implementation of the tool with the implementation of the language, which
 increases the cost to port to other platforms. If users become dependent upon these tools,
 it can stall the advancement of the language and the adoption of new language features.
 Second and more critical, it makes these tools unsound. For instance, debuggers typically
-examine programs which have been compiled without optimizations.
-
-% is this correct and, if so, for what reason?
-
-This means that, without costly equivalence guarantees (necessary?), the debugged program
-is different than the deployed program. This is undesirable.
+examine programs which have been compiled without optimizations. In general, this means 
+that the debugged program has different behavior than the deployed program. This is 
+obviously undesirable.
 
 It is desirable to implement such tools at the same level as the language, removing
 dependency upon the implementation an instead relying on definitional and behavioral
