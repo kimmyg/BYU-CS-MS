@@ -198,31 +198,22 @@ $T:\mathcal{C}\rightarrow\mathcal{C}$, $\eta:Id_{\mathcal{C}}\rightarrow T$, and
 $\mu:T^{2}\rightarrow T$ are \emph{natural transformations} and the following equations
 hold:
 
-\[
-\mu_{TA};\mu_{A}=T(\mu_{A});\mu_{A}
-\]
-
-\[
-\eta_{TA};\mu{A}=\id_{TA}=T(\eta_{A});\mu_{A}
-\]
+\begin{enumerate}
+\item $\mu_{TA};\mu_{A}=T(\mu_{A});\mu_{A}$
+\item $\eta_{TA};\mu{A}=id_{TA}=T(\eta_{A});\mu_{A}$
+\end{enumerate}
 
 Defintion 2.2
 
 A \emph{Kleisli triple} over $\mathcal{C}$ is a triple $(T,\eta,\_^{*})$, where
-$T:\Obj(\mathcal{C}\rightarrow \Obj(\mathcal{C}$, $\eta_{A}:A\rightarrow TA$,
+$T:Obj(\mathcal{C}\rightarrow Obj(\mathcal{C}$, $\eta_{A}:A\rightarrow TA$,
 $f^{*}:TA\rightarrow TB$ for $f:A\rightarrow TB$ and the following equations hold:
 
-\[
-\eta_{A}^{*}=\id_{TA}
-\]
-
-\[
-eta_{A};f^{*}=f
-\]
-
-\[
-f^{*};g^{*}=(f;g^{*})^{*}
-\]
+\begin{enumerate}
+\item $\eta_{A}^{*}=id_{TA}$
+\item $eta_{A};f^{*}=f$
+\item $f^{*};g^{*}=(f;g^{*})^{*}$
+\end{enumerate}
 
 These equations represent the monadic laws that all alleged monads must preserve. We will
 appeal to them directly in the verification of our candidate monad.
@@ -260,15 +251,19 @@ continuation mark, an expression which value will be associated with this key, a
 expression within the dynamic extent of which a continuation mark will exist with this
 key. In a Scheme-like syntax, it appears as so:
 
-% use slatex \begin{verbatim} (with-continuation-mark /key-expression/ /value-expression/
-/expression/) \end{verbatim}
+% use slatex
+\begin{verbatim}
+(with-continuation-mark /key-expression/ /value-expression/ /expression/)
+\end{verbatim}
 
 \emph{current-continuation-marks} has one parameter, a set of keys, and returns a list of
 all the associated values set within the dynamic context of the invocation. Scheme-like,
 it looks like this:
 
 %look at Clement's dissertation to see the actual characterizations of these
-\begin{verbatim} (current-continuation-marks /key-set/) \end{verbatim}
+\begin{verbatim}
+(current-continuation-marks /key-set/)
+\end{verbatim}
 
 Importantly, the result of this invocation provides no evidence of any portion of the
 dynamic context lacking continuation marks with the specified keys. This preserves the
@@ -288,8 +283,15 @@ operations builds as the recursive calls are made. Each multiplication is comput
 must be performed after the recursive call of which the machine must keep track.
 
 
-\begin{figure} \figure{fac-rec} \begin{verbatim} (define (fact n) (if (= n 0) 1 (* n (fact
-(- n 1)))) \end{verbatim} \end{figure}
+\begin{figure}
+\label{fac-rec}
+\begin{verbatim}
+(define (fact n)
+  (if (= n 0)
+      1
+      (* n (fact (- n 1))))
+\end{verbatim}
+\end{figure}
 
 Figure \ref{fac-tail-rec} illustrates the tail recursive manifestation (wc?) of the
 factorial function. In contrast to the function in figure \ref{fac-rec}, this formulation
@@ -298,21 +300,44 @@ after the evaluation of the recursive call, that call is said to be in tail posi
 Because the machine does not have to keep track of any pending computations, it is
 unnecessary to create an additional execution context.
 
-\begin{figure} \label{fac-tail-rec} \begin{verbatim} (define (fact-tr n acc) (if (= n 0)
-acc (fact-tr (- n 1) (* n acc)))) \end{verbatim} \end{figure}
+\begin{figure}
+\label{fac-tail-rec}
+\begin{verbatim}
+(define (fact-tr n acc)
+  (if (= n 0)
+      acc
+      (fact-tr (- n 1) (* n acc))))
+\end{verbatim}
+\end{figure}
 
-what this means for continuation marks in the face of such behavior. First, it may be
+% what this means for continuation marks in the face of such behavior. First, it may be
 useful to determine exactly to what the term \emph{continuation} refers. According to ...,
 a continuation is simply ``the rest of the computation''. Consider the following versions
 [wc] of the previous functions enhanced with continuation marks.
 
-\begin{figure} \label{fac-rec-cm} \begin{verbatim} (define (fact n) (if (= n 0) (begin
-(display (current-continuation-marks 'fact)) 1) (with-continuation-mark 'fact n (* n (fact
-(- n 1))))) \end{verbatim} \end{figure}
+\begin{figure}
+\label{fac-rec-cm}
+\begin{verbatim}
+(define (fact n)
+  (if (= n 0)
+      (begin
+        (display (current-continuation-marks 'fact))
+        1)
+      (with-continuation-mark 'fact n (* n (fact (- n 1)))))
+\end{verbatim}
+\end{figure}
 
-\begin{figure} \label{fac-tail-rec-cm} \begin{verbatim} (define (fact-tr n acc) (if (= n
-0) (begin (display (current-continuation-marks 'fact)) acc) (with-continuation-mark 'fact
-n (fact-tr (- n 1) (* n acc)))) \end{verbatim} \end{figure}
+\begin{figure}
+\label{fac-tail-rec-cm}
+\begin{verbatim}
+(define (fact-tr n acc)
+  (if (= n 0)
+      (begin
+        (display (current-continuation-marks 'fact))
+        acc)
+      (with-continuation-mark 'fact n (fact-tr (- n 1) (* n acc))))
+\end{verbatim}
+\end{figure}
 
 We would expect that, in the regular recursive variant, [the addition of new contexts
 implies that each annotation is applied to a new context and so all the annotations are
