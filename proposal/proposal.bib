@@ -2,7 +2,8 @@
   title={Portable and high-level access to the stack with Continuation Marks},
   author={Clements, J.},
   year={2006},
-  school={Northeastern University Boston}
+  school={Northeastern University Boston},
+  annotate={Clements introduces the programming language feature continuation marks and motivates their use. He provides an operational semantics vis â vis the Scheme interpreter and three concrete applications: an algebraic stepper and a language with security annotations specifically designed to elucidate the behavior of continuation marks in the presence of tail call optimization and demonstrate the feasibility of such optimizations in languages which rely on security annotations already such as C\# and Java.}
 }
 
 @article{hudak1992report,
@@ -13,13 +14,26 @@
   number={5},
   pages={1--164},
   year={1992},
-  publisher={ACM}
+  publisher={ACM},
+  annotate={This report describes the lazy, purely functional language Haskell.}
 }
 
 @article{liang2009modular,
   title={Modular Monadic Semantics},
   author={Liang, S. and Hudak, P.},
-  year={2009}
+  year={2009},
+  publisher={Citeseer},
+  annotate={Liang, et al. motivate the use of monad for semantic specification by exposing the non-modularity of the commonly used denotational approach. They also discuss monad transformers and the effect of monads on semantics-directed compilation. Most important to this work, they discuss the composition of monads modeling many different features including tracing, assignment, lazy evaluation, continuations, and nondeterminism.}
+}
+
+@inproceedings{moggi1989computational,
+  title={Computational lambda-calculus and monads},
+  author={Moggi, E.},
+  booktitle={Logic in Computer Science, 1989. LICS'89, Proceedings., Fourth Annual Symposium on},
+  pages={14--23},
+  year={1989},
+  organization={IEEE},
+  annotate={Moggi introduces an application of the category theoretic monad to computation modeling. He discusses the typical approaches to semantics definition and identifies some of their weaknesses. He offers monads as an alternative approach which is more expressible.}
 }
 
 @book{moggi1990abstract,
@@ -29,11 +43,15 @@
   publisher={University of Edinburgh, Department of Computer Science, Laboratory for Foundations of Computer Science}
 }
 
-@inproceedings{moggi1989computational,
-  title={Computational lambda-calculus and monads},
+@article{moggi1991notions,
+  title={Notions of computation and monads},
   author={Moggi, E.},
-  booktitle={Logic in Computer Science, 1989. LICS'89, Proceedings., Fourth Annual Symposium on},
-  pages={14--23},
-  year={1989},
-  organization={IEEE}
+  journal={Information and computation},
+  volume={93},
+  number={1},
+  pages={55--92},
+  year={1991},
+  publisher={Elsevier},
+  annotate={Moggi continues his exposition on the application of monads to semantics definition with examples for continuations, state, partiality, nondeterminism, etc. He then discusses approaches to reasoning about programming languages and programs in a fixed programming language. He introduces a simple language with a monadic interpretation and explores its semantics.}
 }
+

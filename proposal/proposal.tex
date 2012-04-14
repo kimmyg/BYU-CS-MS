@@ -102,6 +102,10 @@
 % examples. 
 %\usepackage{graphicx}
 %\usepackage{pdfsync}
+\usepackage{amsthm}
+
+\newcounter{definition}
+\newcounter{example}
 
 \begin{document}
 
@@ -135,17 +139,17 @@ at the same level as the language instead of some level below.
 % can I use the terms programming language feature and computational model interchangeably?
 
 Monadic semantics originate from Moggi \cite{moggi1989computational} wherein they were
-termed categorical semantics in reference to their category theoretic construction.
-Monadic semantics describe the meaning of computational models such as partial
-computability, side-effectfulness, and non-determinism. The appeal of using monads to
-specify semantics is significant: it allows one to work with a pure computational logic,
-such as the lambda calculus, with a particular model of computation in isolation,
-insulating the interactions between different models. There are at least two direct
-benefits to this: First, it helps one define and reason about a particular computational
-model absent from the noise of other models and practical considerations. Second, no
-language feature is an island and when it becomes necessary to investigate the
-interactions between models, the monadic construction facilitates composition in a simple
-way.
+termed categorical semantics in reference to their category theoretic construction; a
+monad is simply an endofunctor in the category of monoids. Monadic semantics describe the
+meaning of computational models such as partial computability, side-effectfulness, and
+non-determinism. The appeal of using monads to specify semantics is significant: it allows
+one to work with a pure computational logic, such as the lambda calculus, with a
+particular model of computation in isolation, insulating the interactions between
+different models. There are at least two direct benefits to this: First, it helps one
+define and reason about a particular computational model absent from the noise of other
+models and practical considerations. Second, no language feature is an island and when it
+becomes necessary to investigate the interactions between models, the monadic construction
+facilitates composition in a simple way.
 
 % talk about how they are recognized as a good way to do things.
 % they allow reasoning about a feature or model in isolation but, surprisingly, also are 
@@ -163,76 +167,84 @@ computational models.
 
 \section{Related Work}
 
+\subsection{Monadic Semantics}
+
 A denotational semantics of a language provides a precise definition of the meaning of
-expressions in that language. However useful, the denotational approach is not modular in
-that the addition of a language construct often requires global changes to the definition
-\cite{liang2009modular}. For this reason, denotational semantics are often eschewed in
-favor of a more tractable approach.
+expressions in that language. Additionally, denotational semantics can be used to capture
+properties of programs making it a great asset for language analysis. However useful, the
+denotational approach exhibits contagion: the addition of a language construct often
+contaminates the entire definition \cite{liang2009modular}. In this sense, is not a
+modular approach and, for this reason, denotational semantics are often eschewed in favor
+of a more tractable approach.
 
-Behavioral semantics were developed in part to mitigate this problem.
+Behavioral semantics mitigate this problem somewhat with a different approach. Rather than expressing an effect or property of the program, behavioral semantics express the execution of the program on an abstract machine.
 
-% I need a good source to learn about behavioral semantics and operational semantics.
-% also look into monadic denotational and monadic behavioral
+% why are behavioral semantics not modular enough?
 
-Monadic semantics provide a truly modular approach to specifying language meaning and can
-do so with precision.
+Monadic semantics provide a modular approach to precisely specifying language meaning. This type of semantics is so termed because of the appeal to the \emph{monad}, a concept stemming from category theory. Moggi \cite{moggi1989computational} applies monads as a categorical semantics of computational models such as non-termination and non-determinism. To illustrate this, we require the following definitions:
 
+\newtheorem{monad}[definition]{Definition}
 
-A monad is an endofunctor in the category of monoids.
-
-Moggi \cite{moggi1989computational} introduces monads as a categorical semantics of
-computational models. He provides the following definitions:
-
-Definition 2.1
-
+\begin{monad}
 A \emph{monad} over a category $\mathcal{C}$ is a triple $(T,\eta,\mu)$ where
-$T:\mathcal{C}\rightarrow\mathcal{C}$, $\eta:Id_{\mathcal{C}}\rightarrow T$, and
+$T:\mathcal{C}\rightarrow\mathcal{C}$, $\eta:\mathrm{Id}_{\mathcal{C}}\rightarrow T$, and
 $\mu:T^{2}\rightarrow T$ are \emph{natural transformations} and the following equations
 hold:
 
-\begin{enumerate}
+\begin{itemize}
 \item $\mu_{TA};\mu_{A}=T(\mu_{A});\mu_{A}$
-\item $\eta_{TA};\mu{A}=id_{TA}=T(\eta_{A});\mu_{A}$
-\end{enumerate}
+\item $\eta_{TA};\mu{A}=\mathrm{id}_{TA}=T(\eta_{A});\mu_{A}$
+\end{itemize}
+\end{monad}
 
-Defintion 2.2
+\newtheorem{kleisli}[definition]{Definition}
 
+\begin{kleisli}
 A \emph{Kleisli triple} over $\mathcal{C}$ is a triple $(T,\eta,\_^{*})$, where
-$T:Obj(\mathcal{C}\rightarrow Obj(\mathcal{C}$, $\eta_{A}:A\rightarrow TA$,
+$T:\mathrm{Obj}(\mathcal{C})\rightarrow \mathrm{Obj}(\mathcal{C})$, $\eta_{A}:A\rightarrow TA$,
 $f^{*}:TA\rightarrow TB$ for $f:A\rightarrow TB$ and the following equations hold:
 
-\begin{enumerate}
-\item $\eta_{A}^{*}=id_{TA}$
-\item $eta_{A};f^{*}=f$
+\begin{itemize}
+\item $\eta_{A}^{*}=\mathrm{id}_{TA}$
+\item $\eta_{A};f^{*}=f$
 \item $f^{*};g^{*}=(f;g^{*})^{*}$
-\end{enumerate}
+\end{itemize}
+\end{kleisli}
 
 These equations represent the monadic laws that all alleged monads must preserve. We will
 appeal to them directly in the verification of our candidate monad.
 
-\subsection{Monad Examples}
+\subsubsection{Monad Examples}
 
 Some examples of monads might be illustrative. More, and in more depth, can be found in 
-Moggi \cite{moggi1989computational}.
+Moggi \cite{moggi1991notions}.
 
-Example 1: Non-deterministic computations
+\newtheorem{partiality}[example]{Example}
+
+\begin{partiality}
+Partiality
+
+\begin{itemize}
+\item $TA=A_{\bot}=A\cup \{\bot\}$
+\item $\eta_{A}$ is the inclusion of $A$ into $A_{\bot}$
+\item if $f:A\rightarrow TB$, then $f^{*}(\bot)=\bot$ and $f^{*}(a)=f(a)$ for $a\in A$
+\end{itemize}
+\end{partiality}
+
+\newtheorem{nondeterminism}[example]{Example}
+
+\begin{nondeterminism}
+Nondeterminism
 
 \begin{itemize}
 \item $T(\cdot)$ is the covariant powerset function, i.e., $T(A)=\mathcal{P}(A)$ and 
 $T(f)(X)$ is the image of $X$ along $f$.
 \item $\eta_{A}$ is the singleton map $a\mapsto \{a\}$
-\item $\mu_{A}$ is the big union map $X\mapsto\bigcup X$
+\item $\mu_{A}$ is the big union map $X\mapsto\bigcup X$, i.e., if $f:A\rightarrow TB$ and $c\in TA$, then $f^{*}(c)=\cup_{x\in c}f(x)$
 \end{itemize}
+\end{nondeterminism}
 
-% explain how this is non-determinism and show how it satisfies the laws
-
-non-termination monad
-TA is A + {bottom}
-
-nondeterminism monad
-TA is P(A)
-
-% use this as a jumping off point to talk about what monads are
+\subsection{Continuation Marks}
 
 There are certain tools that are indispensable to some programmers that concern the
 behavior of their programs: debuggers, profilers, steppers, etc. Without these tools,
@@ -363,19 +375,31 @@ semantics at a high level
 
 \section{Project Description}
 
-produce and provide haskell implementation of a continuation mark monad produce and
-provide haskell implementation of continuation marks according to formal semantics show
-algebraically (i.e., solely through symbolic manipulation) that provided is a monad show
-in the same way that what it models and what the semantics describe are equivalent profit
+We will demonstrate that continuation marks have a monadic semantics by producing a monad
+that models a computation with continuation marks. We will prove  this model equivalent to
+the behavioral semantics already defined for continuation marks which we give below.
 
-Haskell \cite{hudak1992report} is a lazy, purely functional programming language. As a
-purely functional language, all side effects are explicit. This is a great boon when
-reasoning about a function because distant, implicit effects are impossible in this
-environment. In other words, a function will \emph{always} produce the same output given
-the same input. %This property facilitates a bottom-up approach to program testing and
-validation. all its e Because of this, functions can be analyzed singly and then composed
-in a way which removes none of the guarantees attained in isolation. (We will see that
-this is one of the useful characteristics of monads also.)
+CONTINUATION MARKS SEMANTICS HERE
+
+% talk about the semantics a bit
+
+%produce and provide haskell implementation of a continuation mark monad produce and
+%provide haskell implementation of continuation marks according to formal semantics show
+%algebraically (i.e., solely through symbolic manipulation) that provided is a monad show
+%in the same way that what it models and what the semantics describe are equivalent profit
+
+
+
+As is typical, we will use the programming language Haskell \cite{hudak1992report} for our
+implementation and equational analysis. Haskell is a purely functional programming
+language and, as such, all side effects are explicit. This is a great boon when reasoning
+about a function because distant, implicit effects are impossible in this environment. In
+other words, a function will \emph{always} produce the same output given the same input.
+Because of this, functions can be analyzed singly and then composed in a way which removes
+none of the guarantees attained in isolation. (We note that this is one of the useful
+characteristics of monads also.)
+
+%This property facilitates a bottom-up approach to program testing and validation. all its 
 
 Another consequence of this is that input and output are not expressible as simple
 functions. Each of these exhibit non-local effects and it is therefore impossible to
@@ -404,6 +428,9 @@ Continuation marks themselves already have a formal operational semantics specif
 verify that our monad models continuation marks, we will prove that our monad is 
 algebraically equivalent to the accepted operational semantic definition.
 
+Thus, by demonstrating that our construct follows the monadic laws and has the semantics
+of continuation, we will demonstrate that continuation marks have a monadic semantics.
+
 %It may be the case that we have something that \emph{appears} to be a continuation mark
 %monad but is not actually. In order to verify that our construct is a genuine continuation
 %mark monad, we must do the following things:
@@ -425,7 +452,9 @@ algebraically equivalent to the accepted operational semantic definition.
 
 %something about real programs?
 
-THESIS SCHEDULE
+\section{Thesis Schedule}
+
+Less than five years.
 
 %Abstract – 1 to 2 paragraphs summarizing the proposal. Introduction – 1 to 4 pages
 %answering questions 1 and 2 above Related Work – 1 to 2 pages answering question 3 above.
@@ -438,7 +467,7 @@ THESIS SCHEDULE
 %%%%%%%%%%%%%%%%%%%%%%%%%
 
 % Change these to reflect the bibliography style and bibtex database file you want to use
-\bibliographystyle{amsplain}
+\bibliographystyle{annotate}
 \bibliography{proposal}
 
 \end{document}
