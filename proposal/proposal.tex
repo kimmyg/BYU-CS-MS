@@ -103,6 +103,10 @@
 %\usepackage{graphicx}
 %\usepackage{pdfsync}
 \usepackage{amsthm}
+\usepackage{float}
+
+\floatstyle{boxed} 
+\restylefloat{figure}
 
 \newcounter{definition}
 \newcounter{example}
@@ -314,8 +318,9 @@ must be performed after the recursive call of which the machine must keep track.
 (define (fact n)
   (if (= n 0)
       1
-      (* n (fact (- n 1))))
+      (* n (fact (- n 1)))))
 \end{verbatim}
+\caption{The definitionally recursive factorial function}
 \end{figure}
 
 Figure \ref{fac-tail-rec} illustrates the tail recursive manifestation (wc?) of the
@@ -332,6 +337,7 @@ Because the function has no pending computations, the execution context does not
       acc
       (fact-tr (- n 1) (* n acc))))
 \end{verbatim}
+\caption{A tail-recursive variant of the factorial function}
 \end{figure}
 
 % what this means for continuation marks in the face of such behavior. First, it may be
@@ -349,6 +355,7 @@ Because the function has no pending computations, the execution context does not
         1)
       (with-continuation-mark 'fact n (* n (fact (- n 1)))))
 \end{verbatim}
+\caption{The definitionally recursive factorial function augmented with continuation marks}
 \end{figure}
 
 \begin{figure}
@@ -361,6 +368,7 @@ Because the function has no pending computations, the execution context does not
         acc)
       (with-continuation-mark 'fact n (fact-tr (- n 1) (* n acc))))
 \end{verbatim}
+\caption{The tail-recursive factorial function augmented with continuation marks}
 \end{figure}
 
 We would expect that, in the regular recursive variant, [the addition of new contexts
