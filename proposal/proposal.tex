@@ -130,7 +130,7 @@ Thesis: Continuation marks are amenable to a monadic semantics.
 
 Continuation marks \cite{clements2006portable} are a language feature that provides a
 mechanism to annotate the dynamic context of a program. This feature allows the
-association of arbitrary values with arbitrary keys for the dynamic extent of an execution
+association of arbitrary values with arbitrary keys for the lifetime of an execution
 context and the inquiry of currently defined values of pending contexts for a given set of
 keys. This is advantageous for programs that require dynamic information about a program
 execution such as debuggers, profilers, and steppers because it allows them to be defined
@@ -181,11 +181,19 @@ contaminates the entire definition \cite{liang2009modular}. In this sense, is no
 modular approach and, for this reason, denotational semantics are often eschewed in favor
 of a more tractable approach.
 
-Behavioral semantics mitigate this problem somewhat with a different approach. Rather than expressing an effect or property of the program, behavioral semantics express the execution of the program on an abstract machine.
+Behavioral semantics mitigate this problem somewhat with a different approach. Rather than
+expressing an effect or property of the program, behavioral semantics express the
+execution of the program on an abstract machine.
 
 % why are behavioral semantics not modular enough?
+% must all additions be made keeping mind of the current whole?
 
-Monadic semantics provide a modular approach to precisely specifying language meaning. This type of semantics is so termed because of the appeal to the \emph{monad}, a concept stemming from category theory. Moggi \cite{moggi1989computational} applies monads as a categorical semantics of computational models such as non-termination and non-determinism. To illustrate this, we require the following definitions:
+Monadic semantics provide a modular approach to precisely specifying language meaning
+using either a denotational or behavioral approach. This type of semantics is so termed
+because of the appeal to the \emph{monad}, a concept stemming from category theory. Moggi
+\cite{moggi1989computational} applies monads as a categorical semantics of computational
+models such as non-termination and non-determinism. It may be helpful to illustrate this
+and, to do so, we require the following definitions:
 
 \newtheorem{monad}[definition]{Definition}
 
@@ -201,6 +209,10 @@ hold:
 \end{itemize}
 \end{monad}
 
+The above laws apply to the characterization of monads involving the primitives
+\emph{unit} and \emph{join}. Wadler \cite{wadler1995monads} goes into more detail of this.
+However, our discussion will refer to an alternate characterization, given below.
+
 \newtheorem{kleisli}[definition]{Definition}
 
 \begin{kleisli}
@@ -215,7 +227,13 @@ $f^{*}:TA\rightarrow TB$ for $f:A\rightarrow TB$ and the following equations hol
 \end{itemize}
 \end{kleisli}
 
-These equations represent the monadic laws that all alleged monads must preserve. We will
+These laws apply to a characterization of monads that involve the primitives \emph{return}
+and \emph{bind}. The primitive \emph{return} is applied to a value in $A$ which it lifts
+into the monadic domain $TA$. The primitive \emph{bind} is applied to a value in $TA$ and
+a function $f$ which maps values in $A$ to values in $TB$ incidental to some computation.
+\emph{bind} exploits the structure of $TA$ to apply $f$ to values in $A$ and...
+
+These equations represent the monadic laws that all alleged monads must preserve. The first represents the primitive \emph{return} which lifts  We will
 appeal to them directly in the verification of our candidate monad.
 
 \subsubsection{Monad Examples}
@@ -323,11 +341,11 @@ must be performed after the recursive call of which the machine must keep track.
 \caption{The definitionally recursive factorial function}
 \end{figure}
 
-Figure \ref{fac-tail-rec} illustrates the tail recursive manifestation (wc?) of the
-factorial function. In contrast to the function in figure \ref{fac-rec}, this formulation
-performs the multiplication before the recursive call. Because no computation is performed
-after the evaluation of the recursive call, that call is said to be in tail position.
-Because the function has no pending computations, the execution context does not grow.
+Figure \ref{fac-tail-rec} illustrates the tail recursive manifestation of the factorial
+function. In contrast to the function in figure \ref{fac-rec}, this formulation performs
+the multiplication before the recursive call. Because no computation is performed after
+the evaluation of the recursive call, that call is said to be in tail position. Because
+the function has no pending computations, the execution context does not grow.
 
 \begin{figure}
 \label{fac-tail-rec}
@@ -339,6 +357,9 @@ Because the function has no pending computations, the execution context does not
 \end{verbatim}
 \caption{A tail-recursive variant of the factorial function}
 \end{figure}
+
+Figures \ref{fac-rec-cm} and \ref{fac-tail-rec-cm} represent these two variants of the
+factorial function augmented with continuation marks.
 
 % what this means for continuation marks in the face of such behavior. First, it may be
 % useful to determine exactly to what the term \emph{continuation} refers. According to ...,
@@ -371,15 +392,33 @@ Because the function has no pending computations, the execution context does not
 \caption{The tail-recursive factorial function augmented with continuation marks}
 \end{figure}
 
-We would expect that, in the regular recursive variant, [the addition of new contexts
-implies that each annotation is applied to a new context and so all the annotations are
-preserved since each represents future computation to be performed.] In the tail-recursive
-variant, there is no pending computation [and so we should expect that our previous
-annotation be overwritten in some sense--replaced].
+The result of \texttt{(fact 3)} would be
+
+\begin{verbatim}
+(1 2 3)
+6
+\end{verbatim}
+
+whereas the result of \texttt{(fact-tr 3)} would be
+
+\begin{verbatim}
+(1)
+6
+\end{verbatim}
+
+This difference is due to the growing continuation in the definitionally recursive
+\texttt{fact}. Each call to \texttt{fact} has a pending computation--namely, the
+multiplication--after the recursive call and so each necessitates the creation an
+additional evaluation context. The effect of these additional contexts is that each
+annotation is applied to a ``blank'' context and so all the annotations are preserved. In
+the tail-recursive variant, there is no pending computation and therefore no additional
+evaluation context. In this instance, the previous mark is overwritten with the new.
+
+% since each represents future computation to be performed.]  [and so we should expect that our previous annotation be overwritten in some sense--replaced].
 
 
-%explain continuation marks at a high level \cite{clements2006portable} %explain monadic
-semantics at a high level
+%explain continuation marks at a high level \cite{clements2006portable}
+%explain monadic semantics at a high level
 
 \section{Project Description}
 
