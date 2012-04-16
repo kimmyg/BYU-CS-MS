@@ -195,6 +195,12 @@ because of the appeal to the \emph{monad}, a concept stemming from category theo
 models such as non-termination and non-determinism. It may be helpful to illustrate this
 and, to do so, we require the following definitions:
 
+\emph{Note: In the coming sections, we will reference certain laws which monads preserve.
+[author] identifies [6] axioms of monadic behavior which are typically expressed in terms
+of fewer, more loaded operations. We will encounter two such characterizations in the
+following definitions.}
+% there are like eight simple laws that collapse into three. find that paper that says this!
+
 \newtheorem{monad}[definition]{Definition}
 
 \begin{monad}
@@ -222,19 +228,18 @@ $f^{*}:TA\rightarrow TB$ for $f:A\rightarrow TB$ and the following equations hol
 
 \begin{itemize}
 \item $\eta_{A}^{*}=\mathrm{id}_{TA}$
+
+This law represents the primitive \emph{return} which lifts naked values in $A$ into the monadic domain $TA$.
+
 \item $\eta_{A};f^{*}=f$
+
+This law represents the primitive \emph{bind} which maps monads across domains according to a given function $f$. \emph{bind} exploits the structure of $TA$ to apply $f$ to values in $A$ and combines the results in a structure-specific way to obtain a value in $TB$.
+
 \item $f^{*};g^{*}=(f;g^{*})^{*}$
+
+This law represents a sequencing property which must hold; namely, a monadic operation performed as part of a given $f$ must be able to be performed in turn.
 \end{itemize}
 \end{kleisli}
-
-These laws apply to a characterization of monads that involve the primitives \emph{return}
-and \emph{bind}. The primitive \emph{return} is applied to a value in $A$ which it lifts
-into the monadic domain $TA$. The primitive \emph{bind} is applied to a value in $TA$ and
-a function $f$ which maps values in $A$ to values in $TB$ incidental to some computation.
-\emph{bind} exploits the structure of $TA$ to apply $f$ to values in $A$ and...
-
-These equations represent the monadic laws that all alleged monads must preserve. The first represents the primitive \emph{return} which lifts  We will
-appeal to them directly in the verification of our candidate monad.
 
 \subsubsection{Monad Examples}
 
@@ -437,8 +442,8 @@ CONTINUATION MARKS SEMANTICS HERE
 
 
 
-As is typical, we will use the programming language Haskell \cite{hudak1992report} for our
-implementation and equational analysis. Haskell is a purely functional programming
+As is typical, we will use the programming language Haskell \cite{jones2003haskell} for
+our implementation and equational analysis. Haskell is a purely functional programming
 language and, as such, all side effects are explicit. This is a great boon when reasoning
 about a function because distant, implicit effects are impossible in this environment. In
 other words, a function will \emph{always} produce the same output given the same input.
