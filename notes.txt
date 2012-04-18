@@ -176,3 +176,27 @@ fact 2 = wcm 'fact 2 ((wcm 'fact 1 (\fs -> 1  >>= \acc -> \fs -> 1 * acc)) >>= \
 
 \fs -> 1 >>= \acc -> \fs -> 1 * acc
 \fs -> (\acc -> \fs -> 1 * acc) ((\fs -> 1) (empty:fs))
+
+ContinuationMarkMonad (CMM) in terms of CM1:
+
+CM1 represents computations with unkeyed annotations. CMM represents computations with 
+keyed annotations.
+
+In terms of types, we have CMM k v a in terms of CM1 v' a. (The prime is important!)
+
+The ultimate goal is to have something like this:
+
+(wcm "k1" "v1" (wcm "k2" "v2" ccms ["k1","k2"]))
+
+return something like this:
+
+[[("k1","v1"),("k2","v2")]]
+
+Ok, I just realized that v' should be a vastly different type from v.
+
+Suppose v' was a map from k to v! (A map is a valid annotation, after all.)
+
+We transform Nothing into a Just (Map k v) which isn't super clean since, for our 
+purposes, there is no useful distinction between Nothing and empty :: Map k v. (Is that 
+right?)
+

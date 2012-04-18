@@ -1,16 +1,18 @@
 module ContinuationMarkMonad where
 import Control.Monad
 import Data.Map
-import Stack
+import CM1
 
-data CM k v a = CM ((Stack (Map k v)) -> a)
-
-runCM :: CM k v a -> a
-runCM (CM m) = m [empty]
+data CM k v a = CM (CM1 (Map k v -> a)
 
 instance Monad (CM k v) where
-  return x = CM (\_ -> x)
-  CM m >>= f = CM (\fs -> let CM m' = f (m (empty:fs)) in m' fs)
+  return x = CM (return x)
+  CM m >>= f = m >>= f
+
+wcm :: Ord k => k -> v -> CM k v a -> CM k v a
+wcm k v (CM m) = CM
+
+-- put in CM1 the top of stack primitive from Clements' dissertation?
 
 wcm :: Ord k => k -> v -> CM k v a -> CM k v a
 wcm k v (CM m) = CM (\(f:fs) -> m ((insert k v f):fs))
@@ -22,6 +24,9 @@ frameMarks (k:ks) m = case Data.Map.lookup k m of
   Nothing -> frameMarks ks m
 
 ccms :: Ord k => [k] -> CM k v [[(k, v)]]
+ccms ks = -- pull ccms from CM1 and extract information
+
+ccms :: Ord k => [k] -> CM k v [[(k, v)]]
 ccms ks = CM (\fs -> Prelude.filter (not . Prelude.null) (Prelude.map (\f -> frameMarks ks f) fs))
 
 ccm :: Ord k => k -> CM k v [v]
@@ -29,3 +34,6 @@ ccm k = CM (\fs -> let CM m = ccms [k] in Prelude.map (\[(_, v)] -> v) (m fs))
 
 getallCM :: CM k v (Stack (Map k v))
 getallCM = CM (\fs -> fs)
+
+runCM :: CM k v a -> a
+runCM (CM m) = runCM1 m
