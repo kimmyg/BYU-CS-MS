@@ -303,19 +303,15 @@ continuation mark, an expression which value will be associated with this key, a
 expression within the dynamic extent of which a continuation mark will exist with this
 key. In a Scheme-like syntax, it appears as so:
 
-% use slatex
-\begin{verbatim}
-(with-continuation-mark /key-expression/ /value-expression/ /expression/)
-\end{verbatim}
+% will use slatex for the dissertation; too much of a hassle now
+\texttt{(with-continuation-mark} \emph{key-expr} \emph{value-expr} \emph{body-expr}\texttt{)}
 
 \emph{current-continuation-marks} has one parameter, a set of keys, and returns a list of
 all the associated values set within the dynamic context of the invocation. Scheme-like,
 it looks like this:
 
-%look at Clement's dissertation to see the actual characterizations of these
-\begin{verbatim}
-(current-continuation-marks /key-set/)
-\end{verbatim}
+
+\texttt{(current-continuation-marks} \emph{key-set}\texttt{)}
 
 Importantly, the result of this invocation provides no evidence of any portion of the
 dynamic context lacking continuation marks with the specified keys. This preserves the
@@ -323,20 +319,19 @@ ability to perform optimizations without exposing details which would render the
 optimizations unsound. This also requires special consideration of a language that
 supports tail call optimization which is not an optimization in the above sense since the
 behavior of which is present in the semantic definition of the language. In fact, 
-<<expression>> is in tail position; a language with tail call optimization will reflect 
+\emph{body-expr} is in tail position; a language with tail call optimization will reflect 
 this.
 
 The canonical example to illustrate the behavior of continuation marks in the presence and
 absence of tail recursion is the factorial function.
 
-Figure \ref{fac-rec} illustrates the definitional recursive implementation (wc) of the
-factorial function. In this [representation/expression], a cascade of multiplication
-operations builds as the recursive calls are made. Each multiplication is computation that
-must be performed after the recursive call of which the machine must keep track.
+Figure \ref{fac-rec} illustrates the definitional recursive variant of the factorial
+function. In this actualization, a cascade of multiplication operations builds as the
+recursive calls are made. Each multiplication is computation that must be performed after
+the recursive call of which the machine must keep track.
 
 
 \begin{figure}
-\label{fac-rec}
 \begin{verbatim}
 (define (fact n)
   (if (= n 0)
@@ -344,6 +339,7 @@ must be performed after the recursive call of which the machine must keep track.
       (* n (fact (- n 1)))))
 \end{verbatim}
 \caption{The definitionally recursive factorial function}
+\label{fac-rec}
 \end{figure}
 
 Figure \ref{fac-tail-rec} illustrates the tail recursive manifestation of the factorial
@@ -353,7 +349,6 @@ the evaluation of the recursive call, that call is said to be in tail position. 
 the function has no pending computations, the execution context does not grow.
 
 \begin{figure}
-\label{fac-tail-rec}
 \begin{verbatim}
 (define (fact-tr n acc)
   (if (= n 0)
@@ -361,6 +356,7 @@ the function has no pending computations, the execution context does not grow.
       (fact-tr (- n 1) (* n acc))))
 \end{verbatim}
 \caption{A tail-recursive variant of the factorial function}
+\label{fac-tail-rec}
 \end{figure}
 
 Figures \ref{fac-rec-cm} and \ref{fac-tail-rec-cm} represent these two variants of the
@@ -372,7 +368,6 @@ factorial function augmented with continuation marks.
 % [wc] of the previous functions enhanced with continuation marks.
 
 \begin{figure}
-\label{fac-rec-cm}
 \begin{verbatim}
 (define (fact n)
   (if (= n 0)
@@ -382,10 +377,10 @@ factorial function augmented with continuation marks.
       (with-continuation-mark 'fact n (* n (fact (- n 1)))))
 \end{verbatim}
 \caption{The definitionally recursive factorial function augmented with continuation marks}
+\label{fac-rec-cm}
 \end{figure}
 
 \begin{figure}
-\label{fac-tail-rec-cm}
 \begin{verbatim}
 (define (fact-tr n acc)
   (if (= n 0)
@@ -395,6 +390,7 @@ factorial function augmented with continuation marks.
       (with-continuation-mark 'fact n (fact-tr (- n 1) (* n acc))))
 \end{verbatim}
 \caption{The tail-recursive factorial function augmented with continuation marks}
+\label{fac-tail-rec-cm}
 \end{figure}
 
 The result of \texttt{(fact 3)} would be
@@ -404,7 +400,7 @@ The result of \texttt{(fact 3)} would be
 6
 \end{verbatim}
 
-whereas the result of \texttt{(fact-tr 3)} would be
+whereas the result of \texttt{(fact-tr 3 1)} would be
 
 \begin{verbatim}
 (1)
