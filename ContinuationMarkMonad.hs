@@ -1,48 +1,34 @@
 module ContinuationMarkMonad where
+import Prelude hiding (lookup)
 import Control.Monad
-import Data.Map
+import Data.Map hiding (filter, map, null)
 import CM1
 
-data CM k v a = CM (CM1 (Map k v -> a) -> a)
+data CM k v a = CM (CM1 (Map k v) a)
 
 instance Monad (CM k v) where
   return x = CM (return x)
-  CM m >>= f = m >>= f
+  CM m >>= f = CM (m >>= (\x -> let (CM m) = f x in m))
 
 wcm :: Ord k => k -> v -> CM k v a -> CM k v a
-wcm k v (CM m) = CM (\cm1 -> wcm_t (a k v) cm1)
+wcm k v (CM m) = CM (wcm_t (\m' -> case m' of
+  Nothing    -> singleton k v
+  (Just m'') -> insert k v m'') m)
 
-a :: Ord k => k -> v -> Maybe (Map k v) -> Map k v
-a k v Nothing  = singleton k v
-a k v (Just m) = update k v m
+extract_single :: Ord k => [k] -> Map k v -> [(k, v)]
+extract_single []     _ = []
+extract_single (k:ks) m = case lookup k m of
+  Nothing -> extract_single ks m
+  Just v  -> (k, v):(extract_single ks m)
 
-wcm :: Ord k => k -> v -> CM k v a -> CM k v a
-wcm k v (CM m) = CM (\m -> wcm
-
-wcm :: Ord k => k -> v -> CM k v a -> CM k v a
-wcm k v (CM m) = CM (\(f:fs) -> m ((insert k v f):fs))
-
-
-
-frameMarks :: Ord k => [k] -> Map k v -> [(k, v)]
-frameMarks []     _   = []
-frameMarks (k:ks) m = case Data.Map.lookup k m of
-  Just v  -> (k, v):(frameMarks ks m)
-  Nothing -> frameMarks ks m
+extract :: Ord k => [k] -> [Map k v] -> [[(k, v)]]
+extract _  []     = []
+extract ks (m:ms) = (extract_single ks m):(extract ks ms)
 
 ccms :: Ord k => [k] -> CM k v [[(k, v)]]
-ccms ks = CM (\
-
-CM
-
-ccms :: Ord k => [k] -> CM k v [[(k, v)]]
-ccms ks = CM (\fs -> Prelude.filter (not . Prelude.null) (Prelude.map (\f -> frameMarks ks f) fs))
+ccms ks = CM (CM1.ccm >>= (\ms -> return (filter (not . null) (extract ks ms))))
 
 ccm :: Ord k => k -> CM k v [v]
-ccm k = CM (\fs -> let CM m = ccms [k] in Prelude.map (\[(_, v)] -> v) (m fs))
+ccm k = let (CM m) = ccms [k] in CM (m >>= (\ms -> return (map (\(_, v) -> v) (concat ms))))
 
-getallCM :: CM k v (Stack (Map k v))
-getallCM = CM (\fs -> fs)
-
-runCM :: CM k v a -> a
 runCM (CM m) = runCM1 m

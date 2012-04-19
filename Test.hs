@@ -32,4 +32,7 @@ fact_tr n acc = wcm "fact" (show n) (fact_tr (n - 1) (n * acc))
 test5 :: Bool
 test5 = (==) (120, ["1"]) $ runCM $ fact_tr 5 1
 
-main = print $ [test1, test2, test3, test4, test5]
+test6 :: Bool
+test6 = (==) ["v2"] $ runCM $ (wcm "key" "v1" (wcm "key" "v2" (ccm "key")))
+
+main = print $ [test1, test2, test3, test4, test5, test6]

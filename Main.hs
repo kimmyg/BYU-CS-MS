@@ -1,7 +1,5 @@
 module Main where
 import ContinuationMarkMonad
-import Data.Map
-import Stack
 
 fact :: Int -> CM String String (Int, [String])
 fact 0 = do
@@ -19,7 +17,5 @@ fact_tr 0 acc = do
 
 fact_tr n acc = wcm "fact" (show n) (fact_tr (n - 1) (n * acc))
 
-main = print $ runCM $ fact_tr 3 1
+main = print $ runCM $ fact 3
 
---main = print $ runCM $ getallCM $ (return 1 :: CM String String Int)
-  
