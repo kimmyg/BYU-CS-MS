@@ -13,6 +13,9 @@ instance Monad (CM1 m) where
 wcm :: m -> CM1 m a -> CM1 m a
 wcm v (CM1 m) = CM1 (\(_:vs) -> m ((Just v):vs))
 
+wcm_t :: (Maybe m -> m) -> CM1 m a -> CM1 m a
+wcm_t t (CM1 m) = CM1 (\(v:vs) -> m ((t v):vs))
+
 ccm :: CM1 m [m]
 ccm = CM1 (\vs -> catMaybes vs)
 
