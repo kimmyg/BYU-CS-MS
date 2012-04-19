@@ -102,6 +102,7 @@
 % examples. 
 %\usepackage{graphicx}
 %\usepackage{pdfsync}
+\usepackage{amsmath}
 \usepackage{amsthm}
 \usepackage{float}
 
@@ -427,7 +428,29 @@ We will demonstrate that continuation marks have a monadic semantics by producin
 that models a computation with continuation marks. We will prove  this model equivalent to
 the behavioral semantics already defined for continuation marks which we give below.
 
-CONTINUATION MARKS SEMANTICS HERE
+\begin{align*}
+e = &(e\,e) & v = \lambda x. e\\
+    &x\\
+    &v\\
+    &(wcm\,e\,e)\\
+    &(ccm)
+\end{align*}
+
+\begin{align*}
+E = &(wcm\,v\,F) & \chi\,(wcm\,v\,F) &= v : (\chi\,F)\\
+    &F\\
+F = &[]          & \chi\,[]          &= empty\\
+    &(E\,e)      & \chi\,(E\,e)      &= \chi(E)\\
+    &(v\,E)      & \chi\,(v\,E)      &= \chi(E)\\
+    &(wcm\,E\,e) & \chi\,(wcm\,E\,e) &= \chi(E)
+\end{align*}
+
+\begin{align*}
+E[(\lambda x.e)\,v]       &= E[e[x\leftarrow v]]\\
+E[(wcm\,v\,(wcm\,v'\,e))] &= E[(wcm\,v'\,e)]\\
+E[(wcm\,v\,v')]           &= E[v']\\
+E[(ccm)]                  &= E[\chi\,E]
+\end{align*}
 
 % talk about the semantics a bit
 
