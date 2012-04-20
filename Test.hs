@@ -50,16 +50,10 @@ test10 = (==) [[("k1", "v3"), ("k2", "v2")]] $ runCM $ (wcm "k1" "v1" (wcm "k2" 
 test11 :: Bool
 test11 = (==) (2, [[("k2", "v2")], [("k1", "v1")]]) $ runCM $ do
   wcm "k1" "v1" $ do
-    x <- return 1
-    wcm "k2" "v2" $ do
+    (x, ms) <- wcm "k2" "v2" (do
       ms <- ccms ["k1", "k2"]
-      return (1+x, ms)
+      return (1, ms))
+    return (1+x, ms)
 
--- main = print $ [test1, test2, test3, test4, test5, test6, test7, test8, test9, test10, test11]
-main = print $ runCM $ do
-  wcm "k1" "v1" $ do
-    x <- return 1
-    wcm "k2" "v2" $ do
-      ms <- ccms ["k1", "k2"]
-      return (1+x, ms)
+main = print $ [test1, test2, test3, test4, test5, test6, test7, test8, test9, test10, test11]
 
