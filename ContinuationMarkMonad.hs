@@ -11,6 +11,10 @@ instance Monad (CM k v) where
   CM m >>= f = CM (m >>= (\x -> let (CM m) = f x in m))
 
 wcm :: Ord k => k -> v -> CM k v a -> CM k v a
+-- wcm k v (CM m') = CM (CM1.ccm >>= (\(ms) -> case ms of
+--   []    -> CM1.wcm (singleton k v) m'
+--   (m:_) -> CM1.wcm (insert k v m) m'))
+
 wcm k v (CM m) = CM (wcm_t (\m' -> case m' of
   Nothing    -> singleton k v
   (Just m'') -> insert k v m'') m)
