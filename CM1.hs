@@ -13,27 +13,7 @@ instance Monad (CM1 m) where
 wcm :: m -> CM1 m a -> CM1 m a
 wcm v (CM1 m) = CM1 (\(_:vs) -> m ((Just v):vs))
 
-ucm :: (Maybe m -> m) -> CM1 m a -> CM1 m a
-ucm t (CM1 m) = CM1 (\(v:vs) -> m ((Just (t v)):vs))
-
-{--
-get marks
-if marks is empty
-  push singleton
-else
-  get top mark
-  push singleton
-
-  get marks
-  get top mark
-  if top mark is singleton (that was just pushed)
-    we're ok
-  otherwise
-    push insert into top mark
---}
-
-ccm :: CM1 m [Maybe m]
---ccm = CM1 (\vs -> catMaybes vs)
-ccm = CM1 id
+ccm :: CM1 m [m]
+ccm = CM1 (\vs -> catMaybes vs)
 
 runCM1 (CM1 m) = m (Nothing:[])

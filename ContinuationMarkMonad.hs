@@ -11,13 +11,21 @@ instance Monad (CM k v) where
   CM m >>= f = CM (m >>= (\x -> let (CM m) = f x in m))
 
 wcm :: Ord k => k -> v -> CM k v a -> CM k v a
--- wcm k v (CM m') = CM (CM1.ccm >>= (\ms -> case ms of
---   []    -> CM1.wcm (singleton k v) m'
---   (m:_) -> CM1.wcm (insert k v m) m'))
-
-wcm k v (CM m) = CM (ucm (\m' -> case m' of
-  Nothing    -> singleton k v
-  (Just m'') -> insert k v m'') m)
+wcm k v (CM m) = CM $ do
+  ms <- CM1.ccm
+  let l = length ms in
+    if l == 0 then
+      CM1.wcm (singleton k v) m
+    else
+      let (m':_) = ms in
+        let m'' = insert k v m' in
+          CM1.wcm m'' $ do
+            ms <- CM1.ccm
+            let l' = length ms in
+              if l == l' then
+                CM1.wcm m'' m
+              else
+                CM1.wcm (singleton k v) m
 
 extract_single :: Ord k => [k] -> Map k v -> [(k, v)]
 extract_single []     _ = []
