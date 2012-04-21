@@ -1,5 +1,5 @@
 module Main where
-import ContinuationMarkMonad
+import CM
 
 test1 :: Bool
 test1 = null $ runCM $ ccm "test"

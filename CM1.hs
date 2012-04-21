@@ -16,4 +16,4 @@ wcm v (CM1 m) = CM1 (\(_:vs) -> m ((Just v):vs))
 ccm :: CM1 m [m]
 ccm = CM1 (\vs -> catMaybes vs)
 
-runCM1 (CM1 m) = m (Nothing:[])
+runCM (CM1 m) = m (Nothing:[])
