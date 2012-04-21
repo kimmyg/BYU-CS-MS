@@ -270,7 +270,7 @@
         \end{doublespace}%
     \par}% end centering
     \vspace{2\@blankline}\par
-    This {\@documenttype} proposal has been read by each member of the following
+    This {\@documenttype} has been read by each member of the following
     graduate committee and by majority vote has been found to be
     satisfactory.
     \vspace{3\@blankline}\par

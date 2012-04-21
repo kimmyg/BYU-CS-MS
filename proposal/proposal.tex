@@ -70,7 +70,7 @@
 
 % Committee members 
 \committeechair{Jay McCarthy} 
-\committeemembera{} 
+\committeemembera{Sean Warnick} 
 \committeememberb{}
 \committeememberc{} 
 \committeememberd{}
@@ -331,7 +331,6 @@ function. In this actualization, a cascade of multiplication operations builds a
 recursive calls are made. Each multiplication is computation that must be performed after
 the recursive call of which the machine must keep track.
 
-
 \begin{figure}
 \begin{verbatim}
 (define (fact n)
@@ -345,9 +344,9 @@ the recursive call of which the machine must keep track.
 
 Figure \ref{fac-tail-rec} illustrates the tail recursive manifestation of the factorial
 function. In contrast to the function in figure \ref{fac-rec}, this formulation performs
-the multiplication before the recursive call. Because no computation is performed after
-the evaluation of the recursive call, that call is said to be in tail position. Because
-the function has no pending computations, the execution context does not grow.
+the multiplication before the recursive call. Because the function has no pending
+computations after the evaluation of the recursive call, the execution context need not
+grow. Such a call is said to be in tail position.
 
 \begin{figure}
 \begin{verbatim}
@@ -428,29 +427,49 @@ We will demonstrate that continuation marks have a monadic semantics by producin
 that models a computation with continuation marks. We will prove  this model equivalent to
 the behavioral semantics already defined for continuation marks which we give below.
 
+\begin{figure}
 \begin{align*}
 e = &(e\,e) & v = \lambda x. e\\
     &x\\
     &v\\
-    &(wcm\,e\,e)\\
-    &(ccm)
+    &(\mathrm{wcm}\,e\,e)\\
+    &(\mathrm{ccm})
 \end{align*}
+\caption{Domain definition}
+\label{domain-definition}
+\end{figure}
 
+The left column of figure \ref{domain-definition} denotes that expressions in our language
+are applications, variables, values, \emph{wcm} forms, or \emph{ccm} forms. The right
+column denotes that values in the language are $\lambda$-abstractions.
+
+\begin{figure}
 \begin{align*}
-E = &(wcm\,v\,F) & \chi\,(wcm\,v\,F) &= v : (\chi\,F)\\
+E = &(\mathrm{wcm}\,v\,F) & \chi((\mathrm{wcm}\,v\,F)) &= v : (\chi(F))\\
     &F\\
-F = &[]          & \chi\,[]          &= empty\\
-    &(E\,e)      & \chi\,(E\,e)      &= \chi(E)\\
-    &(v\,E)      & \chi\,(v\,E)      &= \chi(E)\\
-    &(wcm\,E\,e) & \chi\,(wcm\,E\,e) &= \chi(E)
+F = &[]                   & \chi([])                   &= \mathrm{empty}\\
+    &(E\,e)               & \chi((E\,e))               &= \chi(E)\\
+    &(v\,E)               & \chi((v\,E))               &= \chi(E)\\
+    &(\mathrm{wcm}\,E\,e) & \chi((\mathrm{wcm}\,E\,e)) &= \chi(E)
 \end{align*}
+\caption{Grammar and the $\chi$ metafunction}
+\label{grammar}
+\end{figure}
 
+The left column of figure \ref{grammar} establishes static relationships between language forms. In these definitions, $E$ and $F$ signify ``holes'' in the computation--that is, the expression that is currently being evaluated. The distinction between $E$ and $F$ is made to enforce a definitional constraint: the evaluation of the mark occurs before the evaluation of the body. (This constraint is crucial in the face of mutation.) The corresponding rules in the right column describe the evaluation of the $\chi$ metafunction upon which the evaluation of the \emph{ccm} form depends.
+
+\begin{figure}
 \begin{align*}
-E[(\lambda x.e)\,v]       &= E[e[x\leftarrow v]]\\
-E[(wcm\,v\,(wcm\,v'\,e))] &= E[(wcm\,v'\,e)]\\
-E[(wcm\,v\,v')]           &= E[v']\\
-E[(ccm)]                  &= E[\chi\,E]
+E[(\lambda x.e)\,v]                         &= E[e[x\leftarrow v]]\\
+E[(\mathrm{wcm}\,v\,(\mathrm{wcm}\,v'\,e))] &= E[(\mathrm{wcm}\,v'\,e)]\\
+E[(\mathrm{wcm}\,v\,v')]                    &= E[v']\\
+E[(\mathrm{ccm})]                           &= E[\chi(E)]
 \end{align*}
+\caption{Evaluation rules}
+\label{evaluation-rules}
+\end{figure}
+
+The definitions in figure \ref{evaluation-rules} establish the proper interpretation of various expressions. The first follows the typical definition of application. The second defines the tail behavior of the \emph{wcm} form. The third expresses that the \emph{wcm} form takes on the value of its body. Finally, the fourth defines the value of the \emph{ccm} form in terms of the $\chi$ metafunction.
 
 % talk about the semantics a bit
 
