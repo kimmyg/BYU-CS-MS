@@ -8,24 +8,20 @@ data CM k v a = CM (CM1 (Map k v) a)
 
 instance Monad (CM k v) where
   return x = CM (return x)
-  CM m >>= f = CM (m >>= (\x -> let (CM m) = f x in m))
+  CM cm1 >>= f = CM (cm1 >>= (\x -> let (CM cm1) = f x in cm1))
 
 wcm :: Ord k => k -> v -> CM k v a -> CM k v a
-wcm k v (CM m) = CM $ do
+wcm k v (CM cm1) = CM $ do
   ms <- CM1.ccm
   let l = length ms in
-    if l == 0 then
-      CM1.wcm (singleton k v) m
-    else
-      let (m':_) = ms in
-        let m'' = insert k v m' in
-          CM1.wcm m'' $ do
-            ms <- CM1.ccm
-            let l' = length ms in
-              if l == l' then
-                CM1.wcm m'' m
-              else
-                CM1.wcm (singleton k v) m
+    CM1.wcm (singleton k v) $ do
+      ms' <- CM1.ccm
+      let l' = length ms' in
+        if l == l' then
+          let (m:_) = ms in
+            CM1.wcm (insert k v m) cm1
+        else
+          CM1.wcm (singleton k v) cm1
 
 extract_single :: Ord k => [k] -> Map k v -> [(k, v)]
 extract_single []     _ = []
@@ -41,6 +37,6 @@ ccms :: Ord k => [k] -> CM k v [[(k, v)]]
 ccms ks = CM (CM1.ccm >>= (\ms -> return (filter (not . null) (extract ks ms))))
 
 ccm :: Ord k => k -> CM k v [v]
-ccm k = let (CM m) = ccms [k] in CM (m >>= (\ms -> return (map (\(_, v) -> v) (concat ms))))
+ccm k = let (CM cm1) = ccms [k] in CM (cm1 >>= (\ms -> return (map snd (concat ms))))
 
 runCM (CM m) = runCM1 m
