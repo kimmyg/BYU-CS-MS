@@ -10,4 +10,4 @@ fact n = do
   (marks, acc) <- wcm (show n) (fact (n - 1));
   return (marks, (n * acc))
            
-main = print $ runCM1 $ fact 5
+main = let x = (wcm 2 ccm) in print $ runCM $ (wcm 1 (x >>= return))
