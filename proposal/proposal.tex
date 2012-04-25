@@ -424,8 +424,19 @@ evaluation context. In this instance, the previous mark is overwritten with the 
 \section{Project Description}
 
 We will demonstrate that continuation marks have a monadic semantics by producing a monad
-that models a computation with continuation marks. We will prove  this model equivalent to
-the behavioral semantics already defined for continuation marks which we give below.
+that models a computation with continuation marks. We present two equivalent definitions 
+for the semantics of continuation marks. The first is simply in terms of a language. While 
+we will not involve this language in any proofs, it better conveys the essence of continuation 
+marks absent any machine model, so we include it for clarity. The second is in terms of an 
+abstract machine for which we provide the small step semantics. It is our reference 
+implementation against which we will verify the behavior of our monad.
+
+\subsection{Language Definition}
+
+Figure \ref{domain-definition} presents the definition of expressions and values in our 
+language. The left column denotes that expressions in our language are applications, variables, 
+values, \emph{wcm} forms, or \emph{ccm} forms. The right column denotes that values in the 
+language are $\lambda$-abstractions.
 
 \begin{figure}
 \begin{align*}
@@ -439,9 +450,15 @@ e = &(e\,e) & v = \lambda x. e\\
 \label{domain-definition}
 \end{figure}
 
-The left column of figure \ref{domain-definition} denotes that expressions in our language
-are applications, variables, values, \emph{wcm} forms, or \emph{ccm} forms. The right
-column denotes that values in the language are $\lambda$-abstractions.
+Figure \ref{language-definition} presents both the syntactic forms of the language and the 
+definition of a metafunction, $\chi$, in terms of those forms. The left column of figure 
+\ref{language-definition} establishes static relationships between language forms. In these 
+definitions, $E$ and $F$ signify ``holes'' in the computation--that is, where the current 
+evaluation will be inserted. The distinction between $E$ and $F$ is made to enforce a 
+definitional constraint: the evaluation of the mark occurs before the evaluation of the 
+body. (This constraint is crucial in the face of mutation.) The corresponding rules in the 
+right column describe the evaluation of the $\chi$ metafunction upon which the evaluation 
+of the \emph{ccm} form depends.
 
 \begin{figure}
 \begin{align*}
@@ -453,10 +470,10 @@ F = &[]                   & \chi([])                   &= \mathrm{empty}\\
     &(\mathrm{wcm}\,E\,e) & \chi((\mathrm{wcm}\,E\,e)) &= \chi(E)
 \end{align*}
 \caption{Grammar and the $\chi$ metafunction}
-\label{grammar}
+\label{language-definition}
 \end{figure}
 
-The left column of figure \ref{grammar} establishes static relationships between language forms. In these definitions, $E$ and $F$ signify ``holes'' in the computation--that is, the expression that is currently being evaluated. The distinction between $E$ and $F$ is made to enforce a definitional constraint: the evaluation of the mark occurs before the evaluation of the body. (This constraint is crucial in the face of mutation.) The corresponding rules in the right column describe the evaluation of the $\chi$ metafunction upon which the evaluation of the \emph{ccm} form depends.
+The definitions in figure \ref{language-semantics} establish the proper interpretation of various expressions. The first follows the typical definition of application. The second defines the tail behavior of the \emph{wcm} form. The third expresses that the \emph{wcm} form takes on the value of its body. Finally, the fourth defines the value of the \emph{ccm} form in terms of the $\chi$ metafunction.
 
 \begin{figure}
 \begin{align*}
@@ -466,59 +483,96 @@ E[(\mathrm{wcm}\,v\,v')]                    &= E[v']\\
 E[(\mathrm{ccm})]                           &= E[\chi(E)]
 \end{align*}
 \caption{Evaluation rules}
-\label{language-evaluation}
+\label{language-semantics}
 \end{figure}
 
-The definitions in figure \ref{language-evaluation} establish the proper interpretation of various expressions. The first follows the typical definition of application. The second defines the tail behavior of the \emph{wcm} form. The third expresses that the \emph{wcm} form takes on the value of its body. Finally, the fourth defines the value of the \emph{ccm} form in terms of the $\chi$ metafunction.
+\subsection{Machine Model Definition}
+
+Figure \ref{machine-definition} presents the definition of the machine model of continuation 
+marks and the corresponding definition of the $\chi$ metafunction. The machine $S$ is defined 
+as a triple of the control $C$ representing the term under evaluation, the environment $E$ 
+defined as a function from identifiers to values, and the continuation $K$ representing a 
+sequence of pending contexts.
+
+The term $C$ under evaluation can be in various forms: a simple variable, a $\lambda$-abstraction, 
+an application, a \emph{wcm} expression, or a \emph{ccm} expression.
+
+Machine values $V$ are closures, a pair of a $\lambda$-abstraction and an environment $E$.
+
+The continuation $K$ is defined recursively. It is a sequence beginning with $\bullet\,e,E$ 
+denoting a function application context in which the function value is under evaluation, 
+$v\,\bullet$ denoting the same in which the argument value is under evaluation, $\mathrm{wcm}\,
+\bullet\,e$ denoting a \emph{wcm} expression context in which the continuation mark is under 
+evaluation, $\mathrm{wcm}\,v$ denoting the same in which the body is under evaluation, or 
+$\mathrm{halt}$ representing an empty sequence--the empty continuation. (Here, $\bullet$ 
+represents a ``hole'' in the computation.) 
+
+Adjacent to the definition of the continuation $K$ is the definition of the $\chi$ metafunction 
+in terms of the various forms of $K$.
 
 \begin{figure}
 \begin{align*}
-S= &\langle C,E,K\rangle\\
-E= &\mathrm{Id}\rightarrow\mathrm{Value}\\
-V= &\langle\lambda x.e,E\rangle\\
-C= &\lambda x.e\\
+S= & \langle C,E,K\rangle\\
+C= & x\\
+   & \lambda x.e\\
    & e\,e\\
    & \mathrm{wcm}\,e\,e\\
    & \mathrm{ccm}\\
-K= &\bullet e,E;k        & \chi(k)\\
-   & v\,\bullet;k        & \chi(k)\\
-   & \mathrm{wcm}\,\bullet\,e,E;k & \chi(k)\\
-   & \mathrm{wcm}\,v; k           & v:\chi(k)\\
-   & \mathrm{halt}       & \mathrm{empty}
+E= & \mathrm{Id}\rightarrow\mathrm{Value}\\
+V= & \langle\lambda x.e,E\rangle\\
+K= & \bullet\,e,E;k               & \chi(\bullet\,e,E;k)=\chi(k)\\
+   & v\,\bullet;k                 & \chi(v\,\bullet;k)=\chi(k)\\
+   & \mathrm{wcm}\,\bullet\,e,E;k & \chi(\mathrm{wcm}\,\bullet\,e,E;k)=\chi(k)\\
+   & \mathrm{wcm}\,v; k           & \chi(\mathrm{wcm}\,v; k)=v:\chi(k)\\
+   & \mathrm{halt}                & \chi(\mathrm{halt})=\mathrm{empty}
 \end{align*}
-\caption{Machine grammar (?)}
-\label{machine-grammar}
+\caption{Machine definition with corresponding $\chi$ metafunction definition}
+\label{machine-definition}
 \end{figure}
 
-\begin{figure}
-\begin{align*}
-\langle\lambda x.e,E,k\rangle                           &\rightarrow \langle\langle\lambda x.e,E\rangle,E,k\rangle\\
-\langle e\,e',E,k\rangle                                &\rightarrow\langle e,E,\bullet\,e',E;k\rangle\\
-\langle v,E,\bullet\,e',E';k\rangle                     &\rightarrow\langle e',E',v\,\bullet;k\rangle\\
-\langle v,E,(\lambda x.e,E')\,\bullet;k\rangle          &\rightarrow\langle e,E'[x\mapsto v],k\rangle\\
-\langle \mathrm{wcm}\,e\,e',E,k\rangle                  &\rightarrow\langle e,E,\mathrm{wcm}\,\bullet e',E;k\rangle\\
-\langle v,E,\mathrm{wcm}\,\bullet e',E';k\rangle        &\rightarrow\langle e',E',\mathrm{wcm}\,v;k\rangle\\
-\langle v,E,\mathrm{wcm}\,v';k\rangle                   &\rightarrow\langle v,E,k\rangle\\
-\langle \mathrm{ccm},E,k\rangle                         &\rightarrow\langle\chi(k),E,k\rangle
-\end{align*}
+Figure \ref{machine-semantics} presents the small step semantics of the machine model 
+introduced in figure \ref{machine-definition}. Program evaluation is defined as
 
 \[
 \frac{\langle e,\emptyset,\mathrm{halt}\rangle\rightarrow^{*}\langle V,E,\mathrm{halt}\rangle}{eval(e)=V}
 \]
+
+where an expression combined with an empty environment and empty continuation constitute 
+a program.
+
+\begin{figure}
+\begin{align*}
+\langle x,E,k\rangle                                       &\rightarrow\langle E[x],E,k\rangle\\
+\langle\lambda x.e,E,k\rangle                              &\rightarrow\langle \langle\lambda x.e,E\rangle,E,k\rangle\\
+\langle e\,e',E,k\rangle                                   &\rightarrow\langle e,E,(\bullet\,e',E);k\rangle\\
+\langle v,E,(\bullet\,e',E');k\rangle                      &\rightarrow\langle e',E',v\,\bullet;k\rangle\\
+\langle v,E,\langle\lambda x.e,E'\rangle\,\bullet;k\rangle &\rightarrow\langle e,E'[x\mapsto v],k\rangle\\
+\langle \mathrm{wcm}\,e\,e',E,k\rangle                     &\rightarrow\langle e,E,(\mathrm{wcm}\,\bullet e',E);k\rangle\\
+\langle v,E,\mathrm{wcm}\,\bullet e',E';k\rangle           &\rightarrow\langle e',E',\mathrm{wcm}\,v;f(k)\rangle\\
+\langle v,E,\mathrm{wcm}\,v';k\rangle                      &\rightarrow\langle v,E,k\rangle\\
+\langle \mathrm{ccm},E,k\rangle                            &\rightarrow\langle \chi(k),E,k\rangle
+\end{align*}
+
+where 
+
+\[
+f(x)=
+\left\{
+\begin{array}{lr}
+k & \mathrm{if}\,x=\mathrm{wcm}\,v;k\\
+x & \mathrm{otherwise}
+\end{array}
+\right.
+\]
+
 \caption{Machine semantics for continuation marks}
 \label{machine-semantics}
 \end{figure}
-
-% talk about the semantics a bit
 
 %produce and provide haskell implementation of a continuation mark monad produce and
 %provide haskell implementation of continuation marks according to formal semantics show
 %algebraically (i.e., solely through symbolic manipulation) that provided is a monad show
 %in the same way that what it models and what the semantics describe are equivalent profit
-
-Figures \ref{machine-grammar} and \ref{machine-semantics} present the grammar and machine 
-semantics for continuation marks. Figure \ref{machine-grammar} also includes the definition 
-of the $\chi$ metafunction in this context.
 
 As is typical, we will use the programming language Haskell \cite{jones2003haskell} for
 our implementation and equational analysis. Haskell is a purely functional programming
