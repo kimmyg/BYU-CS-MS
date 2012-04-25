@@ -197,9 +197,9 @@ models such as non-termination and non-determinism. It may be helpful to illustr
 and, to do so, we require the following definitions:
 
 \emph{Note: In the coming sections, we will reference certain laws which monads preserve.
-[author] identifies [6] axioms of monadic behavior which are typically expressed in terms
-of fewer, more loaded operations. We will encounter two such characterizations in the
-following definitions.}
+Moggi \cite{moggi1989computational} and Wadler \cite{wadler1995monads} describe axioms of 
+monadic behavior which are typically expressed in terms of fewer, more loaded operations. 
+We will encounter two such characterizations in the following definitions.}
 % there are like eight simple laws that collapse into three. find that paper that says this!
 
 \newtheorem{monad}[definition]{Definition}
@@ -466,40 +466,48 @@ E[(\mathrm{wcm}\,v\,v')]                    &= E[v']\\
 E[(\mathrm{ccm})]                           &= E[\chi(E)]
 \end{align*}
 \caption{Evaluation rules}
-\label{evaluation-rules}
+\label{language-evaluation}
 \end{figure}
 
-The definitions in figure \ref{evaluation-rules} establish the proper interpretation of various expressions. The first follows the typical definition of application. The second defines the tail behavior of the \emph{wcm} form. The third expresses that the \emph{wcm} form takes on the value of its body. Finally, the fourth defines the value of the \emph{ccm} form in terms of the $\chi$ metafunction.
+The definitions in figure \ref{language-evaluation} establish the proper interpretation of various expressions. The first follows the typical definition of application. The second defines the tail behavior of the \emph{wcm} form. The third expresses that the \emph{wcm} form takes on the value of its body. Finally, the fourth defines the value of the \emph{ccm} form in terms of the $\chi$ metafunction.
 
+\begin{figure}
 \begin{align*}
 S= &\langle C,E,K\rangle\\
 E= &\mathrm{Id}\rightarrow\mathrm{Value}\\
 V= &\langle\lambda x.e,E\rangle\\
 C= &\lambda x.e\\
    & e\,e\\
-   & wcm\,e\,e\\
-   & ccm\\
+   & \mathrm{wcm}\,e\,e\\
+   & \mathrm{ccm}\\
 K= &\bullet e,E;k        & \chi(k)\\
    & v\,\bullet;k        & \chi(k)\\
-   & wcm\,\bullet\,e,E;k & \chi(k)\\
-   & wcm\,v; k           & v:\chi(k)\\
+   & \mathrm{wcm}\,\bullet\,e,E;k & \chi(k)\\
+   & \mathrm{wcm}\,v; k           & v:\chi(k)\\
    & \mathrm{halt}       & \mathrm{empty}
 \end{align*}
+\caption{Machine grammar (?)}
+\label{machine-grammar}
+\end{figure}
 
+\begin{figure}
 \begin{align*}
-\langle\lambda x.e,E,k\rangle                  &\rightarrow \langle\langle\lambda x.e,E\rangle,E,k\rangle\\
-\langle e\,e',E,k\rangle                       &\rightarrow\langle e,E,\bullet\,e',E;k\rangle\\
-\langle v,E,\bullet\,e',E';k\rangle            &\rightarrow\langle e',E',v\,\bullet;k\rangle\\
-\langle v,E,(\lambda x.e,E')\,\bullet;k\rangle &\rightarrow\langle e,E'[x\mapsto v],k\rangle\\
-\langle wcm\,e\,e',E,k\rangle                  &\rightarrow\langle e,E,wcm\,\bullet e',E;k\rangle\\
-\langle v,E,wcm\,\bullet e',E';k\rangle        &\rightarrow\langle e',E',wcm\,v;k\rangle\\
-\langle v,E,wcm\,v';k\rangle                   &\rightarrow\langle v,E,k\rangle\\
-\langle ccm,E,k\rangle                         &\rightarrow\langle\chi(k),E,k\rangle
+\langle\lambda x.e,E,k\rangle                           &\rightarrow \langle\langle\lambda x.e,E\rangle,E,k\rangle\\
+\langle e\,e',E,k\rangle                                &\rightarrow\langle e,E,\bullet\,e',E;k\rangle\\
+\langle v,E,\bullet\,e',E';k\rangle                     &\rightarrow\langle e',E',v\,\bullet;k\rangle\\
+\langle v,E,(\lambda x.e,E')\,\bullet;k\rangle          &\rightarrow\langle e,E'[x\mapsto v],k\rangle\\
+\langle \mathrm{wcm}\,e\,e',E,k\rangle                  &\rightarrow\langle e,E,\mathrm{wcm}\,\bullet e',E;k\rangle\\
+\langle v,E,\mathrm{wcm}\,\bullet e',E';k\rangle        &\rightarrow\langle e',E',\mathrm{wcm}\,v;k\rangle\\
+\langle v,E,\mathrm{wcm}\,v';k\rangle                   &\rightarrow\langle v,E,k\rangle\\
+\langle \mathrm{ccm},E,k\rangle                         &\rightarrow\langle\chi(k),E,k\rangle
 \end{align*}
 
 \[
 \frac{\langle e,\emptyset,\mathrm{halt}\rangle\rightarrow^{*}\langle V,E,\mathrm{halt}\rangle}{eval(e)=V}
 \]
+\caption{Machine semantics for continuation marks}
+\label{machine-semantics}
+\end{figure}
 
 % talk about the semantics a bit
 
@@ -508,7 +516,9 @@ K= &\bullet e,E;k        & \chi(k)\\
 %algebraically (i.e., solely through symbolic manipulation) that provided is a monad show
 %in the same way that what it models and what the semantics describe are equivalent profit
 
-
+Figures \ref{machine-grammar} and \ref{machine-semantics} present the grammar and machine 
+semantics for continuation marks. Figure \ref{machine-grammar} also includes the definition 
+of the $\chi$ metafunction in this context.
 
 As is typical, we will use the programming language Haskell \cite{jones2003haskell} for
 our implementation and equational analysis. Haskell is a purely functional programming
