@@ -1,3 +1,6 @@
 module V where
+import C
+import E
 
-type V = Int
+data V = V C E | L [V]
+  deriving Show

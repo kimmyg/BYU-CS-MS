@@ -1,5 +1,5 @@
 module C where
+import E
+import Exp
 
-type Id = String
-
-data C = Id Id | Abs Id C | App C C | Wcm C C | Ccm
+data C = Val Abs E | Exp Exp

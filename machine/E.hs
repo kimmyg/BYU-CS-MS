@@ -1,13 +1,17 @@
 module E where
-import V
+import C
 import Data.Map
 
-type E = Map String V
+data E = E (Map Id (C,E))
+  deriving Show
 
-store :: String -> V -> E -> E
-store = insert
+store :: Id -> (C,E) -> E -> E
+store id v (E m) = E (insert id v m)
 
-fetch :: String -> E -> V
-fetch id e = case Data.Map.lookup id e of
+fetch :: Id -> E -> (C,E)
+fetch id (E m) = case Data.Map.lookup id m of
   (Just v) -> v
   Nothing  -> error (id ++ " not found in environment")
+
+empty :: E
+empty = E Data.Map.empty

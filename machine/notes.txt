@@ -1,0 +1,6 @@
+evaluation of certain programs using this CEK machine
+
+(\x -> x + 1) 5 is of form e1 e2
+(e1 e2,empty,halt) ((\x -> x + 1) 5,empty,halt) ->
+(e1,empty,App1 e2 E halt) ((\x -> x + 1),empty,App1 5 empty halt) ->
+(
