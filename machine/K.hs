@@ -1,7 +1,5 @@
 module K where
-import C
-import E
-import V
+import CEV
 
 data K = App1 C E K | App2 V K | Wcm1 C E K | Wcm2 V K | Clos V K | Halt
 

@@ -1,5 +1,5 @@
 module Main where
 import S
-import C
+import CEV
 
-main = print $ eval $ Wcm (Num 5) Ccm
+main = print $ eval $ Ccm
