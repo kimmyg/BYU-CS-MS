@@ -144,12 +144,12 @@ at the same level as the language instead of some level below.
 % can I use the terms programming language feature and computational model interchangeably?
 
 Monadic semantics originate from Moggi \cite{moggi1989computational} wherein they were
-termed categorical semantics in reference to their category theoretic construction; a
-monad is simply a monoid in the category of endofunctors \cite{mac1998categories}. Monadic semantics describe the
+termed categorical semantics in reference to their category theoretic construction. (A
+monad is simply a monoid in the category of endofunctors \cite{mac1998categories}.) Monadic semantics describe the
 meaning of computational models such as partial computability, side-effectfulness, and
 non-determinism. The appeal of using monads to specify semantics is significant: it allows
 one to work with a pure computational logic, such as the lambda calculus, with a
-particular model of computation in isolation, insulating the interactions between
+particular model of computation in isolation, insulating interactions between
 different models. There are at least two direct benefits to this: First, it helps one
 define and reason about a particular computational model absent from the noise of other
 models and practical considerations. Second, no language feature is an island and when it
@@ -161,7 +161,7 @@ facilitates composition in a simple way.
 % composable
 
 Thus, the statement that continuation marks are amenable to a monadic semantics means
-simply that we can characterize them with a monad, simultaneously allowing us to express
+simply that we can characterize their feature as a monad, simultaneously allowing us to express
 the essence of continuation marks and reason about its interaction with other
 computational models.
 
@@ -184,7 +184,7 @@ of a more tractable approach.
 
 Behavioral semantics mitigate this problem somewhat with a different approach. Rather than
 expressing an effect or property of the program, behavioral semantics express the
-execution of the program on an abstract machine.
+execution of the program on an abstract machine. \emph{Need more here. Why not stick with these?}
 
 % why are behavioral semantics not modular enough?
 % must all additions be made keeping mind of the current whole?
@@ -194,7 +194,7 @@ using either a denotational or behavioral approach. This type of semantics is so
 because of the appeal to the \emph{monad}, a concept stemming from category theory. Moggi
 \cite{moggi1989computational} applies monads as a categorical semantics of computational
 models such as non-termination and non-determinism. It may be helpful to illustrate this
-and, to do so, we require the following definitions:
+for which we require the following definitions:
 
 \emph{Note: In the coming sections, we will reference certain laws which monads preserve.
 Moggi \cite{moggi1989computational} and Wadler \cite{wadler1995monads} describe axioms of 
@@ -238,7 +238,7 @@ This law represents the primitive \emph{bind} which maps monads across domains a
 
 \item $f^{*};g^{*}=(f;g^{*})^{*}$
 
-This law represents a sequencing property which must hold; namely, a monadic operation performed as part of a given $f$ must be able to be performed in turn.
+This law represents a sequencing property which must hold; namely, a monadic operation performed as part of a given $f$ must be able to be performed in turn. This property is equivalent to associativity of application.
 \end{itemize}
 \end{kleisli}
 
@@ -299,18 +299,21 @@ continuation marks.
 The feature of continuation marks itself is accessible via two surface level syntactic
 forms: \emph{with-continuation-mark} and \emph{current-continuation-marks}.
 
-\emph{with-continuation-mark} has three parameters: a key identifying the nature of the
-continuation mark, an expression which value will be associated with this key, and an
-expression within the dynamic extent of which a continuation mark will exist with this
-key. In a Scheme-like syntax, it appears as so:
+\emph{with-continuation-mark} has three parameters: an expression evaluating to a key 
+identifying the nature of the continuation mark, an expression which value will be 
+associated with this key, and an expression within the dynamic extent of which a 
+continuation mark will exist with this key. In a Scheme-like syntax, it appears as so:
 
 % will use slatex for the dissertation; too much of a hassle now
 \texttt{(with-continuation-mark} \emph{key-expr} \emph{value-expr} \emph{body-expr}\texttt{)}
 
 \emph{current-continuation-marks} has one parameter, a set of keys, and returns a list of
-all the associated values set within the dynamic context of the invocation. Scheme-like,
-it looks like this:
-
+all the associated values set within the dynamic context of the invocation. If a particular 
+context has been annotated by more than one key in the set, this will be reflected in the 
+returned list\footnote{The returned list is typically a list of non-empty lists where each 
+sub-list represents the marks on a context.}. Additionally, the order in which values were 
+attached with a particular key is preserved. Scheme-like, \emph{current-continuation-marks}
+looks like this:
 
 \texttt{(current-continuation-marks} \emph{key-set}\texttt{)}
 
@@ -318,13 +321,12 @@ Importantly, the result of this invocation provides no evidence of any portion o
 dynamic context lacking continuation marks with the specified keys. This preserves the
 ability to perform optimizations without exposing details which would render the
 optimizations unsound. This also requires special consideration of a language that
-supports tail call optimization which is not an optimization in the above sense since the
-behavior of which is present in the semantic definition of the language. In fact, 
-\emph{body-expr} is in tail position; a language with tail call optimization will reflect 
-this.
+supports tail call optimization which is not an optimization in the above sense since its
+behavior is defined in the semantics of the language. By definition, \emph{body-expr} is 
+in tail position; a language with tail call optimization will reflect this.
 
 The canonical example to illustrate the behavior of continuation marks in the presence and
-absence of tail recursion is the factorial function.
+absence of proper tail recursion is the factorial function.
 
 Figure \ref{fac-rec} illustrates the definitional recursive variant of the factorial
 function. In this actualization, a cascade of multiplication operations builds as the
@@ -556,11 +558,11 @@ a program.
 where 
 
 \[
-f(x)=
+f(k)=
 \left\{
 \begin{array}{lr}
-k & \mathrm{if}\,x=\mathrm{wcm}\,v;k\\
-x & \mathrm{otherwise}
+k' & \mathrm{if}\,k=\mathrm{wcm}\,v;k'\\
+k & \mathrm{otherwise}
 \end{array}
 \right.
 \]
