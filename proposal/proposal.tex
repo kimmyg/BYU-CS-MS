@@ -496,17 +496,17 @@ as a triple of the control $C$ representing the term under evaluation, the envir
 defined as a function from identifiers to values, and the continuation $K$ representing a 
 sequence of pending contexts.
 
-The term $C$ under evaluation can be in various forms: a simple variable, a $\lambda$-abstraction, 
+The term $C$ under evaluation can be in various forms: a single identifier, a $\lambda$-abstraction, 
 an application, a \emph{wcm} expression, or a \emph{ccm} expression.
 
 Machine values $V$ are closures, a pair of a $\lambda$-abstraction and an environment $E$.
 
-The continuation $K$ is defined recursively. It is a sequence beginning with $\bullet\,e,E$ 
+The continuation $K$ is defined recursively. It is a sequence beginning with $\circ\,e,E$ 
 denoting a function application context in which the function value is under evaluation, 
-$v\,\bullet$ denoting the same in which the argument value is under evaluation, $\mathrm{wcm}\,
-\bullet\,e$ denoting a \emph{wcm} expression context in which the continuation mark is under 
+$v\,\circ$ denoting the same in which the argument value is under evaluation, $\mathrm{wcm}\,
+\circ\,e$ denoting a \emph{wcm} expression context in which the continuation mark is under 
 evaluation, $\mathrm{wcm}\,v$ denoting the same in which the body is under evaluation, or 
-$\mathrm{halt}$ representing an empty sequence--the empty continuation. (Here, $\bullet$ 
+$\mathrm{halt}$ representing an empty sequence--the empty continuation. (Here, $\circ$ 
 represents a ``hole'' in the computation.) 
 
 Adjacent to the definition of the continuation $K$ is the definition of the $\chi$ metafunction 
@@ -522,9 +522,9 @@ C= & x\\
    & \mathrm{ccm}\\
 E= & \mathrm{Id}\rightarrow\mathrm{Value}\\
 V= & \langle\lambda x.e,E\rangle\\
-K= & \bullet\,e,E;k               & \chi(\bullet\,e,E;k)=\chi(k)\\
-   & v\,\bullet;k                 & \chi(v\,\bullet;k)=\chi(k)\\
-   & \mathrm{wcm}\,\bullet\,e,E;k & \chi(\mathrm{wcm}\,\bullet\,e,E;k)=\chi(k)\\
+K= & \circ\,e,E;k               & \chi(\circ\,e,E;k)=\chi(k)\\
+   & v\,\circ;k                 & \chi(v\,\circ;k)=\chi(k)\\
+   & \mathrm{wcm}\,\circ\,e,E;k & \chi(\mathrm{wcm}\,\circ\,e,E;k)=\chi(k)\\
    & \mathrm{wcm}\,v; k           & \chi(\mathrm{wcm}\,v; k)=v:\chi(k)\\
    & \mathrm{halt}                & \chi(\mathrm{halt})=\mathrm{empty}
 \end{align*}
@@ -546,11 +546,11 @@ a program.
 \begin{align*}
 \langle x,E,k\rangle                                       &\rightarrow\langle E[x],E,k\rangle\\
 \langle\lambda x.e,E,k\rangle                              &\rightarrow\langle \langle\lambda x.e,E\rangle,E,k\rangle\\
-\langle e\,e',E,k\rangle                                   &\rightarrow\langle e,E,(\bullet\,e',E);k\rangle\\
-\langle v,E,(\bullet\,e',E');k\rangle                      &\rightarrow\langle e',E',v\,\bullet;k\rangle\\
-\langle v,E,\langle\lambda x.e,E'\rangle\,\bullet;k\rangle &\rightarrow\langle e,E'[x\mapsto v],k\rangle\\
-\langle \mathrm{wcm}\,e\,e',E,k\rangle                     &\rightarrow\langle e,E,(\mathrm{wcm}\,\bullet e',E);k\rangle\\
-\langle v,E,\mathrm{wcm}\,\bullet e',E';k\rangle           &\rightarrow\langle e',E',\mathrm{wcm}\,v;f(k)\rangle\\
+\langle e\,e',E,k\rangle                                   &\rightarrow\langle e,E,(\circ\,e',E);k\rangle\\
+\langle v,E,(\circ\,e',E');k\rangle                      &\rightarrow\langle e',E',v\,\circ;k\rangle\\
+\langle v,E,\langle\lambda x.e,E'\rangle\,\circ;k\rangle &\rightarrow\langle e,E'[x\mapsto v],k\rangle\\
+\langle \mathrm{wcm}\,e\,e',E,k\rangle                     &\rightarrow\langle e,E,(\mathrm{wcm}\,\circ e',E);k\rangle\\
+\langle v,E,\mathrm{wcm}\,\circ e',E';k\rangle           &\rightarrow\langle e',E',\mathrm{wcm}\,v;f(k)\rangle\\
 \langle v,E,\mathrm{wcm}\,v';k\rangle                      &\rightarrow\langle v,E,k\rangle\\
 \langle \mathrm{ccm},E,k\rangle                            &\rightarrow\langle \chi(k),E,k\rangle
 \end{align*}
