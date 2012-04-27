@@ -161,7 +161,7 @@ facilitates composition in a simple way.
 % composable
 
 Thus, the statement that continuation marks are amenable to a monadic semantics means
-simply that we can characterize their feature as a monad, simultaneously allowing us to express
+simply that we can characterize the feature as a monad, simultaneously allowing us to express
 the essence of continuation marks and reason about its interaction with other
 computational models.
 
@@ -174,17 +174,23 @@ computational models.
 
 \subsection{Monadic Semantics}
 
-A denotational semantics of a language provides a precise definition of the meaning of
-expressions in that language. Additionally, denotational semantics can be used to capture
-properties of programs making it a great asset for language analysis. However useful, the
-denotational approach exhibits contagion: the addition of a language construct often
-contaminates the entire definition \cite{liang2009modular}. In this sense, is not a
-modular approach and, for this reason, denotational semantics are often eschewed in favor
-of a more tractable approach.
+A denotational semantics of a language provides a precise definition of the meaning of a 
+language by mapping expressions in that language into a mathematical domain. In this way,
+denotational semantics can be used to capture the meaning of programs, as well as
+properties about them, making it a great asset for language analysis. However useful, the
+denotational approach has large pitfalls. Additional language features escalate the 
+semantic domain from perhaps simple values to more complicated structures difficult to reason 
+about. Moreover, the addition of a language feature often contaminates the entire definition 
+\cite{liang2009modular}. In this sense, the denotational approach is not a modular one. For 
+these reasons, denotational semantics are often eschewed in favor of one more tractable.
 
-Behavioral semantics mitigate this problem somewhat with a different approach. Rather than
-expressing an effect or property of the program, behavioral semantics express the
-execution of the program on an abstract machine. \emph{Need more here. Why not stick with these?}
+Behavioral semantics do not suffer from the complexity of denotational semantics. Instead of 
+mapping programs to values in some domain, behavioral semantics provide meaning by defining 
+the operation of an abstract machine on which programs run. However, they exhibit a 
+susceptibility to contamination similar to the denotational approach. Once again, modification 
+of or augmentation to the language typically requires a disproportionate amount of modification 
+of and augmentation to the definition.
+
 
 % why are behavioral semantics not modular enough?
 % must all additions be made keeping mind of the current whole?
@@ -457,12 +463,14 @@ e = &(e\,e) & v = \lambda x. e\\
 Figure \ref{language-definition} presents both the syntactic forms of the language and the 
 definition of a metafunction, $\chi$, in terms of those forms. The left column of figure 
 \ref{language-definition} establishes static relationships between language forms. In these 
-definitions, $E$ and $F$ signify ``holes'' in the computation--that is, where the current 
-evaluation will be inserted. The distinction between $E$ and $F$ is made to enforce a 
-definitional constraint: the evaluation of the mark occurs before the evaluation of the 
-body. (This constraint is crucial in the face of mutation.) The corresponding rules in the 
-right column describe the evaluation of the $\chi$ metafunction upon which the evaluation 
-of the \emph{ccm} form depends.
+definitions, $E$ and $F$ signify contexts in the computation. The distinction between $E$ 
+and $F$ is made to force directly nested \emph{wcm} terms to behave as solely the innermost 
+term.
+
+%definitional constraint: the evaluation of the mark occurs before the evaluation of the 
+%body. (This constraint is crucial in the face of mutation.) The corresponding rules in the 
+%right column describe the evaluation of the $\chi$ metafunction upon which the evaluation 
+%of the \emph{ccm} form depends.
 
 \begin{figure}
 \begin{align*}
@@ -485,10 +493,10 @@ form in terms of the $\chi$ metafunction.
 
 \begin{figure}
 \begin{align*}
-E[(\lambda x.e)\,v]                         &= E[e[x\leftarrow v]]\\
-E[(\mathrm{wcm}\,v\,(\mathrm{wcm}\,v'\,e))] &= E[(\mathrm{wcm}\,v'\,e)]\\
-E[(\mathrm{wcm}\,v\,v')]                    &= E[v']\\
-E[(\mathrm{ccm})]                           &= E[\chi(E)]
+E[(\lambda x.e)\,v]                         &\rightarrow E[e[x\leftarrow v]]\\
+E[(\mathrm{wcm}\,v\,(\mathrm{wcm}\,v'\,e))] &\rightarrow E[(\mathrm{wcm}\,v'\,e)]\\
+E[(\mathrm{wcm}\,v\,v')]                    &\rightarrow E[v']\\
+E[(\mathrm{ccm})]                           &\rightarrow E[\chi(E)]
 \end{align*}
 \caption{Evaluation rules}
 \label{language-semantics}
@@ -508,25 +516,29 @@ an application, a \emph{wcm} expression, or a \emph{ccm} expression.
 Machine values $V$ are closures, a pair of a $\lambda$-abstraction and an environment $E$.
 
 The continuation $K$ is defined recursively. It is a sequence beginning with $(\circ\,e,E)$ 
-denoting a function application context in which the function value is under evaluation, 
-$(v\,\circ)$ denoting the same in which the argument value is under evaluation, $(\mathrm{wcm}\,
+denoting a function application context in which the function expression is under evaluation, 
+$(v\,\circ)$ denoting the same in which the argument expression is under evaluation, $(\mathrm{wcm}\,
 \circ\,e)$ denoting a \emph{wcm} expression context in which the continuation mark is under 
 evaluation, $(\mathrm{wcm}\,v)$ denoting the same in which the body is under evaluation, or 
 $\mathrm{halt}$ representing an empty sequence--the empty continuation. (Here, $\circ$ 
-represents a ``hole'' in the computation.) 
+represents a ``hole'' in the computation--that is, where the current evaluation will be inserted.) 
 
 Adjacent to the definition of the continuation $K$ is the definition of the $\chi$ metafunction 
-in terms of the various forms of $K$.
+in terms of the various forms of $K$. In the pure $\lambda$-calculus, the only values are closures--
+function and environment pairs--and ``primitive'' values such as numbers or lists are encoded in 
+terms of these. We will consider the values of $\chi$ to be so encoded, obviating the need to 
+augment the definition.
 
 \begin{figure}
 \begin{align*}
-S= & \langle C,E,K\rangle\\
-C= & x\\
+S= & \langle C,E,K\rangle\,\mathrm{or}\,\langle V,E,K\rangle\\
+C= & e\\
+e= & x\\
    & \lambda x.e\\
    & e\,e\\
    & \mathrm{wcm}\,e\,e\\
    & \mathrm{ccm}\\
-E= & \mathrm{Id}\rightarrow\mathrm{Value}\\
+E= & x\rightarrow\mathrm{V}\\
 V= & \langle\lambda x.e,E\rangle\\
 K= & \circ\,e,E;k               & \chi(\circ\,e,E;k)=\chi(k)\\
    & v\,\circ;k                 & \chi(v\,\circ;k)=\chi(k)\\
@@ -548,6 +560,13 @@ introduced in figure \ref{machine-definition}. Program evaluation is defined as
 where an expression combined with an empty environment and empty continuation constitute 
 a program.
 
+At each step of evaluation, we consider an $e$-term or a value $v$. We reduce each $e$-term 
+according to its form, extending the continuation $k$ with context information as necessary. 
+Once a term has been evaluated--that is, once we are left with a value--we operate according 
+to the present context. Thus, as expressions are encountered, the continuation grows and as 
+evaluation occurs, the continuation shrinks. The obtainment of a value and exhaustion of the 
+continuation signifies the completion of program evaluation.
+
 \begin{figure}
 \begin{align*}
 \langle x,E,k\rangle                                       &\rightarrow\langle E[x],E,k\rangle\\
@@ -556,7 +575,7 @@ a program.
 \langle v,E,(\circ\,e',E');k\rangle                      &\rightarrow\langle e',E',v\,\circ;k\rangle\\
 \langle v,E,\langle\lambda x.e,E'\rangle\,\circ;k\rangle &\rightarrow\langle e,E'[x\mapsto v],k\rangle\\
 \langle \mathrm{wcm}\,e\,e',E,k\rangle                     &\rightarrow\langle e,E,(\mathrm{wcm}\,\circ e',E);k\rangle\\
-\langle v,E,\mathrm{wcm}\,\circ e',E';k\rangle           &\rightarrow\langle e',E',\mathrm{wcm}\,v;f(k)\rangle\\
+\langle v,E,\mathrm{wcm}\,\circ e',E';k\rangle           &\rightarrow\langle e',E',\mathrm{wcm}\,v;\mathrm{pare}(k)\rangle\\
 \langle v,E,\mathrm{wcm}\,v';k\rangle                      &\rightarrow\langle v,E,k\rangle\\
 \langle \mathrm{ccm},E,k\rangle                            &\rightarrow\langle \chi(k),E,k\rangle
 \end{align*}
@@ -564,7 +583,7 @@ a program.
 where 
 
 \[
-f(k)=
+\mathrm{pare}(k)=
 \left\{
 \begin{array}{lr}
 k' & \mathrm{if}\,k=\mathrm{wcm}\,v;k'\\
@@ -582,14 +601,16 @@ k & \mathrm{otherwise}
 %algebraically (i.e., solely through symbolic manipulation) that provided is a monad show
 %in the same way that what it models and what the semantics describe are equivalent profit
 
-It is typical to use the programming language Haskell \cite{jones2003haskell} to reason 
-about and algebraically manipulate semantic defintions. Haskell is a purely functional programming
-language and, as such, all side effects are explicit. This is a great boon when reasoning
-about a function because distant, implicit effects are impossible in this environment. In
-other words, a function will \emph{always} produce the same output given the same input.
-Because of this, functions can be analyzed singly and then composed in a way which removes
-none of the guarantees attained in isolation. (We note that this is one of the useful
-characteristics of monads also.)
+\subsection{Implementation} 
+
+In order to express and reason about behavioral and monadic semantics, we require a suitable 
+language. It is typical to use the Haskell language \cite{jones2003haskell} to express, reason 
+about, and manipulate semantic defintions. Haskell is a purely functional programming language 
+and, as such, all side effects are explicit. This is a great boon when reasoning about a 
+function because distant, implicit effects are impossible in this environment. In other words, 
+a function will \emph{always} produce the same output given the same input. Because of this, 
+functions can be analyzed singly and then composed in a way which removes none of the guarantees 
+attained in isolation. (We note that this is one of the useful characteristics of monads also.)
 
 %This property facilitates a bottom-up approach to program testing and validation. all its 
 
