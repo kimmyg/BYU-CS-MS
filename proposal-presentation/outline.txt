@@ -1,33 +1,4 @@
-monads
-- category theoretic roots
-- modularity
-
-continuation marks
-- examples
-
-a monad for continuation marks
-
-change joke definition of monad, add citation to "category theory for the working mathematician", pg. 138
-
-document:
-
-24 April 2012
-do presentation with HTML/CSS? I could do it with Racket slideshow, but I don't know if I need that...
-
-papers (for today):
-featherweight java
-category theory for the working mathematician
-slideshow: functional presentations
-functional pearls: probabilistic functional programming in haskell
-monads need not be endofunctors
-monadic framework for delimited continuations
-abstracting abstract machines
-termination in language-based systems
-a tail-recursive machine with stack inspection
-little languages and their programming environments
-control operators, the secd-machine, and the lambda calculus
-a correspondence between algol 60 and church's lambda-notation
-language-based information-flow security
+Thesis: Continuation marks are amenable to a monadic semantics.
 
 Lack of Modularity in Denotational Semantics*
 
@@ -72,7 +43,7 @@ A typical/standard representation of the continuation is the call stack. In this
 Example
 
 (w-c-m key-expr value-expr body-expr)
-(w-c-m 'key 'outer (if x (wcm 'key 'inner (c-c-m 'key))))
+(w-c-m 'key 'outer (if x (wcm 'key 'inner (c-c-m '(key)))))
 
 Useful for fluid let values, debuggers, profilers, steppers.
 
@@ -86,49 +57,3 @@ Monads have specific laws that must be satisfied. Will prove they hold.
 (return x) >>= f = f x (left identity)
 m >>= return = m (right identity)
 (m >>= f) >>= g = m >>= (\x -> f x >>= g) (associativity)
-
-(return x) >>= f
-= CM1 (\_ -> x) >>= f
-= CM1 (\vs -> let (CM1 m') = f ((\_ -> x) (Nothing:vs)) in m' vs)
-= CM1 (\vs -> let (CM1 m') = f x in m' vs)
-= CM1 (\vs -> [unwrap](f x) vs)
-= wrapped f x
-
-(CM1 m) >>= return
-= CM1 (\vs -> let (CM1 m') = return (m (Nothing:vs)) in m' vs)
-= CM1 (\vs -> let (CM1 m') = CM1 (\_ -> m (Nothing:vs)) in m' vs)
-= CM1 (\vs -> (\_ -> m (Nothing:vs)) vs)
-= CM1 (\vs -> m (Nothing:vs))
-= (CM1 m) with another continuation mark (can we argue that these are "transparent"?)
-
-((CM1 m) >>= f) >>= g
-= (CM1 (\vs -> let (CM1 m') = f (m (Nothing:vs)) in m' vs)) >>= g
-= (CM1 (\vs -> let (CM1 m') = g ((\vs -> let (CM1 m') = f (m (Nothing:vs)) in m' vs) (Nothing:vs)) in m' vs))
-= (CM1 (\
-= (CM1 m) >>= (\x -> f x >>= g)
-
-suppose the monad was in fact just the computations (no wrapping CM1)
-
-return x = (\_ -> x)
-m >>= f = (\vs -> f (m (Nothing:vs)) vs)
-
-(return x) >>= f
-= (\_ -> x) >>= f [definition of return]
-= (\vs -> f ((\_ -> x) (Nothing:vs)) vs) [definition of bind]
-= (\vs -> f x vs) [application (reduction?)]
-= f x [application]
-
-m >>= return
-= (\vs -> return (m (Nothing:vs)) vs) [definition of bind]
-= (\vs -> (\_ -> m (Nothing:vs)) vs) [definition of return]
-= (\vs -> m (Nothing:vs)) [application]
-
-(m >>= f) >>= g
-= (\vs -> f (m (Nothing:vs)) vs) >>= g [definition of bind]
-= (\vs -> g ((\vs -> f (m (Nothing:vs)) vs) (Nothing:vs)) vs) [definition of bind]
-= (\vs -> g ((f (m (Nothing:vs))) (Nothing:vs)) vs) [application]
-= (\vs -> (\x -> g ((f x) (Nothing:vs))) (m (Nothing:vs)) vs) [abstraction]
-= (\vs -> (\x -> f x >>= g) (m (Nothing:vs)) vs) [definition of bind]
-= m >>= (\x -> f x >>= g) [definition of bind]
-
-
