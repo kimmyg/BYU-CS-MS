@@ -16,5 +16,5 @@ empty = E (\id -> error (id ++ " not in environment"))
 data V = V C E | VNum Int | L [V]
   deriving Show
 
-data C = Id Id | Abs Id C | App C C | CNum Int | Wcm C C | Ccm
+data C = Id Id | Abs Id C | App C C | CNum Int | Sum C C | Wcm C C | Ccm
   deriving Show

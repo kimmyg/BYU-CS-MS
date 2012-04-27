@@ -1,7 +1,7 @@
 module K where
 import CEV
 
-data K = App1 C E K | App2 V K | Wcm1 C E K | Wcm2 V K | Clos V K | Halt
+data K = App1 C E K | App2 V K | Wcm1 C E K | Wcm2 V K | Clos V K | Sum1 C E K | Sum2 V K | Halt
 
 pare :: K -> K
 pare (Wcm2 _ k) = k
