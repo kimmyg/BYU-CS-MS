@@ -299,16 +299,18 @@ continuation marks.
 The feature of continuation marks itself is accessible via two surface level syntactic
 forms: \emph{with-continuation-mark} and \emph{current-continuation-marks}.
 
-\emph{with-continuation-mark} has three parameters: an expression evaluating to a key 
-identifying the nature of the continuation mark, an expression which value will be 
-associated with this key, and an expression within the dynamic extent of which a 
-continuation mark will exist with this key. In a Scheme-like syntax, it appears as so:
+\emph{with-continuation-mark} has three parameters: a key expression \emph{key-expr}, a 
+value expression \emph{value-expr} and a body expression \emph{body-expr}. The evaluation 
+of \emph{value-expr} will be associated with a key, the evaluation of \emph{key-expr}, 
+before the evaluation of \emph{body-expr}. During the lifetime of the evaluation of 
+\emph{body-expr}, a continuation mark will exist associated with this key. In a Scheme-like 
+syntax, this call appears like so:
 
 % will use slatex for the dissertation; too much of a hassle now
 \texttt{(with-continuation-mark} \emph{key-expr} \emph{value-expr} \emph{body-expr}\texttt{)}
 
-\emph{current-continuation-marks} has one parameter, a set of keys, and returns a list of
-all the associated values set within the dynamic context of the invocation. If a particular 
+\emph{current-continuation-marks} has one parameter, a set of keys \emph{key-set}, and returns a list of
+all the associated values attached to the dynamic context of the invocation. If a particular 
 context has been annotated by more than one key in the set, this will be reflected in the 
 returned list\footnote{The returned list is typically a list of non-empty lists where each 
 sub-list represents the marks on a context.}. Additionally, the order in which values were 
@@ -317,12 +319,12 @@ looks like this:
 
 \texttt{(current-continuation-marks} \emph{key-set}\texttt{)}
 
-Importantly, the result of this invocation provides no evidence of any portion of the
+Importantly, the result of \emph{current-continuation-marks} provides no evidence of any portion of the
 dynamic context lacking continuation marks with the specified keys. This preserves the
 ability to perform optimizations without exposing details which would render the
 optimizations unsound. This also requires special consideration of a language that
-supports tail call optimization which is not an optimization in the above sense since its
-behavior is defined in the semantics of the language. By definition, \emph{body-expr} is 
+supports tail call optimization (which is not an optimization in the above sense since its
+behavior is defined in the semantics of the language). By definition, \emph{body-expr} is 
 in tail position; a language with tail call optimization will reflect this.
 
 The canonical example to illustrate the behavior of continuation marks in the presence and
@@ -374,7 +376,7 @@ factorial function augmented with continuation marks.
 (define (fact n)
   (if (= n 0)
       (begin
-        (display (current-continuation-marks 'fact))
+        (display (current-continuation-marks '(fact)))
         1)
       (with-continuation-mark 'fact n (* n (fact (- n 1)))))
 \end{verbatim}
@@ -387,7 +389,7 @@ factorial function augmented with continuation marks.
 (define (fact-tr n acc)
   (if (= n 0)
       (begin
-        (display (current-continuation-marks 'fact))
+        (display (current-continuation-marks '(fact)))
         acc)
       (with-continuation-mark 'fact n (fact-tr (- n 1) (* n acc))))
 \end{verbatim}
@@ -398,14 +400,14 @@ factorial function augmented with continuation marks.
 The result of \texttt{(fact 3)} would be
 
 \begin{verbatim}
-(1 2 3)
+(((fact 1)) ((fact 2)) ((fact 3)))
 6
 \end{verbatim}
 
 whereas the result of \texttt{(fact-tr 3 1)} would be
 
 \begin{verbatim}
-(1)
+(((fact 1)))
 6
 \end{verbatim}
 
@@ -413,7 +415,7 @@ This difference is due to the growing continuation in the definitionally recursi
 \texttt{fact}. Each call to \texttt{fact} has a pending computation--namely, the
 multiplication--after the recursive call and so each necessitates the creation an
 additional evaluation context. The effect of these additional contexts is that each
-annotation is applied to a ``blank'' context and so all the annotations are preserved. In
+annotation is applied to a new, ``blank'' context, so all the annotations are preserved. In
 the tail-recursive variant, there is no pending computation and therefore no additional
 evaluation context. In this instance, the previous mark is overwritten with the new.
 
@@ -475,7 +477,11 @@ F = &[]                   & \chi([])                   &= \mathrm{empty}\\
 \label{language-definition}
 \end{figure}
 
-The definitions in figure \ref{language-semantics} establish the proper interpretation of various expressions. The first follows the typical definition of application. The second defines the tail behavior of the \emph{wcm} form. The third expresses that the \emph{wcm} form takes on the value of its body. Finally, the fourth defines the value of the \emph{ccm} form in terms of the $\chi$ metafunction.
+The definitions in figure \ref{language-semantics} establish the proper interpretation of 
+various expressions. The first follows the typical definition of application. The second 
+defines the tail behavior of the \emph{wcm} form. The third expresses that the \emph{wcm} 
+form takes on the value of its body. Finally, the fourth defines the value of the \emph{ccm} 
+form in terms of the $\chi$ metafunction.
 
 \begin{figure}
 \begin{align*}
@@ -501,11 +507,11 @@ an application, a \emph{wcm} expression, or a \emph{ccm} expression.
 
 Machine values $V$ are closures, a pair of a $\lambda$-abstraction and an environment $E$.
 
-The continuation $K$ is defined recursively. It is a sequence beginning with $\circ\,e,E$ 
+The continuation $K$ is defined recursively. It is a sequence beginning with $(\circ\,e,E)$ 
 denoting a function application context in which the function value is under evaluation, 
-$v\,\circ$ denoting the same in which the argument value is under evaluation, $\mathrm{wcm}\,
-\circ\,e$ denoting a \emph{wcm} expression context in which the continuation mark is under 
-evaluation, $\mathrm{wcm}\,v$ denoting the same in which the body is under evaluation, or 
+$(v\,\circ)$ denoting the same in which the argument value is under evaluation, $(\mathrm{wcm}\,
+\circ\,e)$ denoting a \emph{wcm} expression context in which the continuation mark is under 
+evaluation, $(\mathrm{wcm}\,v)$ denoting the same in which the body is under evaluation, or 
 $\mathrm{halt}$ representing an empty sequence--the empty continuation. (Here, $\circ$ 
 represents a ``hole'' in the computation.) 
 
@@ -576,8 +582,8 @@ k & \mathrm{otherwise}
 %algebraically (i.e., solely through symbolic manipulation) that provided is a monad show
 %in the same way that what it models and what the semantics describe are equivalent profit
 
-As is typical, we will use the programming language Haskell \cite{jones2003haskell} for
-our implementation and equational analysis. Haskell is a purely functional programming
+It is typical to use the programming language Haskell \cite{jones2003haskell} to reason 
+about and algebraically manipulate semantic defintions. Haskell is a purely functional programming
 language and, as such, all side effects are explicit. This is a great boon when reasoning
 about a function because distant, implicit effects are impossible in this environment. In
 other words, a function will \emph{always} produce the same output given the same input.
@@ -610,12 +616,13 @@ The mathematical basis of a monad lends three laws that fully specify the behavi
 monad. We will provide a proof that our construct satisfies these laws and can thus be 
 correctly termed a monad. This proof is by nature algebraic.
 
-Continuation marks themselves already have a formal operational semantics specified. To 
-verify that our monad models continuation marks, we will prove that our monad is 
-algebraically equivalent to the accepted operational semantic definition.
+We will appeal to the formal semantics of continuation marks, given previously, to verify 
+our monad truly models this language feature. This proof is also algebraic and will entail 
+establishing intensional equality between an abstract machine modelling continuation marks 
+and our monad.
 
 Thus, by demonstrating that our construct follows the monadic laws and has the semantics
-of continuation, we will demonstrate that continuation marks have a monadic semantics.
+of continuation marks, we will demonstrate that continuation marks have a monadic semantics.
 
 %It may be the case that we have something that \emph{appears} to be a continuation mark
 %monad but is not actually. In order to verify that our construct is a genuine continuation
