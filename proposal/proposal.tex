@@ -443,29 +443,14 @@ implementation against which we will verify the behavior of our monad.
 
 \subsection{Language Definition}
 
-Figure \ref{domain-definition} presents the definition of expressions and values in our 
-language. The left column denotes that expressions in our language are applications, variables, 
-values, \emph{wcm} forms, or \emph{ccm} forms. The right column denotes that values in the 
-language are $\lambda$-abstractions.
-
-\begin{figure}
-\begin{align*}
-e = &(e\,e) & v = \lambda x. e\\
-    &x\\
-    &v\\
-    &(\mathrm{wcm}\,e\,e)\\
-    &(\mathrm{ccm})
-\end{align*}
-\caption{Domain definition}
-\label{domain-definition}
-\end{figure}
-
-Figure \ref{language-definition} presents both the syntactic forms of the language and the 
-definition of a metafunction, $\chi$, in terms of those forms. The left column of figure 
-\ref{language-definition} establishes static relationships between language forms. In these 
-definitions, $E$ and $F$ signify contexts in the computation. The distinction between $E$ 
-and $F$ is made to force directly nested \emph{wcm} terms to behave as solely the innermost 
-term.
+Figure \ref{language-definition} presents the syntactic forms of the language, the 
+definition of a metafunction $\chi$ in terms of those forms, and the definitions of 
+expressions and values in the language. Definitions of $E$ and $F$ signify contexts in the 
+computation. The distinction between $E$ and $F$ is made to force directly nested 
+\emph{wcm} terms to behave as solely the innermost term. The definition of $e$ establishes 
+the forms of valid expressions in the language: applications, variables, values, \emph{wcm} 
+forms, and \emph{ccm} forms. The definition of $v$ denotes that values in the language 
+are $\lambda$-abstractions.
 
 %definitional constraint: the evaluation of the mark occurs before the evaluation of the 
 %body. (This constraint is crucial in the face of mutation.) The corresponding rules in the 
@@ -479,7 +464,13 @@ E = &(\mathrm{wcm}\,v\,F) & \chi((\mathrm{wcm}\,v\,F)) &= v : (\chi(F))\\
 F = &[]                   & \chi([])                   &= \mathrm{empty}\\
     &(E\,e)               & \chi((E\,e))               &= \chi(E)\\
     &(v\,E)               & \chi((v\,E))               &= \chi(E)\\
-    &(\mathrm{wcm}\,E\,e) & \chi((\mathrm{wcm}\,E\,e)) &= \chi(E)
+    &(\mathrm{wcm}\,E\,e) & \chi((\mathrm{wcm}\,E\,e)) &= \chi(E)\\
+e = &(e\,e)\\
+    &x\\
+    &v\\
+    &(\mathrm{wcm}\,e\,e)\\
+    &(\mathrm{ccm})\\
+v = & \lambda x. e
 \end{align*}
 \caption{Grammar and the $\chi$ metafunction}
 \label{language-definition}
