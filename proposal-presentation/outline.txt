@@ -1,5 +1,35 @@
 Thesis: Continuation marks are amenable to a monadic semantics.
 
+Brief overview of Denotational Semantics
+
+E : Term -> Value
+E[[n]] = n
+E[[e_{1}+e_{2}]] = E[[e_{1}]]+E[[e_{2}]]
+
+Domain is numbers.
+
+Let's add variables (environments).
+
+E : Term -> Env -> Value
+(where Env : id -> Value)
+E[[n]] = \e. n
+E[[x]] = \e. e[x]
+E[[e_{1}+e_{2}]] = \e. E[[e_{1}]] e + E[[e_{2}]] e
+
+Once we add variables, the domain becomes functions.
+
+Let's add continuations to allow sequencing.
+
+E : Term -> Env -> (Value -> Ans) -> Ans
+E[[n]] = \e.\k. k n
+E[[x]] = \e.\k. k (e[x])
+E[[e_{1}+e_{2}]] = \e.\k. E[[e_{1}]] e (\i E[[e_{2}]] e (\j k (i+j)))
+E[[e_{1};e_{2}]] = \e.\k. E[[e_{1}]] e (\x. E[[e_{2}]] e k)
+
+Once we add continuations, domain becomes quite complicated.
+
+In addition to complicating the domain, notice that every addition to the language required a global changes to the definition.
+
 Lack of Modularity in Denotational Semantics*
 
 E : Term -> Value
