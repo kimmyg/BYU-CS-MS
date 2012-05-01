@@ -10,7 +10,7 @@ instance Monad (CM1 m) where
   return x = CM1TP (\_ -> x)
   (CM1 m) >>= f = case f (m (Nothing:[])) of
     (CM1 _)   -> CM1 (\vs -> let (CM1 m') = f (m (Nothing:vs)) in m' vs)
-    (CM1TP _) -> CM1TP (\vs -> let (CM1TP m') = f (m vs) in m' vs)
+    (CM1TP _) -> CM1 (\vs -> let (CM1TP m') = f (m vs) in m' vs)
   (CM1TP m) >>= f = case f (m (Nothing:[])) of
     (CM1 _)   -> CM1 (\vs -> let (CM1 m') = f (m (Nothing:vs)) in m' vs)
     (CM1TP _) -> CM1TP (\vs -> let (CM1TP m') = f (m vs) in m' vs)
