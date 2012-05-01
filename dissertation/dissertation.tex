@@ -1,0 +1,404 @@
+\documentclass[ms,electronic,twosidetoc,letterpaper,chaptercenter,parttop]{byumsphd}
+% Author: Chris Monson
+%
+% This document is in the public domain
+%
+% Options for this class include the following (* indicates default):
+%
+%   phd (*) -- produce a dissertation
+%   ms -- produce a thesis
+%
+%   electronic -- default official university option, overrides the following:
+%                 - equalmargins
+%
+%   hardcopy -- overrides the following:
+%                 - no equalmargins
+%                 - twoside
+%
+%   letterpaper -- ignored, but helpful for the Makefile that I use
+%
+%   10pt -- 10 point font size
+%   11pt -- 11 point font size
+%   12pt (*) -- 12 point font size
+%
+%   lof -- produce a list of figures in the preamble (off)
+%   lot -- produce a list of tables in the preamble (off)
+%   lol -- produce a list of listings in the preamble (off)
+%
+%   layout -- show layout lines on the pages, helps with overfull boxes (off)
+%   grid -- show a half-inch grid on every page, helps with printing (off)
+%   separator -- print an extra instruction page between preamble and body (off)
+%
+%   twoside (*) -- two-sided output (margins alternate for odd and even pages,
+%     blank pages inserted to ensure that chapters begin on the right side of a
+%     bound copy, etc.)
+%   oneside -- one-sided output (margins are the same on all pages)
+%   equalmargins -- make all margins equal - ugly for binding, but compliant
+%
+%   twosidetoc - start two-sided margins at the TOC instead of the body.  This
+%     is sometimes (oddly) required, but be aware that it will make the page
+%     numbering seem screwy, e.g., the first four full sheets of paper will
+%     have number i-iv (not shown, though), and the next sheets will each have
+%     two numbers, one for each side.  I suspect that most people don't look at
+%     the roman numerals anyway, but it is a weird requirement.
+%
+%   openright (*) -- force new chapters to start on an odd page
+%   openany -- don't use this, it's ugly
+%
+%   prettyheadings -- make the section/chapter headings look nice
+%   compliantheadings (*) -- make them look ugly, but compliant with standards
+%
+%   chaptercenter -- center the chapter headings horizontally
+%   chapterleft (*) -- place chapter headings on the left
+%
+%   partmiddle -- Part headers are centered vertically, no other text on page
+%   parttop (*) -- Part headers at top of page, other text expected
+%
+%   duplexprinter -- Ensures that the two-sided portion starts on the right
+%     side when printing.  This is not for use in submission, since the best
+%     thing to do there is to print everything out one-sided, then take it down
+%     to the copy store to have them do the rest.  It does help to save trees
+%     when you are printing out copies just to look at them and fiddle with
+%     things.
+%
+%
+% EXAMPLES:
+%
+% The rest is up to you.  To fiddle with margins, use the \settextwidth and
+% \setbindingoffset macros, described below.  I suggest that you
+% \settextwidth{6.0in} for better-looking output (otherwise you'll get 3/4-inch
+% margins after binding, which is sort of weird).  This will depend on the
+% opinions of the various dean/coordinator folks, though, so be sure to ask
+% them before embarking on a major formatting task.
+
+% The following command fixes my particular printer, which starts 0.03 inches
+% too low, shifting the whole page down by that amount.  This shifts the
+% document content up so that it comes out right when printed.
+%
+% Discovering this sort of behavior is best done by specifying the ``grid''
+% option in the class parameters above.  It prints a 1/2 inch grid on every
+% page.  You can then use a ruler to determine exactly what the printer is
+% doing.
+%
+% Uncomment to shift content up (accounting for printer problems)
+%\setlength{\voffset}{-.03in}
+
+% Here we set things up for invisible hyperlinks in the document.  This makes
+% the electronic version clickable without changing the way that the document
+% prints.  It's useful, but optional.
+%
+% NOTE: "driverfallback=ps2pdf" chooses ps2pdf in the case of LaTeX and pdftex
+% in the case of pdflatex. If you use my LaTeX makefile (at
+% http://latex-makefile.googlecode.com/) then pdftex is the default There are
+% many other benefits to using the makefile, too.  This option is not always
+% available, so use with care.
+\usepackage[
+    bookmarks=true,
+    bookmarksnumbered=true,
+    breaklinks=false,
+    raiselinks=true,
+    pdfborder={0 0 0},
+    colorlinks=false,
+    plainpages=false,
+    ]{hyperref}
+
+% To fiddle with the margin settings use the below.  DO NOT change stuff
+% directly (like setting \textwidth) - it will break subtle things and you'll
+% be tearing your hair out.
+%
+% For example, if you want 1.5in equal margins, or 2in and 1in margins when
+% printing, add the following below:
+%
+%\setbindingoffset{1.0in}
+%\settextwidth{5.5in}
+%
+% When equalmargins is specified in the class options, the margins will be
+% equal at 1.5in each: (8.5 - 5.5) / 2.  When equalmargins is not specified,
+% the inner margin will be 2.0 and the outer margin will be 1.0: inner = (8.5 -
+% 5.5 - 1.0) / 2 + 1.0 (the 1.0 is the binding offset).
+%
+% The idea is this: you determine how much space the text is going to take up,
+% whether for an electronic document (equalmargins) or not.  You don't want the
+% layout shifting around between printed and electronic documents.
+%
+% So, you specify the text width.  Then, if there is a binding offset (when
+% binding your thesis, the binding takes up space - usually 0.5 inches), that
+% reduces the visual space on the final printed copy.  So, the *effective*
+% margins are calculated by reducing the page size by the binding offset, then
+% computing the remaining space and dividing by two.  Adding back in the
+% binding offset gives the inner margin.  The outer margin is just what's left.
+%
+% All of this is done using the geometry package, which should be manipulated
+% directly at your peril.  It's best just to use the above macros to manipulate
+% your margins.
+%
+% That said, using the geometry macro to set top and bottom margins, or
+% anything else vertical, is perfectly safe and encouraged, e.g.,
+%
+%\geometry{top=2.0in,bottom=2.0in}
+%
+% Just don't fiddle with horizontal margins this way.  You have been warned.
+
+% This makes hyperlinks point to the tops of figures, not their captions
+\usepackage[all]{hypcap}
+
+% These packages allow the bibliography to be sorted alphabetically and allow references to more than one paper to be sorted and compressed (i.e. instead of [5,2,4,6] you get [2,4-6])
+\usepackage[numbers,sort&compress]{natbib}
+\usepackage{hypernat}
+
+% Because I use these things in more than one place, I created new commands for
+% them.  I did not use \providecommand because I absolutely want LaTeX to error
+% out if these already exist.
+\newcommand{\Title}{The Monadic Semantics of Continuation Marks}
+\newcommand{\Author}{Kimball R. Germane}
+\newcommand{\GraduationMonth}{September}
+\newcommand{\GraduationYear}{2012}
+
+% Set up the internal PDF information so that it becomes part of the document
+% metadata.  The pdfinfo command will display this.
+\hypersetup{%
+    pdftitle=\Title,%
+    pdfauthor=\Author,%
+    pdfsubject={MS Dissertation, BYU CS Department: %
+                Degree Granted \GraduationMonth~\GraduationYear, Document Created \today},%
+    pdfkeywords={BYU, thesis, dissertation, LaTeX},%
+}
+
+% Rewrite the itemize, description, and enumerate environments to have more
+% reasonable spacing:
+\newcommand{\ItemSep}{\itemsep 0pt}
+\let\oldenum=\enumerate
+\renewcommand{\enumerate}{\oldenum \ItemSep}
+\let\olditem=\itemize
+\renewcommand{\itemize}{\olditem \ItemSep}
+\let\olddesc=\description
+\renewcommand{\description}{\olddesc \ItemSep}
+
+% Important settings for the byumsphd class.
+\title{\Title}
+\author{\Author}
+
+\committeechair{Jay McCarthy}
+\committeemembera{Sean Warnick}
+\committeememberb{a}
+\committeememberc{b}
+\committeememberd{c}
+
+\monthgraduated{\GraduationMonth}
+\yeargraduated{\GraduationYear}
+\yearcopyrighted{\GraduationYear}
+
+\documentabstract{%
+This document is an example of how to use the byumsphd {\LaTeX} class file.  The class creates Ph.D. and Master's documents equally well, producing all appropriate preamble content and adhering precisely to the minimum formatting requirements.  It is meant to replace the old ECEn style file that has been circulating for many years.
+
+Note that there is a blank line between paragraphs, here.
+}
+
+\documentkeywords{%
+    Thesis template, poorly-crafted example, conflicting margin instructions
+}
+
+\acknowledgments{%
+    Thanks go to the ECEn style file authors for providing both a reasonable initial style and the motivation to abandon it.
+}
+
+\department{Computer~Science}
+\graduatecoordinator{Dan~Ventura}
+\collegedean{Thomas~W.~Sederberg}
+\collegedeantitle{Associate~Dean}
+
+% Customize the name of the Table of Contents section.
+\renewcommand\contentsname{Table of Contents}
+
+% Remove all widows an orphans.  This is not normally recommended, but in a
+% paper dissertation there is no reasonable way around it; you can't exactly
+% rewrite already-published content to fix the problem.
+\clubpenalty 10000
+\widowpenalty 10000
+
+% Allow pages to have extra blank space at the bottom in order to accommodate
+% removal of widows and orphans.
+\raggedbottom
+
+% Produce nicely formatted paragraphs. There is nothing additional to do.  In
+% case you get some problems, surround your text with
+% \begin{sloppy} ... \end{sloppy}. If that does not work, try
+% \microtypesetup{protrusion=false} ... \microtypesetup{protrusion=true}
+\usepackage{microtype}
+
+\usepackage{amsmath}
+
+\begin{document}
+
+% Produce the preamble
+\microtypesetup{protrusion=false}
+\maketitle
+\microtypesetup{protrusion=true}
+
+\section{The ``obvious'' monad}
+
+One approach to devising a monad for continuation marks is to isolate a 
+recursive function and consider its behavior with respect to continuation 
+marks when defined with structural and tail recursion. We will once again 
+return to the factorial function. For reference, we provide implementations 
+adopting both recursive strategies and augmented with continuation marks 
+(in figure/below).
+
+\begin{verbatim}
+(define fact
+  (lambda (n)
+    (if (= n 0)
+        (begin
+           (display (c-c-m '(fact)))
+           1)
+        (w-c-m 'fact n (* n (fact (- n 1)))))))
+\end{verbatim}
+
+\begin{verbatim}
+(define fact-tr
+  (lambda (n acc)
+    (if (= n 0)
+        (begin
+          (display (c-c-m '(fact)))
+          acc)
+        (w-c-m 'fact n (fact-tr (- n 1) (* n acc))))))
+\end{verbatim}
+
+We remind the reader of the specific behavior of these two functions with 
+respect to continuation marks: the expression \texttt{(fact 3)} results in 
+the output
+
+\begin{verbatim}
+(((fact 1)) ((fact 2)) ((fact 3)))
+6
+\end{verbatim}
+
+whereas the expression \texttt{(fact-tr 3 1)} results in the output
+
+\begin{verbatim}
+(((fact 1)))
+6
+\end{verbatim}.
+
+Haskell's \texttt{do} notation provides a syntactic sugaring of monad binding 
+evocative of an imperative style of programming. In this sugaring, 
+
+\begin{verbatim}
+m >>= \x -> return x
+\end{verbatim}
+
+becomes
+
+\begin{verbatim}
+do
+  x <- m;
+  return x
+\end{verbatim}.
+
+This can inspire us to take a top-down approach.
+
+We seek to be able to express factorial in the following ways
+
+\begin{verbatim}
+fact :: Int -> CM Int Int
+fact 0 = return 1
+fact n = do
+  acc <- fact (n - 1)
+  return (n * acc)
+\end{verbatim}
+
+\begin{verbatim}
+fact-tr :: Int -> Int -> CM Int Int
+fact-tr 0 acc = return acc
+fact-tr n acc = fact-tr (n - 1) (n * acc)
+\end{verbatim}
+
+Because Haskell is a pure functional language, we cannot insert a 
+side-effecting expression such as output into factorial as directly as we 
+could in Scheme. Because our purpose here is to uncover the essence of 
+continuation marks, we will forego the effort to insert [an output function] 
+and observe that we can combine the continuation marks with the value of 
+factorial to the same effect.
+
+\begin{verbatim}
+fact :: Int -> CM Int (Int,[Int])
+fact 0 = do
+  ms <- ccm
+  return (1,ms)
+
+fact n = do
+  (acc,ms) <- wcm n (fact (n - 1))
+  return (n * acc,ms)
+\end{verbatim}
+
+\begin{verbatim}
+fact-tr :: Int -> Int -> CM Int (Int,[Int])
+fact-tr 0 acc = do
+  ms <- ccm
+  return (acc,ms)
+
+fact-tr n acc = wcm n (fact-tr (n - 1) (n * acc))
+\end{verbatim}
+
+Our realization of a monad should exploit some fundamental difference 
+between these two definitions. In the first, a cascade of multiplications 
+builds as the recursive calls take place, extending the continuation. Each 
+deferred multiplication requires some context to which control can return 
+and execution continued. In the second, the absense of additional computation 
+is apparent by the declarative form of the definition. This suggests that 
+the addition of a context should accompany a remainder of computation 
+expressed here with a bind. Then we might define CM like so:
+
+\begin{verbatim}
+\end{verbatim}
+
+\section{Why the ``obvious'' monad is not actually a monad}
+
+The given definition of $CM$ exhibits correct behavior relative to our 
+factorial definitions which gives us confidence that we are indeed 
+modelling continuation marks. However, it doesn't exhibit correct behavior 
+with respect to the monad laws.
+
+The monad laws express three properties that the \emph{bind} and \emph{return} 
+operations should have. The first,
+
+\begin{verbatim}
+m >>= return \equiv m
+\end{verbatim},
+
+expresses that \emph{return} should act as a right identity under the 
+operation bind. The second,
+
+\begin{verbatim}
+return x >>= f \equiv f x
+\end{verbatim},
+
+expresses that it should act as a left identity under the same operation. The 
+third,
+
+\begin{verbatim}
+(m >>= f) >>= g \equiv m >>= (\x -> (f x) >>= g)
+\end{verbatim}
+
+expresses the associativity property that should hold for \emph{bind}.
+
+Let $m$ be a monad in $CM$.
+
+\begin{align*}
+m >>= return &\equiv (\lambda vs \rightarrow (return\,(m\,(\mathrm{Nothing}:vs)))\,vs)\\
+             &\equiv (\lambda vs \rightarrow ((\lambda x \rightarrow (\lambda \_ \rightarrow x)) (m\,(\mathrm{Nothing}:vs)))\,vs)\\
+             &\equiv (\lambda vs \rightarrow ((\lambda \_ \rightarrow (m\,(\mathrm{Nothing}:vs))))\,vs)\\
+             &\equiv (\lambda vs \rightarrow m\,(\mathrm{Nothing}:vs))\\
+             &\not\equiv m
+\end{align*}
+
+To see why this is not equivalent to $m$, suppose $m\equiv 
+\mathrm{wcm}\,2\,\mathrm{ccm}$. Then the value of $\mathrm{wcm}\,1\,m$ is
+$[2]$, but the value of $\mathrm{wcm}\,1\,(m>>=\mathrm{return})$ is $[2,1]$.
+
+\bibliographystyle{plainnat}
+\bibliography{bib}
+
+\end{document}
+
+% vim: lbr

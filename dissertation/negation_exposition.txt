@@ -1,0 +1,161 @@
+\section{The ``obvious'' monad}
+
+One approach to devising a monad for continuation marks is to isolate a 
+recursive function and consider its behavior with respect to continuation 
+marks when defined with structural and tail recursion. We will once again 
+return to the factorial function. For reference, we provide implementations 
+adopting both recursive strategies and augmented with continuation marks 
+(in figure/below).
+
+\begin{verbatim}
+(define fact
+  (lambda (n)
+    (if (= n 0)
+        (begin
+           (display (c-c-m '(fact)))
+           1)
+        (w-c-m 'fact n (* n (fact (- n 1)))))))
+\end{verbatim}
+
+\begin{verbatim}
+(define fact-tr
+  (lambda (n acc)
+    (if (= n 0)
+        (begin
+          (display (c-c-m '(fact)))
+          acc)
+        (w-c-m 'fact n (fact-tr (- n 1) (* n acc))))))
+\end{verbatim}
+
+We remind the reader of the specific behavior of these two functions with 
+respect to continuation marks: the expression \texttt{(fact 3)} results in 
+the output
+
+\begin{verbatim}
+(((fact 1)) ((fact 2)) ((fact 3)))
+6
+\end{verbatim}
+
+whereas the expression \texttt{(fact-tr 3 1)} results in the output
+
+\begin{verbatim}
+(((fact 1)))
+6
+\end{verbatim}.
+
+Haskell's \texttt{do} notation provides a syntactic sugaring of monad binding 
+evocative of an imperative style of programming. In this sugaring, 
+
+\begin{verbatim}
+m >>= \x -> return x
+\end{verbatim}
+
+becomes
+
+\begin{verbatim}
+do
+  x <- m;
+  return x
+\end{verbatim}.
+
+This can inspire us to take a top-down approach.
+
+We seek to be able to express factorial in the following ways
+
+\begin{verbatim}
+fact :: Int -> CM Int Int
+fact 0 = return 1
+fact n = do
+  acc <- fact (n - 1)
+  return (n * acc)
+\end{verbatim}
+
+\begin{verbatim}
+fact-tr :: Int -> Int -> CM Int Int
+fact-tr 0 acc = return acc
+fact-tr n acc = fact-tr (n - 1) (n * acc)
+\end{verbatim}
+
+Because Haskell is a pure functional language, we cannot insert a 
+side-effecting expression such as output into factorial as directly as we 
+could in Scheme. Because our purpose here is to uncover the essence of 
+continuation marks, we will forego the effort to insert [an output function] 
+and observe that we can combine the continuation marks with the value of 
+factorial to the same effect.
+
+\begin{verbatim}
+fact :: Int -> CM Int (Int,[Int])
+fact 0 = do
+  ms <- ccm
+  return (1,ms)
+
+fact n = do
+  (acc,ms) <- wcm n (fact (n - 1))
+  return (n * acc,ms)
+\end{verbatim}
+
+\begin{verbatim}
+fact-tr :: Int -> Int -> CM Int (Int,[Int])
+fact-tr 0 acc = do
+  ms <- ccm
+  return (acc,ms)
+
+fact-tr n acc = wcm n (fact-tr (n - 1) (n * acc))
+\end{verbatim}
+
+Our realization of a monad should exploit some fundamental difference 
+between these two definitions. In the first, a cascade of multiplications 
+builds as the recursive calls take place, extending the continuation. Each 
+deferred multiplication requires some context to which control can return 
+and execution continued. In the second, the absense of additional computation 
+is apparent by the declarative form of the definition. This suggests that 
+the addition of a context should accompany a remainder of computation 
+expressed here with a bind. Then we might define CM like so:
+
+\begin{verbatim}
+\end{verbatim}
+
+\section{Why the ``obvious'' monad is not actually a monad}
+
+The given definition of $CM$ exhibits correct behavior relative to our 
+factorial definitions which gives us confidence that we are indeed 
+modelling continuation marks. However, it doesn't exhibit correct behavior 
+with respect to the monad laws.
+
+The monad laws express three properties that the \emph{bind} and \emph{return} 
+operations should have. The first,
+
+\begin{verbatim}
+m >>= return \equiv m
+\end{verbatim},
+
+expresses that \emph{return} should act as a right identity under the 
+operation bind. The second,
+
+\begin{verbatim}
+return x >>= f \equiv f x
+\end{verbatim},
+
+expresses that it should act as a left identity under the same operation. The 
+third,
+
+\begin{verbatim}
+(m >>= f) >>= g \equiv m >>= (\x -> (f x) >>= g)
+\end{verbatim}
+
+expresses the associativity property that should hold for \emph{bind}.
+
+Let $m$ be a monad in $CM$.
+
+\begin{align*}
+m >>= return &\equiv (\lambda vs \rightarrow (return\,(m\,(\mathrm{Nothing}:vs)))\,vs)\\
+             &\equiv (\lambda vs \rightarrow ((\lambda x \rightarrow (\lambda \_ \rightarrow x)) (m\,(\mathrm{Nothing}:vs)))\,vs)\\
+             &\equiv (\lambda vs \rightarrow ((\lambda \_ \rightarrow (m\,(\mathrm{Nothing}:vs))))\,vs)\\
+             &\equiv (\lambda vs \rightarrow m\,(\mathrm{Nothing}:vs))\\
+             &\not\equiv m
+\end{align*}
+
+To see why this is not equivalent to $m$, suppose $m\equiv 
+\mathrm{wcm}\,2\,\mathrm{ccm}$. Then the value of $\mathrm{wcm}\,1\,m$ is
+$[2]$, but the value of $\mathrm{wcm}\,1\,(m>>=\mathrm{return})$ is $[2,1]$.
+
