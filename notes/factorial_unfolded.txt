@@ -1,0 +1,47 @@
+fact 3 = do
+  (acc,ms) <- wcm "3" (fact 2)
+  return (3 * acc,ms)
+
+fact 3 = do
+  (acc,ms) <- wcm "3" (do
+    (acc,ms) <- wcm "2" (fact 1)
+    return (2 * acc))
+  return (3 * acc,ms)
+
+fact 3 = do
+  (acc,ms) <- wcm "3" (do
+    (acc,ms) <- wcm "2" (do
+      (acc,ms) <- wcm "1" (fact 0)
+      return (1 * acc))
+    return (2 * acc))
+  return (3 * acc,ms)
+
+fact 3 = do
+  (acc,ms) <- wcm "3" (do
+    (acc,ms) <- wcm "2" (do
+      (acc,ms) <- wcm "1" (do
+        ms <- ccm
+        return (1,ms))
+      return (1 * acc))
+    return (2 * acc))
+  return (3 * acc,ms)
+
+fact 2 = do
+  (acc,ms) <- wcm "2" (do  
+    (acc,ms) <- wcm "1" (do
+      ms <- ccm
+      return (1,ms))
+    return (1 * acc,ms))
+  return (2 * acc,ms)
+
+fact_tr 2 1 = wcm "2" (fact_tr 1 2)
+fact_tr 2 1 = wcm "2" (wcm "1" (fact_tr 0 2))
+fact_tr 2 1 = wcm "2" (wcm "1" (do
+  ms <- ccm;
+  return (2,ms)))
+
+
+
+wcm "2" (wcm "1" (ccm >>= \ms -> return (1,ms)) >>= \(1,ms) -> return (1 * 1,ms)) >>= \(1,ms) -> return (2 * 1,ms)
+
+wcm "2" (wcm "1" (ccm >>= \ms -> return (2,ms)))
