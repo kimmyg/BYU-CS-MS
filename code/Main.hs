@@ -1,5 +1,5 @@
 module Main where
-import ContinuationMarkMonad
+import CM
 
 fact :: Int -> CM String String (Int, [String])
 fact 0 = do

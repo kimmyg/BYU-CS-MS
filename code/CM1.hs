@@ -4,24 +4,25 @@ import Data.Maybe
 
 -- represents a computation with annotations (unkeyed)
 
-data CM1 m a = CM1 ([Maybe m] -> a) | CM1TP ([Maybe m] -> a)
+data CM1 m a = CM1 ([m] -> a) | WCM1 ([m] -> a)
 
 instance Monad (CM1 m) where
-  return x = CM1TP (\_ -> x)
-  (CM1 m) >>= f = case f (m (Nothing:[])) of
-    (CM1 _)   -> CM1 (\vs -> let (CM1 m') = f (m (Nothing:vs)) in m' vs)
-    (CM1TP _) -> CM1 (\vs -> let (CM1TP m') = f (m vs) in m' vs)
-  (CM1TP m) >>= f = case f (m (Nothing:[])) of
-    (CM1 _)   -> CM1 (\vs -> let (CM1 m') = f (m (Nothing:vs)) in m' vs)
-    (CM1TP _) -> CM1TP (\vs -> let (CM1TP m') = f (m vs) in m' vs)
+  return x = CM1 (\_ -> x)
+  (CM1 m) >>= f = CM1 (\vs -> case f (m vs) of
+    (CM1 m')  -> m' vs
+    (WCM1 m') -> m' vs)
+  (WCM1 m) >>= f = CM1 (\vs -> case f (m vs) of
+    (CM1 m')  -> m' vs
+    (WCM1 m') -> m' vs) 
 
 wcm :: m -> CM1 m a -> CM1 m a
-wcm v (CM1 m)   = CM1 (\(_:vs) -> m ((Just v):vs))
-wcm v (CM1TP m) = CM1TP (\(_:vs) -> m ((Just v):vs))
+wcm v (CM1 m)  = WCM1 (\vs -> m (v:vs))
+wcm v (WCM1 m) = WCM1 (\vs -> m vs)
 
 ccm :: CM1 m [m]
-ccm = CM1 catMaybes
+ccm = CM1 id
 
 runCM :: CM1 m a -> a
-runCM (CM1 m)   = m (Nothing:[])
-runCM (CM1TP m) = m (Nothing:[])
+runCM (CM1 m)  = m []
+runCM (WCM1 m) = m []
+
