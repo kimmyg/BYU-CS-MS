@@ -1,0 +1,144 @@
+Our first approach might be to give \emph{return} a distinction from other 
+functions with which we bind. There may indeed be motivation for this in the 
+recognition that a bind with \emph{return} could represent a call in tail 
+position, i.e., a call which should not add a stack frame. However, if we 
+unfold the definitions of \emph{fact} and \emph{fact-tr} for comparison, we 
+uncover the folly in that approach:
+
+\begin{verbatim}
+fact 2 = do
+  acc <- wcm 2 (fact 1)
+  return (2 * acc)
+
+fact 2 = do
+  acc <- wcm 2 (do
+    acc <- wcm 1 (fact 0)
+    return (1 * acc))
+  return (2 * acc)
+
+fact 2 = do
+  (acc,ms) <- wcm 2 (do
+    (acc,ms) <- wcm 1 (do
+      ms <- ccm
+      return (1,ms))
+    return (1 * acc,ms))
+  return (2 * acc,ms)
+
+fact 2 = (wcm 2 (wcm 1 (ccm >>= \ms -> return (1,ms))) >>= \(acc,ms) -> return (1 * acc,ms))) >>= \(acc,ms) -> return (2*acc,ms)
+
+fact_tr 2 1 = wcm 2 (fact_tr 1 2)
+fact_tr 2 1 = wcm 2 (wcm 1 (fact_tr 0 2))
+fact_tr 2 1 = wcm 2 (wcm 1 (do
+  ms <- ccm;
+  return (acc,ms)))
+
+fact_tr 2 1 = wcm 2 (wcm 1 (ccm >>= \ms -> return (2,ms)))
+\end{verbatim}
+
+This unfolding reveals that a \emph{return} (or the eta-abstraction thereof) 
+\emph{may} represent a call in tail position but could hide computation from 
+the monad environment. It may be instructive to consider the continuation 
+monad which has proper tail-recursive behavior.
+
+\section{Investigation of the continuation monad}
+
+The continuation monad encapsulates continuation-passing style (good citation). 
+This concept is foundational in that \emph{any other monad can be expressed in 
+terms of it}.
+
+
+
+In continuation-passing style, an additional formal parameter, the 
+\emph{continuation}, is added to each function definition. This parameter is 
+itself a function which accepts one argument. Instead of returning, a function 
+calls the \emph{continuation} with its result as the argument.
+
+For example, the addition function may be defined in traditional style like so:
+
+\[
+plus a b = a + b
+\].
+
+In continuation-passing style, this is transformed to:
+
+\[
+plus a b k = k (a + b)
+\].
+
+In continuation-passing style, \emph{every} evaluation is transformed, so a 
+call as simple as
+
+\begin{verbatim}
+if n == 0
+  (...)
+\end{verbatim}
+
+becomes
+
+\begin{verbatim}
+(==) n 0 (\zero ->
+  if zero
+    (...)
+\end{verbatim}.
+
+In continuation-passing style (honestly, find a new segue), all control flow 
+is explicit. Also, growth of the continuation is conspicuous.
+
+We will adopt a hybrid style for the sake of readability.
+
+The factorial function can be expressed as
+
+\begin{verbatim}
+fact n k = 
+  if n == 0
+    k 1
+  else
+    fact (n - 1) (\acc ->
+      k (n * acc))
+\end{verbatim}
+
+and a tail-recursive variant as
+
+\begin{verbatim}
+fact_tr n acc k =
+  if n == 0
+    k acc
+  else
+    fact (n - 1) (n * acc) k
+\end{verbatim}.
+
+Note that in the tail-recursive variant, the function recursively passes the 
+continuation unmodified. In the original, a new continuation is constructed in 
+terms of the previous. In other words, the continuation has grown. (These 
+definitions would exhibit similar behavior even in strict CPS (define above).)
+
+The continuation monad makes this transformation surprisingly straightforward.
+
+We begin our introduction with its type $(T\rightarrow R)\rightarrow R$. In a 
+sense, $T$ represents the type of a pure computation whereas $R$ represents 
+a potentially larger, more descriptive type entailing side-effects, exceptions, 
+or other language features (remember that the continuation monad is ``the mother
+of all monads'' (cite)).
+
+\[
+\mathrm{return} x = \lambda k\rightarrow k x
+\]
+
+Then 
+
+\[
+\mathrm{bind} c f = \lambda k\rightarrow c (\lambda t\rightarrow f t k)
+\]
+
+We were astonished to find that these definitions can be constructed solely 
+from the types [cite that type construction thing]!
+
+We can express factorial in the continuation monad exactly how we would like 
+to in the continuation mark monad:
+
+\begin{verbatim}
+fact 0 = return 1
+fact n = do
+  acc <- fact (n - 1);
+  return (n * acc)
+\end{verbatim}

@@ -45,3 +45,6 @@ fact_tr 2 1 = wcm "2" (wcm "1" (do
 wcm "2" (wcm "1" (ccm >>= \ms -> return (1,ms)) >>= \(1,ms) -> return (1 * 1,ms)) >>= \(1,ms) -> return (2 * 1,ms)
 
 wcm "2" (wcm "1" (ccm >>= \ms -> return (2,ms)))
+
+suppose that wcm returns a special type and an outer doesn't add to it if it's that special type. a bind changes it back to the normal type.
+we would do things inside out, though.
