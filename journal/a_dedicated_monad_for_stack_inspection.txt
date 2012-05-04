@@ -1,0 +1,71 @@
+look up "A functional correspondence between monadic evaluators 
+and abstract machines for languages with computational effects"
+
+I'm referring to the document at http://www.brics.dk/RS/04/28/BRICS-RS-04-28.pdf accessed 4 May 2012.
+
+Specifically, section 9: "A dedicated monad for stack inspection"
+
+the definition is given in Standard ML and I have copied it below.
+
+type 'a monad = permission_table * permission_table list -> ('a * permission_table) lift
+
+fun unit a = (fn (p, pl) => LIFT (a, p))
+fun bind (m, k) = (fn (p, pl) => case m (p, pl) of
+  (LIFT (a, p')) => k a (p', pl)
+| BOTTOM => BOTTOM)
+
+LIFT and BOTTOM correspond to Just and Nothing in the Maybe monad. unit corresponds to return.
+bind corresponds to (>>=) (pronounced 'bind', duh). fn corresponds to \ (a lambda in Haskell).
+a monad of type 'a is a function from a pair permission_table,permission_table list to a lifted 
+pair of value type a',permission_table
+
+this is what it looks like in Haskell.
+
+type SI m a = (m,[m]) -> Maybe (a,m)
+
+instance Monad (SI m) where
+  return x = \(p,pl) -> Just (x,p)
+  m >>= k = \(p,pl) -> case m (p,pl) of
+    (Just (a,p')) -> k a (p',pl)
+    Nothing       -> Nothing
+
+Let's remove the lifting. 
+
+type SI m a = (m,[m]) -> (a,m)
+
+instance Monad (SI m) where
+  return x = \(p,_) -> (x,p)
+  m >>= f = \(p,pl) -> let (a,p') = m (p,pl) in f a (p',pl)
+
+my own additions:
+
+wcm :: m -> SI m a -> SI m a
+wcm p m = \(_,pl) -> m (p,pl))
+
+ccm :: SI m [m]
+ccm = \(p,pl) -> (p:pl)) -- not quite right given below
+
+runCM :: SI m a -> a
+runCM m = m ((),[])
+
+monad laws:
+
+return x >>= f
+\(p,pl) -> let (a,p') = (return x) (p,pl) in f a (p',pl)
+\(p,pl) -> let (a,p') = (\(p,_) -> (x,p)) (p,pl) in f a (p',pl)
+\(p,pl) -> let (a,p') = (x,p) in f a (p',pl)
+\(p,pl) -> f x (p,pl)
+f x
+
+m >>= return
+\(p,pl) -> let (a,p') = m (p,pl) in return a (p',pl)
+\(p,pl) -> let (a,p') = m (p,pl) in (\(p,_) -> (a,p)) (p',pl)
+\(p,pl) -> let (a,p') = m (p,pl) in (a,p')
+\(p,pl) -> m (p,pl)
+m
+
+(m >>= f) >>= g
+\(p,pl) -> 
+m >>= 
+m >>= (\x -> \(p,pl) -> let (a,p') = f x (p,pl) in g a (p',pl)))
+m >>= (\x -> f x >>= g)
