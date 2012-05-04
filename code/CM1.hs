@@ -13,7 +13,7 @@ instance Monad (CM1 m) where
     (WCM1 m') -> m' vs)
   (WCM1 m) >>= f = CM1 (\vs -> case f (m vs) of
     (CM1 m')  -> m' vs
-    (WCM1 m') -> m' vs) 
+    (WCM1 m') -> m' vs)
 
 wcm :: m -> CM1 m a -> CM1 m a
 wcm v (CM1 m)  = WCM1 (\vs -> m (v:vs))
@@ -25,4 +25,3 @@ ccm = CM1 id
 runCM :: CM1 m a -> a
 runCM (CM1 m)  = m []
 runCM (WCM1 m) = m []
-
