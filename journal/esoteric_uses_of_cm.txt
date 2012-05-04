@@ -1,0 +1,36 @@
+Many languages today use static or lexical scoping instead of dynamic scoping. 
+It is widely believed/known [is it?] that dynamic scoping makes reasoning 
+about a program's behavior more difficult [some citation of this]. However, 
+there are some instances where dynamic scope is useful. A powerful feature of 
+a language would be to allow the programmer to selectively decide (?) the type 
+of the scope, perhaps defaulting on the more usable, reasonable behavior.
+
+establish a value of a free variable for the dynamic extent of an expression.
+
+Continuation marks can simulate dynamic scope in a way.
+
+Continuation marks also allow the programmer to detect recursion. Certainly a 
+programmer would know if recursion was a possibility. The programmer may want 
+(wrongly) to detect whether the current call was made recursively.
+
+\begin{verbatim}
+(define (fact n)
+  (begin
+    (if (eql? (first (head (head ccm))) 'fact)
+        (display "call made recursively")
+        #f)
+    (if (= n 0)
+        1
+        (wcm 'fact n (* n (fact (- n 1)))))))
+\end{verbatim}
+
+Following this same idea, continuation marks can also detect tail recursion. 
+The strategy is this: within a call to a recursive function, check for present 
+continuation marks. if not found, place a mark with value $1$ and recurse. if 
+found, determine whether the same number of marks exist as the value of the 
+last mark. Tail recursion can be detected if the value is greater than $1$ but 
+there is only one mark.
+
+Fluid let values
+
+

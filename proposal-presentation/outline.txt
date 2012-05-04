@@ -87,3 +87,4 @@ Monads have specific laws that must be satisfied. Will prove they hold.
 (return x) >>= f = f x (left identity)
 m >>= return = m (right identity)
 (m >>= f) >>= g = m >>= (\x -> f x >>= g) (associativity)
+
