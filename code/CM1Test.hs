@@ -7,7 +7,7 @@ fact 0 = do
   return (1,ms)
 
 fact n = do
-  (acc,ms) <- wcm (show n) (fact (n - 1))
+  (acc,ms) <- wcm (show n) (call (fact (n - 1)))
   return (n * acc,ms)
 
 fact_tr :: Int -> Int -> CM1 String (Int,[String])

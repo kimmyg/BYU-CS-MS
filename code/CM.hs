@@ -1,4 +1,4 @@
-module CM (CM, CM.wcm, CM.ccms, CM.ccm, CM1.runCM) where
+module CM (CM, CM.wcm, CM.ccms, CM.ccm, CM1.call, CM1.runCM) where
 import Prelude hiding (lookup)
 import Data.Map hiding (filter, map, null)
 import CM1
@@ -33,4 +33,3 @@ ccms ks = CM1.ccm >>= (\ms -> return (filter (not . null) (extract ks ms)))
 
 ccm :: Ord k => k -> CM k v [v]
 ccm k = let cm = ccms [k] in cm >>= (\ms -> return (map snd (concat ms)))
-

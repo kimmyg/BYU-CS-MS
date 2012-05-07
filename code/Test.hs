@@ -17,7 +17,7 @@ fact 0 = do
   ms <- ccm "fact"
   return (1, ms)
 fact n = wcm "fact" (show n) (do
-  (acc, ms) <- fact (n - 1)
+  (acc, ms) <- call (fact (n - 1))
   return (n * acc, ms))
 
 test4 :: Bool
@@ -49,7 +49,7 @@ test10 = (==) [[("k1", "v3"), ("k2", "v2")]] $ runCM $ (wcm "k1" "v1" (wcm "k2" 
 
 test11 :: Bool
 test11 = (==) (2, [[("k2", "v2")], [("k1", "v1")]]) $ runCM $ do
-  wcm "k1" "v1" $ do
+  wcm "k1" "v1" $ call $ do
     (x, ms) <- wcm "k2" "v2" (do
       ms <- ccms ["k1", "k2"]
       return (1, ms))
