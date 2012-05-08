@@ -57,9 +57,9 @@
 % them. I did not use \providecommand because I absolutely want LaTeX to error 
 % out if these already exist. 
 
-\newcommand{\Title}{The Monadic Semantics of Continuation Marks}
+\newcommand{\Title}{A Static Type System for Continuation Marks}
 \newcommand{\Author}{Kimball R. Germane} 
-\newcommand{\SubmissionMonth}{April}
+\newcommand{\SubmissionMonth}{May}
 \newcommand{\SubmissionYear}{2012}
 
 % Take these from the commands defined above
@@ -125,7 +125,7 @@
 % remember that the audience in this case actually does not know what these things are 
 % so have a clear, useful exposition.
 
-Thesis: Continuation marks are amenable to a monadic semantics.
+Thesis: Continuation marks have a type. (?)
 
 % talk more about how they are useful here, elaboration will be below
 
@@ -137,146 +137,7 @@ keys. This is advantageous for programs that require dynamic information about a
 execution such as debuggers, profilers, and steppers because it allows them to be defined
 at the same level as the language instead of some level below.
 
-%For instance, <give a simple, useful, illustrative example here>.
-% later we can talk about continuation marks and continuations, simulating dynamic scope, 
-% recursion and tail recursion detection. 
-
-% can I use the terms programming language feature and computational model interchangeably?
-
-Monadic semantics originate from Moggi \cite{moggi1989computational} wherein they were
-termed categorical semantics in reference to their category theoretic construction. (A
-monad is simply a monoid in the category of endofunctors \cite{mac1998categories}.) Monadic semantics describe the
-meaning of computational models such as partial computability, side-effectfulness, and
-non-determinism. The appeal of using monads to specify semantics is significant: it allows
-one to work with a pure computational logic, such as the lambda calculus, with a
-particular model of computation in isolation, insulating interactions between
-different models. There are at least two direct benefits to this: First, it helps one
-define and reason about a particular computational model absent from the noise of other
-models and practical considerations. Second, no language feature is an island and when it
-becomes necessary to investigate the interactions between models, the monadic construction
-facilitates composition in a simple way.
-
-% talk about how they are recognized as a good way to do things.
-% they allow reasoning about a feature or model in isolation but, surprisingly, also are 
-% composable
-
-Thus, the statement that continuation marks are amenable to a monadic semantics means
-simply that we can characterize the feature as a monad, simultaneously allowing us to express
-the essence of continuation marks and reason about its interaction with other
-computational models.
-
-% ... what does it actually mean? if we can show it satisfies the mono requirement, is it 
-% a computational model?
-% we can describe what they are at the core and also how they interact with other 
-% computational models
-
 \section{Related Work}
-
-\subsection{Monadic Semantics}
-
-A denotational semantics of a language provides a precise definition of the meaning of a 
-language by mapping expressions in that language into a mathematical domain. In this way,
-denotational semantics can be used to capture the meaning of programs, as well as
-properties about them, making it a great asset for language analysis. However useful, the
-denotational approach has large pitfalls. Additional language features escalate the 
-semantic domain from perhaps simple values to more complicated structures difficult to reason 
-about. Moreover, the addition of a language feature often contaminates the entire definition 
-\cite{liang2009modular}. In this sense, the denotational approach is not a modular one. For 
-these reasons, denotational semantics are often eschewed in favor of one more tractable.
-
-Behavioral semantics do not suffer from the complexity of denotational semantics. Instead of 
-mapping programs to values in some domain, behavioral semantics provide meaning by defining 
-the operation of an abstract machine on which programs run. However, they exhibit a 
-susceptibility to contamination similar to the denotational approach. Once again, modification 
-of or augmentation to the language typically requires a disproportionate amount of modification 
-of and augmentation to the definition.
-
-
-% why are behavioral semantics not modular enough?
-% must all additions be made keeping mind of the current whole?
-
-Monadic semantics provide a modular approach to precisely specifying language meaning
-using either a denotational or behavioral approach. This type of semantics is so termed
-because of the appeal to the \emph{monad}, a concept stemming from category theory. Moggi
-\cite{moggi1989computational} applies monads as a categorical semantics of computational
-models such as non-termination and non-determinism. It may be helpful to illustrate this
-for which we require the following definitions:
-
-\emph{Note: In the coming sections, we will reference certain laws which monads preserve.
-Moggi \cite{moggi1989computational} and Wadler \cite{wadler1995monads} describe axioms of 
-monadic behavior which are typically expressed in terms of fewer, more loaded operations. 
-We will encounter two such characterizations in the following definitions.}
-% there are like eight simple laws that collapse into three. find that paper that says this!
-
-\newtheorem{monad}[definition]{Definition}
-
-\begin{monad}
-A \emph{monad} over a category $\mathcal{C}$ is a triple $(T,\eta,\mu)$ where
-$T:\mathcal{C}\rightarrow\mathcal{C}$, $\eta:\mathrm{Id}_{\mathcal{C}}\rightarrow T$, and
-$\mu:T^{2}\rightarrow T$ are \emph{natural transformations} and the following equations
-hold:
-
-\begin{itemize}
-\item $\mu_{TA};\mu_{A}=T(\mu_{A});\mu_{A}$
-\item $\eta_{TA};\mu{A}=\mathrm{id}_{TA}=T(\eta_{A});\mu_{A}$
-\end{itemize}
-\end{monad}
-
-The above laws apply to the characterization of monads involving the primitives
-\emph{unit} and \emph{join}. Wadler \cite{wadler1995monads} goes into more detail of this.
-However, our discussion will refer to an alternate characterization, given below.
-
-\newtheorem{kleisli}[definition]{Definition}
-
-\begin{kleisli}
-A \emph{Kleisli triple} over $\mathcal{C}$ is a triple $(T,\eta,\_^{*})$, where
-$T:\mathrm{Obj}(\mathcal{C})\rightarrow \mathrm{Obj}(\mathcal{C})$, $\eta_{A}:A\rightarrow TA$,
-$f^{*}:TA\rightarrow TB$ for $f:A\rightarrow TB$ and the following equations hold:
-
-\begin{itemize}
-\item $\eta_{A}^{*}=\mathrm{id}_{TA}$
-
-This law represents the primitive \emph{return} which lifts naked values in $A$ into the monadic domain $TA$.
-
-\item $\eta_{A};f^{*}=f$
-
-This law represents the primitive \emph{bind} which maps monads across domains according to a given function $f$. \emph{bind} exploits the structure of $TA$ to apply $f$ to values in $A$ and combines the results in a structure-specific way to obtain a value in $TB$.
-
-\item $f^{*};g^{*}=(f;g^{*})^{*}$
-
-This law represents a sequencing property which must hold; namely, a monadic operation performed as part of a given $f$ must be able to be performed in turn. This property is equivalent to associativity of application.
-\end{itemize}
-\end{kleisli}
-
-\subsubsection{Monad Examples}
-
-Some examples of monads might be illustrative. More, and in more depth, can be found in 
-Moggi \cite{moggi1991notions}.
-
-\newtheorem{partiality}[example]{Example}
-
-\begin{partiality}
-Partiality
-
-\begin{itemize}
-\item $TA=A_{\bot}=A\cup \{\bot\}$
-\item $\eta_{A}$ is the inclusion of $A$ into $A_{\bot}$
-\item if $f:A\rightarrow TB$, then $f^{*}(\bot)=\bot$ and $f^{*}(a)=f(a)$ for $a\in A$
-\end{itemize}
-\end{partiality}
-
-\newtheorem{nondeterminism}[example]{Example}
-
-\begin{nondeterminism}
-Nondeterminism
-
-\begin{itemize}
-\item $T(\cdot)$ is the covariant powerset function, i.e., $T(A)=\mathcal{P}(A)$ and 
-$T(f)(X)$ is the image of $X$ along $f$.
-\item $\eta_{A}$ is the singleton map $a\mapsto \{a\}$
-\item $\mu_{A}$ is the big union map $X\mapsto\bigcup X$, i.e., if $f:A\rightarrow TB$ and $c\in TA$, then $f^{*}(c)=\cup_{x\in c}f(x)$
-\end{itemize}
-\end{nondeterminism}
 
 \subsection{Continuation Marks}
 
@@ -372,10 +233,6 @@ grow. Such a call is said to be in tail position.
 Figures \ref{fac-rec-cm} and \ref{fac-tail-rec-cm} represent these two variants of the
 factorial function augmented with continuation marks.
 
-% what this means for continuation marks in the face of such behavior. First, it may be
-% useful to determine exactly to what the term \emph{continuation} refers. According to ...,
-% a continuation is simply ``the rest of the computation''. Consider the following versions
-% [wc] of the previous functions enhanced with continuation marks.
 
 \begin{figure}
 \begin{verbatim}
@@ -425,237 +282,9 @@ annotation is applied to a new, ``blank'' context, so all the annotations are pr
 the tail-recursive variant, there is no pending computation and therefore no additional
 evaluation context. In this instance, the previous mark is overwritten with the new.
 
-% since each represents future computation to be performed.]  [and so we should expect that our previous annotation be overwritten in some sense--replaced].
-
-
-%explain continuation marks at a high level \cite{clements2006portable}
-%explain monadic semantics at a high level
-
 \section{Project Description}
 
-We will demonstrate that continuation marks have a monadic semantics by producing a monad
-that models a computation with continuation marks. We present two equivalent definitions 
-for the semantics of continuation marks. The first is simply in terms of a language. While 
-we will not involve this language in any proofs, it better conveys the essence of continuation 
-marks absent any machine model, so we include it for clarity. The second is in terms of an 
-abstract machine for which we provide the small step semantics. It is our reference 
-implementation against which we will verify the behavior of our monad.
-
-\subsection{Language Definition}
-
-Figure \ref{language-definition} presents the syntactic forms of the language, the 
-definition of a metafunction $\chi$ in terms of those forms, and the definitions of 
-expressions and values in the language. Definitions of $E$ and $F$ signify contexts in the 
-computation. The distinction between $E$ and $F$ is made to force directly nested 
-\emph{wcm} terms to behave as solely the innermost term. The definition of $e$ establishes 
-the forms of valid expressions in the language: applications, variables, values, \emph{wcm} 
-forms, and \emph{ccm} forms. The definition of $v$ denotes that values in the language 
-are $\lambda$-abstractions.
-
-%definitional constraint: the evaluation of the mark occurs before the evaluation of the 
-%body. (This constraint is crucial in the face of mutation.) The corresponding rules in the 
-%right column describe the evaluation of the $\chi$ metafunction upon which the evaluation 
-%of the \emph{ccm} form depends.
-
-\begin{figure}
-\begin{align*}
-E = &(\mathrm{wcm}\,v\,F) & \chi((\mathrm{wcm}\,v\,F)) &= v : (\chi(F))\\
-    &F\\
-F = &[]                   & \chi([])                   &= \mathrm{empty}\\
-    &(E\,e)               & \chi((E\,e))               &= \chi(E)\\
-    &(v\,E)               & \chi((v\,E))               &= \chi(E)\\
-    &(\mathrm{wcm}\,E\,e) & \chi((\mathrm{wcm}\,E\,e)) &= \chi(E)\\
-e = &(e\,e)\\
-    &x\\
-    &v\\
-    &(\mathrm{wcm}\,e\,e)\\
-    &(\mathrm{ccm})\\
-v = & \lambda x. e
-\end{align*}
-\caption{Grammar and the $\chi$ metafunction}
-\label{language-definition}
-\end{figure}
-
-The definitions in figure \ref{language-semantics} establish the proper interpretation of 
-various expressions. The first follows the typical definition of application. The second 
-defines the tail behavior of the \emph{wcm} form. The third expresses that the \emph{wcm} 
-form takes on the value of its body. Finally, the fourth defines the value of the \emph{ccm} 
-form in terms of the $\chi$ metafunction.
-
-\begin{figure}
-\begin{align*}
-E[(\lambda x.e)\,v]                         &\rightarrow E[e[x\leftarrow v]]\\
-E[(\mathrm{wcm}\,v\,(\mathrm{wcm}\,v'\,e))] &\rightarrow E[(\mathrm{wcm}\,v'\,e)]\\
-E[(\mathrm{wcm}\,v\,v')]                    &\rightarrow E[v']\\
-E[(\mathrm{ccm})]                           &\rightarrow E[\chi(E)]
-\end{align*}
-\caption{Evaluation rules}
-\label{language-semantics}
-\end{figure}
-
-\subsection{Machine Model Definition}
-
-Figure \ref{machine-definition} presents the definition of the machine model of continuation 
-marks and the corresponding definition of the $\chi$ metafunction. The machine $S$ is defined 
-as a triple of the control $C$ representing the term under evaluation, the environment $E$ 
-defined as a function from identifiers to values, and the continuation $K$ representing a 
-sequence of pending contexts.
-
-The term $C$ under evaluation can be in various forms: a single identifier, a $\lambda$-abstraction, 
-an application, a \emph{wcm} expression, or a \emph{ccm} expression.
-
-Machine values $V$ are closures, a pair of a $\lambda$-abstraction and an environment $E$.
-
-The continuation $K$ is defined recursively. It is a sequence beginning with $(\circ\,e,E)$ 
-denoting a function application context in which the function expression is under evaluation, 
-$(v\,\circ)$ denoting the same in which the argument expression is under evaluation, $(\mathrm{wcm}\,
-\circ\,e)$ denoting a \emph{wcm} expression context in which the continuation mark is under 
-evaluation, $(\mathrm{wcm}\,v)$ denoting the same in which the body is under evaluation, or 
-$\mathrm{halt}$ representing an empty sequence--the empty continuation. (Here, $\circ$ 
-represents a ``hole'' in the computation--that is, where the current evaluation will be inserted.) 
-
-Adjacent to the definition of the continuation $K$ is the definition of the $\chi$ metafunction 
-in terms of the various forms of $K$. In the pure $\lambda$-calculus, the only values are closures--
-function and environment pairs--and ``primitive'' values such as numbers or lists are encoded in 
-terms of these. We will consider the values of $\chi$ to be so encoded, obviating the need to 
-augment the definition.
-
-\begin{figure}
-\begin{align*}
-S= & \langle C,E,K\rangle\,\mathrm{or}\,\langle V,E,K\rangle\\
-C= & e\\
-e= & x\\
-   & \lambda x.e\\
-   & e\,e\\
-   & \mathrm{wcm}\,e\,e\\
-   & \mathrm{ccm}\\
-E= & x\rightarrow\mathrm{V}\\
-V= & \langle\lambda x.e,E\rangle\\
-K= & \circ\,e,E;k               & \chi(\circ\,e,E;k)=\chi(k)\\
-   & v\,\circ;k                 & \chi(v\,\circ;k)=\chi(k)\\
-   & \mathrm{wcm}\,\circ\,e,E;k & \chi(\mathrm{wcm}\,\circ\,e,E;k)=\chi(k)\\
-   & \mathrm{wcm}\,v; k           & \chi(\mathrm{wcm}\,v; k)=v:\chi(k)\\
-   & \mathrm{halt}                & \chi(\mathrm{halt})=\mathrm{empty}
-\end{align*}
-\caption{Machine definition with corresponding $\chi$ metafunction definition}
-\label{machine-definition}
-\end{figure}
-
-Figure \ref{machine-semantics} presents the small step semantics of the machine model 
-introduced in figure \ref{machine-definition}. Program evaluation is defined as
-
-\[
-\frac{\langle e,\emptyset,\mathrm{halt}\rangle\rightarrow^{*}\langle V,E,\mathrm{halt}\rangle}{eval(e)=V}
-\]
-
-where an expression combined with an empty environment and empty continuation constitute 
-a program.
-
-At each step of evaluation, we consider an $e$-term or a value $v$. We reduce each $e$-term 
-according to its form, extending the continuation $k$ with context information as necessary. 
-Once a term has been evaluated--that is, once we are left with a value--we operate according 
-to the present context. Thus, as expressions are encountered, the continuation grows and as 
-evaluation occurs, the continuation shrinks. The obtainment of a value and exhaustion of the 
-continuation signifies the completion of program evaluation.
-
-\begin{figure}
-\begin{align*}
-\langle x,E,k\rangle                                       &\rightarrow\langle E[x],E,k\rangle\\
-\langle\lambda x.e,E,k\rangle                              &\rightarrow\langle \langle\lambda x.e,E\rangle,E,k\rangle\\
-\langle e\,e',E,k\rangle                                   &\rightarrow\langle e,E,(\circ\,e',E);k\rangle\\
-\langle v,E,(\circ\,e',E');k\rangle                      &\rightarrow\langle e',E',v\,\circ;k\rangle\\
-\langle v,E,\langle\lambda x.e,E'\rangle\,\circ;k\rangle &\rightarrow\langle e,E'[x\mapsto v],k\rangle\\
-\langle \mathrm{wcm}\,e\,e',E,k\rangle                     &\rightarrow\langle e,E,(\mathrm{wcm}\,\circ e',E);k\rangle\\
-\langle v,E,\mathrm{wcm}\,\circ e',E';k\rangle           &\rightarrow\langle e',E',\mathrm{wcm}\,v;\mathrm{pare}(k)\rangle\\
-\langle v,E,\mathrm{wcm}\,v';k\rangle                      &\rightarrow\langle v,E,k\rangle\\
-\langle \mathrm{ccm},E,k\rangle                            &\rightarrow\langle \chi(k),E,k\rangle
-\end{align*}
-
-where 
-
-\[
-\mathrm{pare}(k)=
-\left\{
-\begin{array}{lr}
-k' & \mathrm{if}\,k=\mathrm{wcm}\,v;k'\\
-k & \mathrm{otherwise}
-\end{array}
-\right.
-\]
-
-\caption{Machine semantics for continuation marks}
-\label{machine-semantics}
-\end{figure}
-
-%produce and provide haskell implementation of a continuation mark monad produce and
-%provide haskell implementation of continuation marks according to formal semantics show
-%algebraically (i.e., solely through symbolic manipulation) that provided is a monad show
-%in the same way that what it models and what the semantics describe are equivalent profit
-
-\subsection{Implementation} 
-
-In order to express and reason about behavioral and monadic semantics, we require a suitable 
-language. It is typical to use the Haskell language \cite{jones2003haskell} to express, reason 
-about, and manipulate semantic defintions. Haskell is a purely functional programming language 
-and, as such, all side effects are explicit. This is a great boon when reasoning about a 
-function because distant, implicit effects are impossible in this environment. In other words, 
-a function will \emph{always} produce the same output given the same input. Because of this, 
-functions can be analyzed singly and then composed in a way which removes none of the guarantees 
-attained in isolation. (We note that this is one of the useful characteristics of monads also.)
-
-%This property facilitates a bottom-up approach to program testing and validation. all its 
-
-Another consequence of this is that input and output are not expressible as simple
-functions. Each of these exhibit non-local effects and it is therefore impossible to
-realize them as such. In order to perform a computation with I/O, we must model a
-computation with I/O which is done by a properly crafted monad. The \texttt{IO} monad is
-Haskell is the correct and endorsed method to perform I/O in a computation. Haskell has
-many other regularly-used monads modelling computations with state, non-determinism,
-continuations and exceptions, etc. Haskell is then a natural choice to implement and
-verify a monad which models computations with continuation marks.
-
 \section{Validation}
-
-% it is intended that this section answer "how can we show this is a good solution?" this
-% is the hardest of sciences and so it is implied that any proposed solution we provide will
-% be accompanied by formal proof and we have stated we will supply it. that makes this
-% section out-of-place.
-
-In order to show that our construct is indeed a monad for continuation marks, we must show
-that we our construct is a genuine monad and that it actually models continuation marks.
-
-The mathematical basis of a monad lends three laws that fully specify the behavior of a 
-monad. We will provide a proof that our construct satisfies these laws and can thus be 
-correctly termed a monad. This proof is by nature algebraic.
-
-We will appeal to the formal semantics of continuation marks, given previously, to verify 
-our monad truly models this language feature. This proof is also algebraic and will entail 
-establishing intensional equality between an abstract machine modelling continuation marks 
-and our monad.
-
-Thus, by demonstrating that our construct follows the monadic laws and has the semantics
-of continuation marks, we will demonstrate that continuation marks have a monadic semantics.
-
-%It may be the case that we have something that \emph{appears} to be a continuation mark
-%monad but is not actually. In order to verify that our construct is a genuine continuation
-%mark monad, we must do the following things:
-
-%First, we must show that it actually models continuation marks. Continuation marks
-%already have a denotational semantics defined. We can use equational
-%reasoning/algebraically compare the semantics of the monad against the denotation
-%semantics. What's more, if we express them in a suitable language, we can run our
-%research.
-
-%Second, we must show that it actually is a monad. We can verify the construct satisfies
-%the three monad laws algebraically.
-
-%explain what is necessary to show that what we have are continuation marks and what we
-%have is a monad
-
-%monadic semantics accomplish [their purpose] by providing an abstraction barrier which
-%hides irrelevant...
-
-%something about real programs?
 
 \section{Thesis Schedule}
 
