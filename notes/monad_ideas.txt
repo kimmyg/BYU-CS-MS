@@ -1,0 +1,38 @@
+
+
+data CM1 m a = CM1 ([m] -> a) | WCM1 ([m] -> a)
+
+instance Monad (CM1 m) where
+  return x = CM1 (\_ -> x)
+  (CM1 m) >>= f = CM1 (\vs -> case f (m vs) of
+    (CM1 m')  -> m' vs
+    (WCM1 m') -> m' vs)
+  (WCM1 m) >>= f = CM1 (\vs -> case f (m vs) of
+    (CM1 m')  -> m' vs
+    (WCM1 m') -> m' vs)
+
+wcm :: m -> CM1 m a -> CM1 m a
+wcm v (CM1 m)  = WCM1 (\vs -> m (v:vs))
+wcm v (WCM1 m) = WCM1 (\vs -> m vs)
+
+ccm :: CM1 m [m]
+ccm = CM1 id
+
+runCM :: CM1 m a -> a
+runCM (CM1 m)  = m []
+runCM (WCM1 m) = m []
+
+wcm 5 (ccm)
+
+-- either the outer selectively adds and the inner always overwrites or the outer selectively removes and the inner always adds 
+wcm 5 ccm = WCM1 (\vs -> (ccm) (5:vs))
+          = WCM1 (\vs -> id (5:vs))
+          = WCM1 (\vs -> (5:vs))
+
+let x = wcm 2 ccm in
+
+wcm 1 (wcm 2 ccm)
+wcm 1 ((wcm 2 ccm) >>= return)
+
+there is no difference between m >>= return and m >>= (\x -> return x)
+there /is/ a difference between m >>= (\x -> return x) and m >>= (\x -> return (x+1))

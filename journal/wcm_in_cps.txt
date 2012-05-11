@@ -1,0 +1,81 @@
+We have covered how to transform the $\lambda$-calculus into CPS. Now we consider the 
+$\lambda$-calculus with two additional forms: \emph{wcm} and \emph{ccm}.
+
+suppose that we can bind variables with specific names.
+
+fact n k
+  if n == 0
+    k 1
+  else
+    fact (n - 1) (\acc -> k (n * acc))
+
+fact n k
+  if n == 0
+    k (1,ccm)
+  else
+    wcm n $ fact (n - 1) (\(acc,ms) -> k (n*acc,ms))
+
+ccm k -> k ms [where 'ms' is the name of the bound variable]
+
+x -> \k.k x
+\x.e -> \x.T(e)
+
+k
+
+\acc -> * n acc k
+
+fact 0 k
+
+k 1
+
+fact 1 k
+  fact 0 (\acc -> k (1 * acc))
+
+fact 1 k
+ (\acc -> k (1 * acc)) 1
+
+fact 3 k
+  (\acc -> (\acc -> (\acc -> k (3 * acc)) (2 * acc)) (1 * acc)) 1
+
+fact 0 k
+  ccm (\ms -> (1,ms))
+
+fact 1 k
+  wcm 1 (fact (n - 1) (\acc -> k (n * acc)) 
+
+
+ccm k = k ms
+
+let ms = [] in
+  let n = 3 in
+    let ms = 3:ms in
+      let acc = fact (n - 1)
+
+
+fact n = wcm n (n * fact (n - 1))
+
+fact n = 
+let ms = n:ms in
+  let acc = fact (n - 1) in
+    n * acc
+
+fact n =
+if n == 0
+  let ms' = ccm in
+    (ms',1)
+else
+  let ms = n:ms in
+    let (ms',acc) = fact (n - 1) in
+      (ms',n * acc)
+
+ccm = ms
+
+fact 2
+  let ms = 2:ms in
+    let (ms',acc) =
+     (let ms = 1:ms in
+        let (ms',acc) =
+         (let ms' = ccm in
+            (ms',1))
+          (ms',1 * acc))
+      (ms',2 * acc)
