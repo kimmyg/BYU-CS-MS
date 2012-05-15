@@ -323,13 +323,14 @@ Consider the following definition of a division function
 wherein \texttt{/} denotes a primitive division function which will fail when the 
 denominator is zero.
 
+% find better example for failure continuations
+
 \begin{verbatim}
 (/ 6 3 k e)
 \end{verbatim}
 
 From this, we can see that failure continuations behave like exceptions and indeed 
-represent them in continuation-passing style. (This reveals the reason behind the 
-parameter name choice of the failure continuation.)
+represent them in continuation-passing style.
 
 This and similar variants of CPS in which two continuations are represented are 
 referred to colloquially as ``double-barrelled'' CPS.
