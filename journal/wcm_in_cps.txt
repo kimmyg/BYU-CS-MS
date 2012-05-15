@@ -79,3 +79,54 @@ fact 2
             (ms',1))
           (ms',1 * acc))
       (ms',2 * acc)
+
+
+wcm 5 ccm
+
+wcm 5 ccm k
+
+first of all, we probably want to pass k in unchanged since ccm should be in tail position.
+
+plus 2 4 k = k (2 + 4)
+
+fact n k = fact (n - 1) (\acc -> * n acc k)
+
+wcm 5 ccm k = \ms@(5:ms) -> ccm k
+\ms -> k ms
+
+wcm m f k
+
+(\ms -> f k) m:ms
+
+wcm 5 ccm k
+
+(\ms -> ccm k) 5:ms 
+(\ms -> k ms) 5:ms
+k 5:ms
+
+fact 2 k = wcm 2 (fact 1 (\acc -> * 2 acc k))
+fact 2 k = (\ms -> (fact 1 (\acc -> * 2 acc k))) 2:ms
+
+fact 2 k = (\ms -> (\ms -> (fact 0 (\(acc,ms') -> * 1 acc (\(acc -> * 2 acc k)))) 1:ms) 2:ms
+
+fact 0 k = ccm (\ms' -> k (1,ms'))
+
+
+fact n k =
+= n 0 (\zero? ->
+  if zero?
+    ccm (\ms -> pair 1 ms k)
+  else
+    wcm n (fact (n - 1) (\(acc,ms) -> * n acc (\acc -> pair acc ms k)))
+
+- n 1 (\n_minus_1 ->
+  fact n_minus_1 (\(acc,ms) -> * n acc (\acc -> pair acc ms k)))
+
+    wcm n (fact (n - 1) (\(acc,ms) -> * n acc (\acc -> pair acc ms k)))
+
+every function takes two arguments: the continuation and the marks
+
+ccm k ms = k ms ms
+
+wcm m f k ms = f k m:ms
+
