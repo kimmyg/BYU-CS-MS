@@ -145,7 +145,15 @@ at the same level as the language instead of some level below.
 Continuation-passing style is a breed of languages targeted by transformational compilers 
 amenable to analysis, optimization, verification. (?) 
 
-Continuation-passing style is a characterization of code in which an additional formal 
+Programs in CPS are simpler in that all transfer of control is uniformly represented, which simplifies the construction of compilers \cite{sabry1994formal}.
+
+CPS has a close correspondence to an imperative instruction sequence which eases translation to low-level machines \cite{appel2007compiling}.
+
+CPS is more amenable to reasoning and proof [by virtue of what? it's uniformity?] which...
+one can get more semantics \cite{strachey2000continuations}
+more optimizations are possible \cite{plotkin1975call}
+
+[typical/basic/vanilla] continuation-passing style is a characterization of code in which an additional formal 
 parameter, the \emph{continuation}, is added to each function definition. This parameter 
 is itself a function which accepts one argument. Instead of returning, functions call 
 the \emph{continuation} with their result as the argument. In computation represented in 
