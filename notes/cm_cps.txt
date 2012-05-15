@@ -1,0 +1,80 @@
+first, we consider the lambda calculus with continuation marks:
+
+x
+\x.e
+e f
+
+wcm e f
+ccm
+
+now consider the cps transformation T of these:
+
+x -> \k k x
+
+\x.e -> \x.\k.T(e) k
+
+\k.k e f
+
+
+
+
+T(\x.x) = \x.\k.k x
+T(\x.\y.y x) = \x.\k.T(\y.y x)
+
+T(\y.y) = \y.\k.k y
+
+T(x) = \k.k x
+T(\x.e) = \x.T(e)
+T(e f) = T(f) T(e)
+
+
+\x.x y
+
+\x.\k.k x 
+
+take the value expression and pass in the function expression (modified in some way) 
+as its continuation argument.
+
+(\k.k y) (\x.\k.k x)
+
+(\k.k y) (\x.\k.k x) -> (\x.\k.k x) y -> \k.k y
+
+so T(e f) = T(f) T(e)
+
+nope
+
+consider
+
+\x.x \y.y -> \y.\k.k y \x.\k.k x -> \k.k \x.\k.x
+
+these are the same only incidentally.
+
+we take the argument and create the cps. for the cps we pass in a continuation.
+
+so T(e f) is T(f) applied to some transformation of e.
+
+
+
+x
+\x.e
+e f
+wcm e f
+ccm
+
+transformation T
+
+T(x) = \k.k x
+T(\x.e) = 
+
+
+E[t] k = k T[t]
+E[s] k = S[s] k
+
+S[t0 t1] k = T[t0] T[t1] k
+S[t0 s1] k = S[s1] (\x1.T[t0] x1 k)
+S[s0 t1] k = S[s0] (\x0.x0 T[t1] k)
+S[s0 s1] k = S[s0] (\x0.S[s1] (\x1.x0 x1 k))
+
+T[x] = x
+T[\x.e] = \x.\k.E[e] k
+
