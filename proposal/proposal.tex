@@ -373,6 +373,11 @@ $k$ encapsulating additional work to be performed at the completion of the recur
 computation. In the second, $k$ is passed unmodified, so while computation occurs 
 within each context, no \emph{additional} computation pends.
 
+---
+
+CPS transformations do not typically distinguish between ``primitive'' functions and ``non-primitive'' functions meaning that operations are decomposed by the transformation until raw values are obtained. Consequently, seemingly simple functions--so simple that they are seldom treated as functions--are victim [this sentiment, different word, weaker] to the transform.
+%(This may be the method by which the call-by-value is simulated by the call-by-name--or somehow related to it. If this is the case, it is probably found in Plotkin's paper. If so, bring it up.)
+
 \section{Project description}
 
 The source language is the $\lambda$-calculus with two additional forms specific to continuation 
