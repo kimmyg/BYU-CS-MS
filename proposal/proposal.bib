@@ -134,13 +134,6 @@
   annotate={Sabry's dissertation provides a cogent and thorough overview and investigation of the effects of using continuation-passing style as an intermediate language. The focus of the dissertation is the association between typical and CPS transformational compilers. Attention is given to types and reduction schemes that give way to the various $\lambda$-calculi. It is used for its concise, [strong/well-crafted/summary-ish] conclusions and comprehensive summaries.}
 }
 
-@book{appel2007compiling,
-  title={Compiling with continuations},
-  author={Appel, A.W.},
-  year={2007},
-  publisher={Cambridge Univ Pr}
-}
-
 @article{strachey2000continuations,
   title={Continuations: A mathematical semantics for handling full jumps},
   author={Strachey, C. and Wadsworth, C.P.},
@@ -162,5 +155,50 @@
   year={1975},
   publisher={Elsevier},
   annotate={This seminal paper by Plotkin explores the relationship between ISWIM and the $\lambda$-calculus. Consequently, Plotkin visits the call-by-name and call-by-value variations of the $\lambda$-calculus and the simulation of each variant by the other. He uses the ``technique of continuations'' which can provide denotational semantics for call-by-value languages and utilizes $\lambda$-introducing transforms to ease analysis.}
+}
+
+
+@book{appel2007compiling,
+  title={Compiling with continuations},
+  author={Appel, A.W.},
+  year={2007},
+  publisher={Cambridge Univ Pr}
+}
+
+@article{clements2008implementing,
+  title={Implementing continuation marks in JavaScript},
+  author={Clements, J. and Sundaram, A. and Herman, D.},
+  journal={Computer Science and Software Engineering},
+  pages={45},
+  year={2008}
+}
+
+@article{dybvig2005monadic,
+  title={A monadic framework for subcontinuations},
+  author={Dybvig, R.K. and Peyton-Jones, S. and Sabry, A.},
+  journal={J. Funct. Program.(2007, to appear). http://journals. cambridge. org/action/displayIssue},
+  year={2005},
+  publisher={Citeseer}
+}
+
+@inproceedings{pettyjohn2005continuations,
+  title={Continuations from generalized stack inspection},
+  author={Pettyjohn, G. and Clements, J. and Marshall, J. and Krishnamurthi, S. and Felleisen, M.},
+  booktitle={ACM SIGPLAN Notices},
+  volume={40},
+  number={9},
+  pages={216--227},
+  year={2005},
+  organization={ACM}
+}
+
+@techreport{plt-tr1,
+  title       = {Reference: Racket},
+  author      = {Matthew Flatt and PLT},
+  number      = {PLT-TR-2010-1},
+  institution = {PLT Inc.},
+  year        = {2010},
+  note        = {\url{http://racket-lang.org/tr1/}},
+  annotate    = {Racket, formerly PLT Scheme, is a dialect in the Lisp family of languages. It's PLT stewardship has contributed to make it the de facto testbed for new, useful language features--higher-order contracts, for example--to say nothing of properties like its homoiconic syntax. As such, it served as the inaugural host for continuation marks (hence the Scheme-like syntax employed in the paper). Despite being under active development, its sound design keeps it the host language of choice for many small and large systems alike.}
 }
 
