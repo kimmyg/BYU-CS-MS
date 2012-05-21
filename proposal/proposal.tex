@@ -112,6 +112,8 @@
 \newcounter{definition}
 \newcounter{example}
 
+\newtheorem*{cmtheorem}{C:\lambda_{CM}\rightarrow\lambda Meaning Preservation Extravaganza}
+
 \begin{document}
 
 % Produce the preamble
@@ -130,13 +132,8 @@
 % remember that the audience in this case actually does not know what these things are 
 % so have a clear, useful exposition.
 
-Thesis: A CPS-style global transformation can compile the $\lambda$-calculus with
-continuation marks into the $\lambda$-calculus in a semantics-preserving
-way.
-
-% talk more about how they are useful here, elaboration will be below
-
-
+Thesis: A CPS-like global transformation can compile the $\lambda$-calculus with
+continuation marks into the plain $\lambda$-calculus in a semantics-preserving way.
 
 Continuation marks \cite{clements2006portable} are a language feature that provides a
 mechanism to annotate the dynamic context of a program. This feature allows the
@@ -154,56 +151,22 @@ with exception facilities \cite{pettyjohn2005continuations} which fact has led t
 experimental addition to Javascript \cite{clements2008implementing}.
 
 The continuation-passing style (CPS) transformation is actually a family of 
-transformations designed to make certain analyses simpler. The vanilla CPS transformation 
-augments each function with an additional formal parameter, the \emph{continuation}, which 
-is a functional representation of currently pending computation. Functions in CPS never 
-return; instead, they call the continuation argument with their result. The CPS 
-transformation then simplifies programs by representing all control and data transfer 
-uniformly and explicitly.
+transformations designed to make certain analyses simpler. The simplest variation of the 
+CPS transformation augments each function with an additional formal parameter, the 
+\emph{continuation}, which is a functional representation of currently pending 
+computation. Functions in CPS never return; instead, they call the continuation argument 
+with their result. The CPS transformation then simplifies programs by representing all 
+control and data transfer uniformly and explicitly. In general, the ``spirit'' of the 
+CPS transformation is to represent all transfers of control uniformly \cite{sabry1994formal}.
 
-The ``spirit'' of the CPS transformation is to represent all transfers of control 
-uniformly \cite{sabry1994formal}. When a given transformation has that property, one can 
-say that it is in the family of CPS transformations. For instance, the ``double-barrelled'' 
-CPS transformation is a variant of the standard wherein each function receives not one but 
-two additional formal parameters, each a continuation. One application of this particular 
-transformation is error handling, one continuation argument representing the remainder of 
-a successful computation, the other representing the failure contingency. It is especially 
-useful in modelling exceptions or other non-local transfers of control in situations where 
-the computation might fail.
-
-%It is our interest to understand the essence of continuation marks--their behavior in the 
-%absense of other language features and implementation details. For this, we take the core 
-%of computation, the $\lambda$-calculus, and add facilities to manipulate continuation 
-%marks. These two together comprise a language which we term $\lambda_{cm}$. Our approach 
-%of determining what continuation marks mean computationally will be to express $\lambda_{cm}$ 
-%in the $\lambda$-calculus which preserves the meaning of the language. Our method to make 
-%such an expression will be to perform a transformation in the spirit of CPS which will make 
-%certain useful analyses accessible.
-
-%Because a continuation call is the sole method of control and its argument is the sole methwhich make explicit all data and control transfer
-
-%The language semantics is defined but no correctness proof of the interpreter exists so there is no way to determine whether it is behaving correctly.
-
-%There is a history of transforming languages 
-
-%Continuation-passing style is a breed of languages targeted by transformational compilers 
-%amenable to analysis, optimization, verification. (?) 
-
-%Programs in CPS are simpler in that all transfer of control is uniformly represented, which simplifies the construction of compilers \cite{sabry1994formal}.
-
-%CPS has a close correspondence to an imperative instruction sequence which eases translation to low-level machines \cite{appel2007compiling}.
-
-%CPS is more amenable to reasoning and proof [by virtue of what? it's uniformity?] which...
-%one can get more semantics \cite{strachey2000continuations}
-%more optimizations are possible \cite{plotkin1975call}
-
-
-
-%is a characterization of code in which an additional formal 
-%parameter, the \emph{continuation}, is added to each function definition. This parameter 
-%is itself a function which accepts one argument. Instead of returning, functions call 
-%the continuation with their result as the argument. In computation represented in 
-%CPS, consequently, all control- and data-flow is explicit.
+It is our interest to understand the essence of continuation marks--their behavior in the 
+absense of other language features and implementation details. For this, we take the core 
+of computation, the $\lambda$-calculus, and add facilities to manipulate continuation 
+marks. These two together comprise a language which we term $\lambda_{cm}$. By expressing 
+$\lambda_{cm}$ in terms of the plain $\lambda$-calculus, we uncover the meaning of 
+continuation marks in a pure computational language. We arrive at this expression by 
+performing a transformation in the spirit of CPS from $\lambda_{cm}$ to the $\lambda$-calculus 
+verified to preserve the meaning of the source language.
 
 \section{Related Work}
 
@@ -346,13 +309,79 @@ This difference is due to the growing continuation in the definitionally recursi
 \texttt{fact}. Each call to \texttt{fact} has a pending computation--namely, the
 multiplication--after the recursive call and so each necessitates the creation an
 additional evaluation context. The effect of these additional contexts is that each
-annotation is applied to a new, ``blank'' context, so all the annotations are preserved. In
-the tail-recursive variant, there is no pending computation and therefore no additional
+annotation is applied to a new, ``blank'' context, so all the annotations are preserved. 
+In the tail-recursive variant, there is no pending computation and therefore no additional
 evaluation context. In this instance, the previous mark is overwritten with the new.
 
 \subsection{Continuation-passing style}
 
+The CPS transformation is a family of language transformations designed to simplify 
+programs by representing all data and control flow uniformly and explicitly, in turn 
+simplifying analyses such as optimization and verification \cite{sabry1994formal}. 
+The standard variation adds a formal parameter to every signature and an argument to 
+every call site. 
+
+Consider once again the two variants of the factorial function, sans continuation marks, 
+given earlier. In CPS, the properly recursive variant can be expressed as
+
+\begin{verbatim}
+(define (fact n k) 
+  (if (= n 0)
+      (k 1)
+      (fact (- n 1) (lambda (acc) (k (* n acc))))))
+\end{verbatim}
+
+and the tail-recursive variant as
+
+\begin{verbatim}
+(define (fact-tr n acc k)
+  (if (= n 0)
+      (k acc)
+      (fact-tr (- n 1) (* n acc) k)))
+\end{verbatim}.
+
+Notice that, in the first variation, each recursive call receives a newly-constructed 
+$k$ encapsulating additional work to be performed at the completion of the recursive 
+computation. In the second, $k$ is passed unmodified, so while computation occurs 
+within each context, no \emph{additional} computation pends.
+
+Variations on the standard can make the expression of certain control structures more 
+straightforward. For instance, the ``double-barrelled'' CPS transformation is a 
+variation wherein each function signature receives not one but two additional formal 
+parameters, each a continuation. One application of this particular variation is 
+error handling, one continuation argument representing the remainder of a successful 
+computation, the other representing the failure contingency. It is especially useful 
+in modelling exceptions or other non-local transfers of control in situations where 
+the computation might fail.
+
 %what it is
+
+%Because a continuation call is the sole method of control and its argument is the sole methwhich make explicit all data and control transfer
+
+%The language semantics is defined but no correctness proof of the interpreter exists so there is no way to determine whether it is behaving correctly.
+
+%There is a history of transforming languages 
+
+%Continuation-passing style is a breed of languages targeted by transformational compilers 
+%amenable to analysis, optimization, verification. (?) 
+
+%Programs in CPS are simpler in that all transfer of control is uniformly represented, which simplifies the construction of compilers \cite{sabry1994formal}.
+
+%CPS has a close correspondence to an imperative instruction sequence which eases translation to low-level machines \cite{appel2007compiling}.
+
+%CPS is more amenable to reasoning and proof [by virtue of what? it's uniformity?] which...
+%one can get more semantics \cite{strachey2000continuations}
+%more optimizations are possible \cite{plotkin1975call}
+
+
+
+%is a characterization of code in which an additional formal 
+%parameter, the \emph{continuation}, is added to each function definition. This parameter 
+%is itself a function which accepts one argument. Instead of returning, functions call 
+%the continuation with their result as the argument. In computation represented in 
+%CPS, consequently, all control- and data-flow is explicit.
+
+ When the target language of a transformation represents all control flow uniformly, that transformation embodies the ``spirit'' of CPS \cite{sabry1994formal} and one can say it is in the family of CPS transformations.
 
 Because all control- and data-flow is made explicit, CPS is especially useful as an 
 intermediate representation \cite{flanagan1993essence}. Take a simple computation such as
@@ -389,48 +418,32 @@ represent them in continuation-passing style.
 This and similar variants of CPS in which two continuations are represented are 
 referred to colloquially as ``double-barrelled'' CPS.
 
-CPS is the ideal form to understand tail-call optimization. In it, the fact that the 
+A language in CPS is ideal for understanding tail-call optimization. In it, the fact that the 
 continuation doesn't grow (as opposed to the stack which is an upper bound for the 
 continuation) is visible/explicit. 
 
-Consider once again the two variants of the factorial function, sans continuation marks, 
-given earlier. In CPS, the standard definitional variant can be expressed as
 
-\begin{verbatim}
-fact n k = 
-  if n == 0
-    k 1
-  else
-    fact (n - 1) (lambda (acc) (k (* n acc)))
-\end{verbatim}
-
-and the tail-recursive variant as
-
-\begin{verbatim}
-fact_tr n acc k =
-  if n == 0
-    k acc
-  else
-    fact (n - 1) (n * acc) k
-\end{verbatim}.
-
-Notice that, in the first variation, each recursive call receives a newly-constructed 
-$k$ encapsulating additional work to be performed at the completion of the recursive 
-computation. In the second, $k$ is passed unmodified, so while computation occurs 
-within each context, no \emph{additional} computation pends.
 
 ---
 
-CPS transformations do not typically distinguish between ``primitive'' functions and ``non-primitive'' functions meaning that operations are decomposed by the transformation until raw values are obtained. Consequently, seemingly simple functions--so simple that they are seldom treated as functions--are victim [this sentiment, different word, weaker] to the transform.
+CPS transformations do not typically distinguish between ``primitive'' functions and ``non-primitive'' functions meaning that operations are decomposed by the transformation until raw values are obtained. Consequently, seemingly simple functions--so simple that they are seldom treated as functions--are affected by the transform.
 %(This may be the method by which the call-by-value is simulated by the call-by-name--or somehow related to it. If this is the case, it is probably found in Plotkin's paper. If so, bring it up.)
 
 \section{Project description}
 
-The source language is the $\lambda$-calculus with two additional forms specific to continuation 
-marks. Terms in this language are either single variables; $\lambda$-abstractions; function 
-applications (all these being inherited from the $\lambda$-calculus); the \emph{wcm} form, an 
-abbreviation of \emph{with-continuation-mark}; and the \emph{ccm} form, an abbreviation of 
-\emph{current-continuation-marks}. We will call this language $\lambda_{cm}$.
+We will provide a CPS-like language transformation and verify that it preserves program meaning. A language transformation transforms programs in a source language into equivalent programs in a target language. Equivalence is at the level of semantics, or language meaning.
+
+The source language, $\lambda_{cm}$, is the $\lambda$-calculus with two additional syntactic forms specific to continuation marks. Terms in this language are either single variables, drawn from an infinite set; $\lambda$-abstractions; applications (all these being inherited from the $\lambda$-calculus); the \emph{wcm} form, an abbreviation of \emph{with-continuation-mark}; and the \emph{ccm} form, an abbreviation of \emph{current-continuation-marks}. In the following formal definition of $\lambda_{cm}$, $M$ is the set of syntactic terms in the language.
+
+\begin{align*}
+M ::= &x\\
+      &\lambda x.M\\
+      &M\,M\\
+      &\mathrm{wcm}\,M\,M\\
+      &\mathrm{ccm}\\
+\end{align*}
+
+The target language, the $\lambda$-calculus, follows the above definition with the \emph{wcm} and \emph{ccm} forms omitted.
 
 go from compiling language with feature to language without feature -> 
 
@@ -447,13 +460,7 @@ talk about continuation marks in Javascript
 
 talk about call/cc as the quintessential use of CPS
 
-\begin{align*}
-M ::= &x\\
-      &\lambda x.M\\
-      &M\,M\\
-      &\mathrm{wcm}\,M\,M\\
-      &\mathrm{ccm}\\
-\end{align*}
+
 
 We will provide a CPS transformation of the $\lambda$-calculus with continuation marks.
 
@@ -513,9 +520,17 @@ E[(\mathrm{ccm})]                           &\rightarrow E[\chi(E)]
 
 If an expression reduces to a value according to the language semantics, the expression ``compiled'' to the $\lambda$-calculus reduces to the value ``compiled'' to the $\lambda$-calculus according to the $\lambda$-calculus semantics.
 
+%\begin{cmtheorem}
+
+For expressions $e$ and values $v$, $C$ is a syntactic transformation with the property that
+
 \[
-e\rightarrow^{*}_{cm}v\Rightarrow c(e)\rightarrow^{*}_{\lambda}c(v)
+e\rightarrow^{*}_{\lambda_{cm}}v\Rightarrow C(e)\rightarrow^{*}_{\lambda}C(v)
 \]
+
+where $\rightarrow_{\lambda_{cm}}$ signifies the reduction relation of $\lambda_{cm}$ and $\rightarrow_{\lambda}$ signifies the reduction relation of the $\lambda$-calculus.
+
+%\end{cmtheorem}
 
 \section{Thesis schedule}
 
