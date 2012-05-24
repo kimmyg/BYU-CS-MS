@@ -170,7 +170,8 @@
   author={Clements, J. and Sundaram, A. and Herman, D.},
   journal={Computer Science and Software Engineering},
   pages={45},
-  year={2008}
+  year={2008},
+  annotate={Clements et al. discuss the design and performance of a \emph{JavaScript} continuation marks implementation in terms of stack marks (in accordance with the representation of continuations in the imperative \emph{JavaScript}). They present a subset language of \emph{JavaScript} which they believe includes all critical components of the whole and discuss implementation considerations supporting tail-call optimization. They present a debugger built upon stack marks as is typical of continuation marks. Interestingly, they champion Scheme's hygienic macro system having devoted a portion of their efforts to syntactic manipulation.}
 }
 
 @article{dybvig2005monadic,
@@ -189,7 +190,8 @@
   number={9},
   pages={216--227},
   year={2005},
-  organization={ACM}
+  organization={ACM},
+  annotate={Pettyjohn et al. present a transformation from a language with \emph{call/cc} to a language without \emph{call/cc} but with the stack inspection mechanisms \emph{w-c-m} and \emph{c-c-m}. They prove essential properties of the transformation which employs a variant of CPS. After reporting on the performance for two real-world applications, they introduce a characterization of generalized stack inspection in terms of exception mechanisms. They accomplish this by expressing \emph{w-c-m} as the installation of an exception handler and \emph{c-c-m} as the raising of an exception. Exception handlers can discriminate based on type which serve as the keys of the continuation marks.}
 }
 
 @techreport{plt-tr1,

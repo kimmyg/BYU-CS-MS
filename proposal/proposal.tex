@@ -112,7 +112,7 @@
 \newcounter{definition}
 \newcounter{example}
 
-\newtheorem*{cmtheorem}{C:\lambda_{CM}\rightarrow\lambda Meaning Preservation Extravaganza}
+\newtheorem*{cmtheorem}{C:$\lambda_{CM}\rightarrow\lambda$ Meaning Preservation Theorem}
 
 \begin{document}
 
@@ -313,32 +313,34 @@ evaluation context. In this instance, the previous mark is overwritten with the 
 
 \subsection{Continuation-passing style}
 
-The CPS transformation is a family of language transformations designed to simplify programs by representing all data and control flow uniformly and explicitly, in turn simplifying compiler analyses such as optimization and verification \cite{sabry1994formal}. The standard variation adds a formal parameter to every signature and an argument to every call site.
+The CPS transformation is a family of language transformations designed to simplify 
+programs by representing all data and control flow uniformly and explicitly, in turn 
+simplifying compiler construction and analyses such as optimization and verification 
+\cite{sabry1994formal}. The standard variation adds a formal parameter to every 
+signature and an argument to every call site.
 
-Consider once again the two variants of the factorial function, sans continuation marks, given earlier. In CPS, the properly recursive variant can be expressed as
-
+As an example, consider once again the two variants of the factorial function, sans continuation 
+marks, given earlier. In CPS, the properly recursive variant can be expressed as
 \begin{verbatim}
 (define (fact n k) 
   (if (= n 0)
       (k 1)
       (fact (- n 1) (lambda (acc) (k (* n acc))))))
 \end{verbatim}
-
 and the tail-recursive variant as
-
 \begin{verbatim}
 (define (fact-tr n acc k)
   (if (= n 0)
       (k acc)
       (fact-tr (- n 1) (* n acc) k)))
-\end{verbatim}.
+\end{verbatim}. (For clarity, we have treated ``primitive'' functions--equality comparison, subtraction, and multiplication--in a direct manner. In contrast, a full CPS transformation would affect \emph{every} function.)
 
 Notice that, in the first variation, each recursive call receives a newly-constructed 
 $k$ encapsulating additional work to be performed at the completion of the recursive 
 computation. In the second, $k$ is passed unmodified, so while computation occurs 
 within each context, no \emph{additional} computation pends. From this example, we 
-can see that the CPS representation is ideal for understanding tail-call optimization. 
-In it, the fact that the continuation doesn't grow is explicit.
+can see that the CPS representation is ideal for understanding tail-call behavior: 
+within, the fact that the continuation doesn't grow is explicit.
 
 The purpose of CPS does not lie solely in pedagogy, however. The reification of and 
 consequent ability to directly manipulate the continuation is a powerful ability, 
@@ -346,58 +348,62 @@ analogous in power to the ability to \emph{capture} a continuation which some
 languages provide. In Scheme, this is accomplished with \emph{call/cc}, short for 
 ``call with current continuation''. This call takes one argument which itself is a 
 function of one argument. \emph{call/cc} calls its argument, passing in a functional 
-representation of the current continuation--the continuation present at the point of 
-the call. This continuation function takes one argument which is treated as the result 
+representation of the current continuation--the continuation present when \emph{call/cc} 
+was invoked. This continuation function takes one argument which is treated as the result 
 of \emph{call/cc} and runs this continuation to completion.
 
 As a simple example,
-
 \begin{verbatim}
 (+ 1 (call/cc
        (lambda (k)
          (k 1))))
 \end{verbatim}
+returns $2$. In effect, invoking $k$ with the value 1 is the same as replacing 
+the entire \emph{call/cc} invocation with the value 1.
 
-returns $2$. Much of the power of \emph{call/cc} lies in the manifestation of the 
-continuation as a function, giving it first-class status. It can be passed as an 
-argument in function calls, invoked, and, amazingly, reinvoked at leisure. It is 
-this reinvokeability that makes \emph{call/cc} the fundamental unit of control 
-from which all other control structures can be built, including loops, coroutines, 
+Much of the power of \emph{call/cc} lies in the manifestation of the continuation 
+as a function, giving it first-class status. It can be passed as an argument in 
+function calls, invoked, and, amazingly, reinvoked at leisure. It is this 
+reinvokeability that makes \emph{call/cc} the fundamental unit of control from 
+which all other control structures can be built, including loops, coroutines, 
 and threads.
 
-\emph{call/cc} is erroneously seen as incredibly heavyweight and overkill for 
-control (cite something). This conception probably comes from the conceptualization 
-of the continuation as the call stack and continuation capture as stack copy while 
-continuation call is stack installation. It is also seen as a form of \emph{goto} 
-which is known to obfuscate control flow and impede analysis (cite something). 
-[Can't and shouldn't talk much about the second. Probably take it out.] Bearing in 
-mind that the CPS transformation aids compilers, it is useful to investigate the 
-characterization of \emph{call/cc} within the standard CPS transformation.
+%\emph{call/cc} is erroneously seen as incredibly heavyweight and overkill for 
+%control (cite something). This conception probably comes from the conceptualization 
+%of the continuation as the call stack and continuation capture as stack copy while 
+%continuation call is stack installation. It is also seen as a form of \emph{goto} 
+%which is known to obfuscate control flow and impede analysis (cite something). 
+%[Can't and shouldn't talk much about the second. Probably take it out.] Bearing in 
+%mind that the CPS transformation aids compilers, it is useful to investigate the 
+%characterization of \emph{call/cc} within the standard CPS transformation.
 
+In direct style, the definition of \emph{call/cc} is conceptually 
 \begin{verbatim}
 (define call/cc
   (lambda (f)
-    (f <some representation of the current continuation>)))
+    (f (get-function-representing-continuation))))
 \end{verbatim}
-
+where \emph{get-function-representing-continuation} is an opaque function which 
+leverages sweeping knowledge of the language implementation. The CPS definition 
+is notably easier:
 \begin{verbatim}
 (define call/cc
   (lambda (f k)
     (f k k)))
 \end{verbatim}
 
-Variations on the standard can make the expression of certain control structures more 
-straightforward. For instance, the ``double-barrelled'' CPS transformation is a 
-variation wherein each function signature receives not one but two additional formal 
-parameters, each a continuation. One application of this particular variation is 
-error handling, one continuation argument representing the remainder of a successful 
-computation, the other representing the failure contingency. It is especially useful 
-in modelling exceptions or other non-local transfers of control in situations where 
-the computation might fail.
+Variations on the standard CPS transformation can make the expression of certain 
+control structures more straightforward. For instance, the ``double-barrelled'' 
+CPS transformation is a variation wherein each function signature receives not 
+one but two additional formal parameters, each a continuation. One application 
+of this particular variation is error handling, one continuation argument 
+representing the remainder of a successful computation, the other representing 
+the failure contingency. It is especially useful in modelling exceptions or 
+other non-local transfers of control in situations where the computation might fail.
 
-%what it is
+%CPS transformations have been thoroughly studied
 
-%Because a continuation call is the sole method of control and its argument is the sole methwhich make explicit all data and control transfer
+%CPS has a close correspondence to an imperative instruction sequence which eases translation to low-level machines \cite{appel2007compiling}.
 
 %The language semantics is defined but no correctness proof of the interpreter exists so there is no way to determine whether it is behaving correctly.
 
@@ -408,34 +414,13 @@ the computation might fail.
 
 %Programs in CPS are simpler in that all transfer of control is uniformly represented, which simplifies the construction of compilers \cite{sabry1994formal}.
 
-%CPS has a close correspondence to an imperative instruction sequence which eases translation to low-level machines \cite{appel2007compiling}.
 
 %CPS is more amenable to reasoning and proof [by virtue of what? it's uniformity?] which...
 %one can get more semantics \cite{strachey2000continuations}
 %more optimizations are possible \cite{plotkin1975call}
 
-
-
-%is a characterization of code in which an additional formal 
-%parameter, the \emph{continuation}, is added to each function definition. This parameter 
-%is itself a function which accepts one argument. Instead of returning, functions call 
-%the continuation with their result as the argument. In computation represented in 
-%CPS, consequently, all control- and data-flow is explicit.
-
-% When the target language of a transformation represents all control flow uniformly, that transformation embodies the ``spirit'' of CPS \cite{sabry1994formal} and one can say it is in the family of CPS transformations.
-
-%Because all control- and data-flow is made explicit, CPS is especially useful as an 
-%intermediate representation \cite{flanagan1993essence}. Take a simple computation such as
-
 %Some programming environments require an inversion of control which is cumbersome for the programmer. This should make it immediately apparent that this is a language problem. The web is an illustrative example of this. A user's interaction with a web application may involve a series of self-contained submissions to a server. The web environment makes available the possibility of regression or duplication of interaction (via the browser's ``Back'' button, for example) so correct server applications must be designed to deal with multiple and concurrent interactions \cite{queinnec2003inverting}.
 %useful in reinverting control (PLAI)
-%talk about double-barreled cps and exceptions
-
-%One of the variants of CPS augments each function definition with \emph{two} formal 
-%parameters and each call site with two arguments: the success continuation and the 
-%failure continuation. The success continuation is treated as the primary one, meaning 
-%that it embodies the remainder of work performed in a successful computation. The 
-%failure continuation is passed into subcalls as is or wrapped appropriately.
 
 %Consider the following definition of a division function
 %\begin{verbatim}
@@ -557,17 +542,15 @@ E[(\mathrm{ccm})]                           &\rightarrow E[\chi(E)]
 
 If an expression reduces to a value according to the language semantics, the expression ``compiled'' to the $\lambda$-calculus reduces to the value ``compiled'' to the $\lambda$-calculus according to the $\lambda$-calculus semantics.
 
-%\begin{cmtheorem}
+\begin{cmtheorem}
 
 For expressions $e$ and values $v$, $C$ is a syntactic transformation with the property that
-
 \[
 e\rightarrow^{*}_{\lambda_{cm}}v\Rightarrow C(e)\rightarrow^{*}_{\lambda}C(v)
 \]
-
 where $\rightarrow_{\lambda_{cm}}$ signifies the reduction relation of $\lambda_{cm}$ and $\rightarrow_{\lambda}$ signifies the reduction relation of the $\lambda$-calculus.
 
-%\end{cmtheorem}
+\end{cmtheorem}
 
 \section{Thesis schedule}
 
