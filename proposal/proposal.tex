@@ -423,7 +423,11 @@ $E$ is simply any term in the language but for the constraint that evaluation
 contexts interleave \emph{wcm} directives. The definition of $e$ establishes 
 the forms of valid expressions in the language: applications, variables, 
 values, \emph{wcm} forms, and \emph{ccm} forms. The definition of $v$ denotes 
-that values in the language are $\lambda$-abstractions.
+that values in the language are $\lambda$-abstractions. (Also, notice that 
+\emph{wcm} and \emph{ccm} have one parameter fewer than the forms introduced 
+earlier. This is because $\lambda_{cm}$ expresses unkeyed marks. While it can 
+be shown that a language with keyed marks can be expressed in terms of a 
+language with unkeyed marks, such as $\lambda_{cm}$, this is not our concern.) 
 
 \begin{figure}
 \begin{align*}
@@ -471,19 +475,11 @@ E[(\mathrm{ccm})]                           &\rightarrow E[\chi(E)]
 \label{chi-metafunction}
 \end{figure}
 
-We will present a transformation in the spirit of CPS from $\lambda_{cm}$ to the $\lambda$-calculus. Furthermore, we will provide and prove a meaning-preservation theorem.
+We will present a transformation in the spirit of CPS from $\lambda_{cm}$ to 
+the plain call-by-value $\lambda$-calculus. Furthermore, we will provide and 
+prove a meaning-preservation theorem.
 
-%We will provide a CPS-like language transformation and verify that it preserves program meaning. A language transformation transforms programs in a source language into semantically equivalent programs in a target language.
-
-%The definition/syntax/grammar of the source language, $\lambda_{cm}$, is given in figure \ref{language-syntax}. Its terms are those of the $\lambda$-calculus--single variables, $\lambda$-abstractions, and applications--along with forms to install a mark on the continuation (\emph{wcm} short for \emph{with-continuation-mark}) and retrieve the continuation's marks (\emph{ccm} short for \emph{current-continuation-marks}).\footnote{Notice that \emph{wcm} and \emph{ccm} have one parameter fewer than the forms introduced earlier. This is because $\lambda_{cm}$ expresses unkeyed marks. While it can be shown that a language with keyed marks can be expressed in terms of a language with unkeyed marks, such as $\lambda_{cm}$, this is not our concern.}
-
-%In order to preserve proper tail-call behavior, directly nested \emph{wcm} forms evaluate to the innermost one; the outer forms are discarded. 
-
-%The source language, $\lambda_{cm}$, is the $\lambda$-calculus with two additional syntactic forms specific to continuation marks. Terms in this language are either single variables, drawn from an infinite set; $\lambda$-abstractions; applications (all these being inherited from the $\lambda$-calculus); the \emph{wcm} form, an abbreviation of \emph{with-continuation-mark}; and the \emph{ccm} form, an abbreviation of \emph{current-continuation-marks}. In the following formal definition of $\lambda_{cm}$, $M$ is the set of syntactic terms in the language.
-
-
-
-%The target language, the $\lambda$-calculus, follows the above definition with the \emph{wcm} and \emph{ccm} forms omitted.
+[could expand here, maybe]
 
 %go from compiling language with feature to language without feature -> 
 
