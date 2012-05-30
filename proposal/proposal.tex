@@ -57,7 +57,7 @@
 % them. I did not use \providecommand because I absolutely want LaTeX to error 
 % out if these already exist. 
 
-\newcommand{\Title}{A Correct Compiler for Continuation Marks using a CPS Transformation}
+\newcommand{\Title}{A Semantics-Preserving CPS-like Transformation for Continuation Marks}
 \newcommand{\Author}{Kimball R. Germane} 
 \newcommand{\SubmissionMonth}{May}
 \newcommand{\SubmissionYear}{2012}
@@ -400,94 +400,30 @@ of this particular variation is error handling with one continuation argument
 representing the remainder of a successful computation and the other representing 
 the failure contingency. It is especially useful in modelling exceptions and 
 other non-local transfers of control in situations where the computation might fail.
+In general, the nature of the CPS transformation allows it to untangle 
+complicated, intricate control structures.
 
-%Its usefulness has been applied to a host of language features.
-
-
-
-%The usefulness of the family of CPS transformations can hardly be overstated.
-% it clarifies complex, intricate control flow
-% 
-
-% I can't write a coherent sentence today so here are notes for my recovery:
-% The paragraph above is a good place to transition into modelling language features with CPS transformations. That isn't the focus of the proposal, though, which is to provide a meaning-preserving transformation which itself could be used for a host of purposes. Really, the point is to keep related work in its section.
-% The project description should reiterate the proposal, introduce the cm language and its semantics, mention the composition of the lambda calculus, and thoroughly present the proposal (whatever that means). It would be great to transition naturally into
-% The validation section presents the theorem which will be proven. Despite its location, the project includes a proof of correctness of the transformation along with its presentation.
-
-
-%\subsection{CPS transformations}
-
-%CPS transformations are commonly employed to ...
-
-%Pettyjohn et al. \cite{pettyjohn2005continuations} provide a semantics
-
-%CPS transformations have been thoroughly studied
-
-%CPS has a close correspondence to an imperative instruction sequence which eases translation to low-level machines \cite{appel2007compiling}.
-
-%The language semantics is defined but no correctness proof of the interpreter exists so there is no way to determine whether it is behaving correctly.
-
-%There is a history of transforming languages 
-
-%Continuation-passing style is a breed of languages targeted by transformational compilers 
-%amenable to analysis, optimization, verification. (?) 
-
-%Programs in CPS are simpler in that all transfer of control is uniformly represented, which simplifies the construction of compilers \cite{sabry1994formal}.
-
-
-%CPS is more amenable to reasoning and proof [by virtue of what? it's uniformity?] which...
-%one can get more semantics \cite{strachey2000continuations}
-%more optimizations are possible \cite{plotkin1975call}
-
-%Some programming environments require an inversion of control which is cumbersome for the programmer. This should make it immediately apparent that this is a language problem. The web is an illustrative example of this. A user's interaction with a web application may involve a series of self-contained submissions to a server. The web environment makes available the possibility of regression or duplication of interaction (via the browser's ``Back'' button, for example) so correct server applications must be designed to deal with multiple and concurrent interactions \cite{queinnec2003inverting}.
-%useful in reinverting control (PLAI)
-
-%Consider the following definition of a division function
-%\begin{verbatim}
-%(define (div a b k e)
-%  (if (= b 0)
-%      (e ?)
-%      (k (/ a b))))
-%\end{verbatim}
-%wherein \texttt{/} denotes a primitive division function which will fail when the 
-%denominator is zero.
-
-% find better example for failure continuations
-
-%\begin{verbatim}
-%(/ 6 3 k e)
-%\end{verbatim}
-
-%From this, we can see that failure continuations behave like exceptions and indeed 
-%represent them in continuation-passing style.
-
-%This and similar variants of CPS in which two continuations are represented are 
-%referred to colloquially as ``double-barrelled'' CPS.
-
-
-
-%(as opposed to the stack which is an upper bound for the continuation) is visible/explicit. 
-
-%CPS transformations do not typically distinguish between ``primitive'' functions and ``non-primitive'' functions meaning that operations are decomposed by the transformation until raw values are obtained. Consequently, seemingly simple functions--so simple that they are seldom treated as functions--are affected by the transform.
-%(This may be the method by which the call-by-value is simulated by the call-by-name--or somehow related to it. If this is the case, it is probably found in Plotkin's paper. If so, bring it up.)
+Similar transformations exist which express other programming language features 
+such as security annotations \cite{wallach2000safkasi} and control structures 
+such as procedures, exceptions, labelled jumps, coroutines, and 
+backtracking. On top of other offerings, this places it in a category of tools 
+to describe and analyze programming language features. (This category is also 
+occupied by Moggi's computational lambda calculus--monads 
+\cite{moggi1989computational}.)
 
 \section{Project description}
 
+We consider an extension of the call-by-value $\lambda$-calculus with 
+facilities to manipulate continuation marks, introduced by Pettyjohn et al. 
+\cite{pettyjohn2005continuations}, which we term $\lambda_{cm}$.
 
-
-%describe language grammar
-%describe language semantics
-%describe process?
-
-% the language grammar is given by E and F
-
-We will provide a CPS-like language transformation and verify that it preserves program meaning. A language transformation transforms programs in a source language into semantically equivalent programs in a target language.
-
-The definition/syntax/grammar of the source language, $\lambda_{cm}$, is given in figure \ref{language-syntax}. Its terms are those of the $\lambda$-calculus--single variables, $\lambda$-abstractions, and applications--along with forms to install a mark on the continuation (\emph{wcm} short for \emph{with-continuation-mark}) and retrieve the continuation's marks (\emph{ccm} short for \emph{current-continuation-marks}).\footnote{Notice that \emph{wcm} and \emph{ccm} have one parameter fewer than the forms introduced earlier. This is because $\lambda_{cm}$ expresses unkeyed marks. While it can be shown that a language with keyed marks can be expressed in terms of a language with unkeyed marks, such as $\lambda_{cm}$, this is not our concern.}
-
-In order to preserve proper tail-call behavior, directly nested \emph{wcm} forms evaluate to the innermost one; the outer forms are discarded. 
-
-The source language, $\lambda_{cm}$, is the $\lambda$-calculus with two additional syntactic forms specific to continuation marks. Terms in this language are either single variables, drawn from an infinite set; $\lambda$-abstractions; applications (all these being inherited from the $\lambda$-calculus); the \emph{wcm} form, an abbreviation of \emph{with-continuation-mark}; and the \emph{ccm} form, an abbreviation of \emph{current-continuation-marks}. In the following formal definition of $\lambda_{cm}$, $M$ is the set of syntactic terms in the language.
+Figure \ref{language-grammar} presents the definition of $\lambda_{cm}$. 
+Definitions of $E$ and $F$ signify computation contexts.The non-terminal 
+$E$ is simply any term in the language but for the constraint that evaluation 
+contexts interleave \emph{wcm} directives. The definition of $e$ establishes 
+the forms of valid expressions in the language: applications, variables, 
+values, \emph{wcm} forms, and \emph{ccm} forms. The definition of $v$ denotes 
+that values in the language are $\lambda$-abstractions.
 
 \begin{figure}
 \begin{align*}
@@ -499,10 +435,55 @@ F = &[]                   &     &v\\
     &(\mathrm{wcm}\,E\,e) & v = & \lambda x. e
 \end{align*}
 \caption{$\lambda_{cm}$ syntax}
-\label{language-syntax}
+\label{language-grammar}
 \end{figure}
 
-The target language, the $\lambda$-calculus, follows the above definition with the \emph{wcm} and \emph{ccm} forms omitted.
+Figure \ref{language-semantics} presents the semantics of $\lambda_{cm}$. The 
+definitions therein establish the proper interpretation of various expressions. 
+The first follows the typical definition of application. The second defines 
+the tail behavior of the \emph{wcm} form. The third expresses that the 
+\emph{wcm} form takes on the value of its body. Finally, the fourth defines 
+the value of the \emph{ccm} form in terms of the $\chi$ metafunction which 
+definition is given in figure \ref{chi-metafunction}.
+The $\chi$ metafunction is defined over syntactic forms of the language, so its 
+definition corresponds closely to the definition of $\lambda_{cm}$ found in 
+figure \ref{language-grammar}.
+
+\begin{figure}
+\begin{align*}
+E[(\lambda x.e)\,v]                         &\rightarrow E[e[x\leftarrow v]]\\
+E[(\mathrm{wcm}\,v\,(\mathrm{wcm}\,v'\,e))] &\rightarrow E[(\mathrm{wcm}\,v'\,e)]\\
+E[(\mathrm{wcm}\,v\,v')]                    &\rightarrow E[v']\\
+E[(\mathrm{ccm})]                           &\rightarrow E[\chi(E)]
+\end{align*}
+\caption{$\lambda_{cm}$ evaluation rules}
+\label{language-semantics}
+\end{figure}
+
+\begin{figure}
+\begin{align*}
+\chi([])                   &= \mathrm{empty}\\
+\chi((E\,e))               &= \chi(E)\\
+\chi((v\,E))               &= \chi(E)\\
+\chi((\mathrm{wcm}\,E\,e)) &= \chi(E)
+\end{align*}
+\caption{Definition of $\chi$ metafunction}
+\label{chi-metafunction}
+\end{figure}
+
+We will present a transformation in the spirit of CPS from $\lambda_{cm}$ to the $\lambda$-calculus. Furthermore, we will provide and prove a meaning-preservation theorem.
+
+%We will provide a CPS-like language transformation and verify that it preserves program meaning. A language transformation transforms programs in a source language into semantically equivalent programs in a target language.
+
+%The definition/syntax/grammar of the source language, $\lambda_{cm}$, is given in figure \ref{language-syntax}. Its terms are those of the $\lambda$-calculus--single variables, $\lambda$-abstractions, and applications--along with forms to install a mark on the continuation (\emph{wcm} short for \emph{with-continuation-mark}) and retrieve the continuation's marks (\emph{ccm} short for \emph{current-continuation-marks}).\footnote{Notice that \emph{wcm} and \emph{ccm} have one parameter fewer than the forms introduced earlier. This is because $\lambda_{cm}$ expresses unkeyed marks. While it can be shown that a language with keyed marks can be expressed in terms of a language with unkeyed marks, such as $\lambda_{cm}$, this is not our concern.}
+
+%In order to preserve proper tail-call behavior, directly nested \emph{wcm} forms evaluate to the innermost one; the outer forms are discarded. 
+
+%The source language, $\lambda_{cm}$, is the $\lambda$-calculus with two additional syntactic forms specific to continuation marks. Terms in this language are either single variables, drawn from an infinite set; $\lambda$-abstractions; applications (all these being inherited from the $\lambda$-calculus); the \emph{wcm} form, an abbreviation of \emph{with-continuation-mark}; and the \emph{ccm} form, an abbreviation of \emph{current-continuation-marks}. In the following formal definition of $\lambda_{cm}$, $M$ is the set of syntactic terms in the language.
+
+
+
+%The target language, the $\lambda$-calculus, follows the above definition with the \emph{wcm} and \emph{ccm} forms omitted.
 
 %go from compiling language with feature to language without feature -> 
 
@@ -513,65 +494,25 @@ The target language, the $\lambda$-calculus, follows the above definition with t
 %things to include:
 %history of CPS
 %compilers of continuation marks
-%cite Racket
-%talk about continuation marks in Javascript
-
-
 %talk about call/cc as the quintessential use of CPS
-
-
-
-%We will provide a CPS transformation of the $\lambda$-calculus with continuation marks.
-
-\subsection{Language Definition}
-
-Figure \ref{language-definition} presents the syntactic forms of the language, the 
-definition of a metafunction $\chi$ in terms of those forms, and the definitions of 
-expressions and values in the language. Definitions of $E$ and $F$ signify contexts in the 
-computation. The distinction between $E$ and $F$ is made to force directly nested 
-\emph{wcm} terms to behave as solely the innermost term. The definition of $e$ establishes 
-the forms of valid expressions in the language: applications, variables, values, \emph{wcm} 
-forms, and \emph{ccm} forms. The definition of $v$ denotes that values in the language 
-are $\lambda$-abstractions.
-
-%definitional constraint: the evaluation of the mark occurs before the evaluation of the 
-%body. (This constraint is crucial in the face of mutation.) The corresponding rules in the 
-%right column describe the evaluation of the $\chi$ metafunction upon which the evaluation 
-%of the \emph{ccm} form depends.
-
-
-
-
-The definitions in figure \ref{language-semantics} establish the proper interpretation of 
-various expressions. The first follows the typical definition of application. The second 
-defines the tail behavior of the \emph{wcm} form. The third expresses that the \emph{wcm} 
-form takes on the value of its body. Finally, the fourth defines the value of the \emph{ccm} 
-form in terms of the $\chi$ metafunction.
-
-\begin{figure}
-\begin{align*}
-E[(\lambda x.e)\,v]                         &\rightarrow E[e[x\leftarrow v]]\\
-E[(\mathrm{wcm}\,v\,(\mathrm{wcm}\,v'\,e))] &\rightarrow E[(\mathrm{wcm}\,v'\,e)]\\
-E[(\mathrm{wcm}\,v\,v')]                    &\rightarrow E[v']\\
-E[(\mathrm{ccm})]                           &\rightarrow E[\chi(E)]
-\end{align*}
-\caption{Evaluation rules}
-\label{language-semantics}
-\end{figure}
 
 \section{Validation}
 
-If an expression reduces to a value according to the language semantics, the expression ``compiled'' to the $\lambda$-calculus reduces to the value ``compiled'' to the $\lambda$-calculus according to the $\lambda$-calculus semantics.
+An important property of our transformation is that it preserves meaning. If not, it would have few conceivable applications as programs in $\lambda_{cm}$ wouldn't correspond to programs in the $\lambda$-calculus in any meaningful sense.
+
+This property is expressed by the following theorem:
 
 \begin{cmtheorem}
 
-For expressions $e$ and values $v$, $C$ is a syntactic transformation with the property that
+For expressions $e$ and values $v$ in $\lambda_{cm}$, $C$ is a syntactic transformation with the property that
 \[
 e\rightarrow^{*}_{\lambda_{cm}}v\Rightarrow C(e)\rightarrow^{*}_{\lambda}C(v)
 \]
 where $\rightarrow_{\lambda_{cm}}$ signifies the reduction relation of $\lambda_{cm}$ and $\rightarrow_{\lambda}$ signifies the reduction relation of the $\lambda$-calculus.
 
 \end{cmtheorem}
+
+In prose, this theorem states that if an expression reduces to a value according to the $\lambda_{cm}$ semantics, the expression ``compiled'' to the $\lambda$-calculus reduces to the value ``compiled'' to the $\lambda$-calculus according to the $\lambda$-calculus semantics.
 
 \section{Thesis schedule}
 
