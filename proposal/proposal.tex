@@ -112,7 +112,7 @@
 \newcounter{definition}
 \newcounter{example}
 
-\newtheorem*{cmtheorem}{C:$\lambda_{CM}\rightarrow\lambda$ Meaning Preservation Theorem}
+\newtheorem*{cmtheorem}{$\mathcal{C}:\lambda_{CM}\rightarrow\lambda$ Meaning Preservation Theorem}
 
 \begin{document}
 
@@ -187,10 +187,10 @@ inspection to enforce security policies (\emph{Java}, \emph{C\#}) or support asp
 oriented programming (\emph{aspectj}) can be defined in terms of a simpler language with
 continuation marks.
 
-Continuation marks originated in PLT Scheme (now Racket) \cite{plt-tr1} as a stack 
+Continuation marks originated in PLT Scheme (now Racket \cite{plt-tr1}) as a stack 
 inspection mechanism. In fact, the \emph{Java} and \emph{C\#} languages rely on a similar 
 stack inspection to enforce security policies of which continuation marks can be seen as 
-a generalization. Surprisingly, continuation marks are supported by any language with 
+a generalization. Surprisingly, continuation marks can be encoded in any language with 
 exception facilities \cite{pettyjohn2005continuations} which fact has led to their 
 experimental addition to Javascript \cite{clements2008implementing}.
 
@@ -313,11 +313,7 @@ evaluation context. In this instance, the previous mark is overwritten with the 
 
 \subsection{Continuation-passing style}
 
-The CPS transformation is a family of language transformations designed to simplify 
-programs by representing all data and control flow uniformly and explicitly, in turn 
-simplifying compiler construction and analyses such as optimization and verification 
-\cite{sabry1994formal}. The standard variation adds a formal parameter to every 
-function definition and an argument to every call site.
+The CPS transformation is a family of language transformations derived from Plotkin \cite{plotkin1975call} and designed to simplify  programs by representing all data and control flow uniformly and explicitly, in turn simplifying compiler construction and analyses such as optimization and verification \cite{sabry1994formal}. The standard variation adds a formal parameter to every function definition and an argument to every call site.
 
 As an example, consider once again the two variants of the factorial function, sans continuation 
 marks, given earlier. In CPS, the properly recursive variant can be expressed as
@@ -333,14 +329,16 @@ and the tail-recursive variant as
   (if (= n 0)
       (k acc)
       (fact-tr (- n 1) (* n acc) k)))
-\end{verbatim}. (For clarity, we have treated ``primitive'' functions--equality comparison, subtraction, and multiplication--in a direct manner. In contrast, a full CPS transformation would affect \emph{every} function.)
+\end{verbatim}. (For clarity, we have treated ``primitive'' functions--equality 
+comparison, subtraction, and multiplication--in a direct manner. In contrast, a 
+full CPS transformation would affect \emph{every} function.)
 
 Notice that, in the first variation, each recursive call receives a newly-constructed 
 $k$ encapsulating additional work to be performed at the completion of the recursive 
 computation. In the second, $k$ is passed unmodified, so while computation occurs 
 within each context, no \emph{additional} computation pends. From this example, we 
-can see that the CPS representation is ideal for understanding tail-call behavior: 
-within, the fact that the continuation doesn't grow is explicit.
+see that the CPS representation is ideal for understanding tail-call behavior as it 
+is explicit that the continuation is preserved by the tail call.
 
 The purpose of CPS does not lie solely in pedagogy, however. The reification of and 
 consequent ability to directly manipulate the continuation is a powerful ability, 
@@ -365,7 +363,7 @@ Much of the power of \emph{call/cc} lies in the manifestation of the continuatio
 as a function, giving it first-class status. It can be passed as an argument in 
 function calls, invoked, and, amazingly, reinvoked at leisure. It is this 
 reinvokeability that makes \emph{call/cc} the fundamental unit of control from 
-which all other control structures can be built, including loops, coroutines, 
+which all other control structures can be built, including generators, coroutines, 
 and threads.
 
 %\emph{call/cc} is erroneously seen as incredibly heavyweight and overkill for 
@@ -479,7 +477,20 @@ We will present a transformation in the spirit of CPS from $\lambda_{cm}$ to
 the plain call-by-value $\lambda$-calculus. Furthermore, we will provide and 
 prove a meaning-preservation theorem.
 
-[could expand here, maybe]
+\subsection{Example CPS transform}
+
+As an example of a CPS transform definition, we supply Fischer's transform 
+(which we call $\mathcal{F}$) of the $\lambda$-calculus 
+\cite{fischer1972lambda} below. Recall that terms in 
+the $\lambda$-calculus take the form of lone variables $x$, 
+$\lambda$-abstractions $\lambda x.M$, and applications 
+$M\,N$ where $M$ and $N$ are themselves $\lambda$-calculus terms.
+
+\begin{align*}
+\mathcal{F}[x]           &= \lambda k.k\,x\\
+\mathcal{F}[\lambda x.M] &= \lambda k.k(\lambda x.\mathcal{F}[M])\\
+\mathcal{F}[M\,N]       &= \lambda k.\mathcal{F}[M](\lambda m.\mathcal{F}[N](\lambda n.(m\,n)\,k))
+\end{align*}
 
 %go from compiling language with feature to language without feature -> 
 
@@ -494,25 +505,40 @@ prove a meaning-preservation theorem.
 
 \section{Validation}
 
-An important property of our transformation is that it preserves meaning. If not, it would have few conceivable applications as programs in $\lambda_{cm}$ wouldn't correspond to programs in the $\lambda$-calculus in any meaningful sense.
+An important property of our transformation is that it preserves meaning. If not, 
+it would have few conceivable applications as programs in $\lambda_{cm}$ wouldn't 
+correspond to programs in the $\lambda$-calculus in any meaningful sense.
 
 This property is expressed by the following theorem:
 
 \begin{cmtheorem}
 
-For expressions $e$ and values $v$ in $\lambda_{cm}$, $C$ is a syntactic transformation with the property that
+For expressions $e$ and values $v$, $\mathcal{C}$ is a syntactic transformation with the 
+property that
 \[
-e\rightarrow^{*}_{\lambda_{cm}}v\Rightarrow C(e)\rightarrow^{*}_{\lambda}C(v)
+e\rightarrow^{*}_{\lambda_{cm}}v\Rightarrow \mathcal{C}[e]\rightarrow^{*}_{\lambda}\mathcal{C}[v]
 \]
-where $\rightarrow_{\lambda_{cm}}$ signifies the reduction relation of $\lambda_{cm}$ and $\rightarrow_{\lambda}$ signifies the reduction relation of the $\lambda$-calculus.
+where $\rightarrow_{\lambda_{cm}}$ signifies the reduction relation of $\lambda_{cm}$ 
+and $\rightarrow_{\lambda}$ signifies the reduction relation of the $\lambda$-calculus.
 
 \end{cmtheorem}
 
-In prose, this theorem states that if an expression reduces to a value according to the $\lambda_{cm}$ semantics, the expression ``compiled'' to the $\lambda$-calculus reduces to the value ``compiled'' to the $\lambda$-calculus according to the $\lambda$-calculus semantics.
+In prose, this theorem states that if an expression reduces to a value according to 
+the $\lambda_{cm}$ semantics, the expression ``compiled'' to the $\lambda$-calculus 
+reduces to the value ``compiled'' to the $\lambda$-calculus according to the 
+$\lambda$-calculus semantics.
+
+Proofs of this type are typically shown directly by induction on the reduction 
+relation. We anticipate the main difficulty will be in ensuring proper tail-call 
+behavior of adjacent marks. To aide testing and development, we will build a Redex 
+\cite{findler2010redex} implementation of the transform.
 
 \section{Thesis schedule}
 
-Less than five years.
+We first intend to define the transform using Redex to obtain feedback. Once the 
+transform has been defined and informally checked, we will proceed with formal 
+verification returning to the first step as necessary. We expect the entire process 
+to take less than five years.
 
 %Abstract – 1 to 2 paragraphs summarizing the proposal. Introduction – 1 to 4 pages
 %answering questions 1 and 2 above Related Work – 1 to 2 pages answering question 3 above.

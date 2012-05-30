@@ -93,6 +93,25 @@
   annotate={Queinnec investigates the consequences of describing a web server using a language with first-class continuations. He considers applications in which agents progress through a sequence of submissions and may backtrack or clone sessions at any time. He concludes that web applications should be written as a single program in direct style wherein the state and continuation are implicitly encoded. Interestingly, he also concludes that this is possible in languages with explicit, reified continuations and submits that web languages should offer them.}
 }
 
+@article{findler2010redex,
+  title={Redex: Practical Semantics Engineering},
+  author={Findler, R.B. and Klein, C.},
+  year={2010},
+  annotate={PLT Redex is a domain-specific language for specifying reduction semantics and includes a suite of tools to aide analysis.}
+}
+
+@inproceedings{fischer1972lambda,
+  title={Lambda calculus schemata},
+  author={Fischer, M.J.},
+  booktitle={ACM SIGACT News},
+  volume={7},
+  number={14},
+  pages={104--109},
+  year={1972},
+  organization={ACM},
+  annotate={Fischer introduces a continuation-passing transform as part of this treatise on the $\lambda$-calculus }
+}
+
 @inproceedings{flanagan1993essence,
   title={The essence of compiling with continuations},
   author={Flanagan, C. and Sabry, A. and Duba, B.F. and Felleisen, M.},
@@ -131,7 +150,7 @@
   author={Sabry, A.A.},
   year={1994},
   school={Citeseer},
-  annotate={Sabry's dissertation provides a cogent and thorough overview and investigation of the effects of using continuation-passing style as an intermediate language. The focus of the dissertation is the association between typical and CPS transformational compilers. Attention is given to types and reduction schemes that give way to the various $\lambda$-calculi. It is used for its concise, [strong/well-crafted/summary-ish] conclusions and comprehensive summaries.}
+  annotate={Sabry's dissertation provides a cogent and thorough overview and investigation of the effects of using continuation-passing style as an intermediate language. The focus of the dissertation is the association between typical and CPS transformational compilers. Attention is given to types and reduction schemes that give way to the various $\lambda$-calculi. It is used for its strong, concise conclusions and comprehensive summaries.}
 }
 
 @article{strachey2000continuations,
@@ -154,9 +173,15 @@
   pages={125--159},
   year={1975},
   publisher={Elsevier},
-  annotate={This seminal paper by Plotkin explores the relationship between ISWIM and the $\lambda$-calculus. Consequently, Plotkin visits the call-by-name and call-by-value variations of the $\lambda$-calculus and the simulation of each variant by the other. He uses the ``technique of continuations'' which can provide denotational semantics for call-by-value languages and utilizes $\lambda$-introducing transforms to ease analysis.}
+  annotate={This seminal paper by Plotkin explores the relationship between ISWIM and the $\lambda$-calculus. Consequently, Plotkin visits the call-by-name and call-by-value variations of the $\lambda$-calculus and the simulation of each variant by the other. He uses the ``technique of continuations'' which can provide denotational semantics for call-by-value languages and utilizes $\lambda$-introducing transforms, a progenitor of current CPS transformations, to ease analysis.}
 }
 
+@article{sussman1975interpreter,
+  title={An Interpreter for Extended Lambda Calculus},
+  author={Sussman, G.J. and Steele, G.},
+  year={1975},
+  publisher={Massachusetts Institute of Technology}
+}
 
 @book{appel2007compiling,
   title={Compiling with continuations},
@@ -213,7 +238,7 @@
   pages={341--378},
   year={2000},
   publisher={ACM},
-  annotate={SAFKASI is the security architecture formerly known as stack inspection. Wallach et al. present security-passing style which is a CPS-like transformation which reifies and manages security contexts. It is an example of the recharacterization induced by a CPS-like global transform.}
+  annotate={SAFKASI is the ``security architecture formerly known as stack inspection''. Wallach et al. present security-passing style which is a CPS-like transformation which reifies and manages security contexts. It is an example of the recharacterization induced by a CPS-like global transform.}
 }
 
 
