@@ -1,74 +1,101 @@
-Thesis: Continuation marks are amenable to a monadic semantics.
+Thesis: A CPS-like global transformation can compile the $\lambda$-calculus with 
+continuation marks to the plain $\lambda$-calculus in a semantics-preserving way.
 
-Brief overview of Denotational Semantics
-
-E : Term -> Value
-E[[n]] = n
-E[[e_{1}+e_{2}]] = E[[e_{1}]]+E[[e_{2}]]
-
-Domain is numbers.
-
-Let's add variables (environments).
-
-E : Term -> Env -> Value
-(where Env : id -> Value)
-E[[n]] = \e. n
-E[[x]] = \e. e[x]
-E[[e_{1}+e_{2}]] = \e. E[[e_{1}]] e + E[[e_{2}]] e
-
-Once we add variables, the domain becomes functions.
-
-Let's add continuations to allow sequencing.
-
-E : Term -> Env -> (Value -> Ans) -> Ans
-E[[n]] = \e.\k. k n
-E[[x]] = \e.\k. k (e[x])
-E[[e_{1}+e_{2}]] = \e.\k. E[[e_{1}]] e (\i E[[e_{2}]] e (\j k (i+j)))
-E[[e_{1};e_{2}]] = \e.\k. E[[e_{1}]] e (\x. E[[e_{2}]] e k)
-
-Once we add continuations, domain becomes quite complicated.
-
-In addition to complicating the domain, notice that every addition to the language required a global changes to the definition.
-
-Lack of Modularity in Denotational Semantics*
-
-E : Term -> Value
-E[[n]] = n
-E[[e_{1}+e_{2}]] = E[[e_{1}]]+E[[e_{2}]]
-
-* Modular Monadic Semantics
-
-Introduce an environment to allow the use of variables and functions
-
-E : Term -> Env -> Value
-E[[n]] = \p.n
-E[[e_{1}+e_{2}]] = \p.E[[e_{1}]]p+E[[e_{2}]]p
-E[[v]] = \p p[[v]]
-
-Introduce continuations to allow sequencing
-
-E : Term -> Env -> (Value -> Ans) -> Ans
-E[[n]] = \p.\k. k n
-E[[e_{1}+e_{2}]]=\p.\k.(E[[e_{1}]]p(\i.E[[e_{2}]]p(\j.k(i+j)))
-E[[v]] = \p.\k. k p[[v]] or p[[v]](\x.k x)
-E[[e_{1};e_{2}]]=\p.\k.E[[e_{1}]]p(\x.E[[e_{2}]]p k)
-
-This is not a modular approach
-
-The addition of a construct (wc) requires global changes to the definition.
-"regarded by many as the most significant obstacle in applying denotational semantics to realistic programming languages"
-
-(still can't say exactly why behavioral are not sufficient. if the reason is of the same nature as above, we can dismiss them similarly. if the reason is different, we must expose it.)
-
-Monadic semantics solve these problems. I'm not introducing them here; they've been applied copiously/comprehensively/generously/something along these lines. (Cite papers on monadic semantics.)
-
-Monadic semantics are a way of formalizing a language feature (?)
 
 Introduce continuation marks
 
-The continuation refers to the "rest of the computation".
-A continuation mark is an annotation on the "rest of the computation".
-A typical/standard representation of the continuation is the call stack. In this case, continuation marks amount to stack annotations. (oversimplification?)
+The continuation is commonly described as the "rest of the computation".
+This is misleading since computation can occur "outside" the continuation.
+(Note tail recursive factorial.)
+So it can't refer to the rest of the computation to evaluate a program.
+I like the term "pending computation" though it still may evoke the "rest" for some.
+Consider the expression (+ 3 (+ 1 1)) (in an strict regime?).
+If we directly interpret this, we can separate [wc] the term with a hole (+ 3 <>) from the redex (+ 1 1).
+The computation (+ 3 <>) is pending after the computation (+ 1 1). It is part of the continuation.
+(In this case, the whole thing.)
+
+Now consider (+ 5 (+ 4 (+ 3 (+ 2 1))))
+This is one view of the evaluation process:
+
+(+ 5 (+ 4 (+ 3 (+ 2 1))))
+
+(+ 4 (+ 3 (+ 2 1)))
+(+ 5 <>)
+
+(+ 3 (+ 2 1))
+(+ 4 <>)
+(+ 5 <>)
+
+(+ 2 1)
+(+ 3 <>)
+(+ 4 <>)
+(+ 5 <>)
+
+3
+(+ 3 <>)
+(+ 4 <>)
+(+ 5 <>)
+
+(+ 3 3)
+(+ 4 <>)
+(+ 5 <>)
+
+6
+(+ 4 <>)
+(+ 5 <>)
+
+(+ 4 6)
+(+ 5 <>)
+
+10
+(+ 5 <>)
+
+(+ 5 10)
+
+15
+
+It looks like a stack. In some models of computation, the continuation /is/ the stack.
+The continuation is more general and abstract. It is induced by the model and may not take 
+the form of a stack conceptually.
+
+Now suppose I had the ability to annotate the continuation with whatever I wanted.
+
+[simple, illustrative example here]
+
+Keeping with tradition, suppose we had a function
+
+(launch-the-missile)
+
+and we can call it from the clearance function:
+
+(clearance (launch-the-missile))
+
+and the no-clearance function:
+
+(no-clearance (launch-the-missile))
+
+with obvious behavior.
+
+(launch-the-missile)
+(clearance <>) "do whatever you like"
+
+(launch-the-missile)
+(no-clearance <>) "you can do nothing"
+
+(launch-the-missile)
+(clearance <>) "do whatever you like"
+(no-clearance <>) "you can do nothing" (include grant clearance)
+
+A correct clearance implementation would check to see if it could grant clearance.
+
+Key is used in the sense of maps but what if it were a cryptographic key? Since we have to 
+explicitly state the keys we want to use, what if launch-the-missile looked for, say, an 
+encryption of a periodically changing value. if it found it, it would know that fresh 
+clearance was given. if it didn't, then it would know that either clearance wasn't given 
+or it wasn't fresh. of course systems aren't designed by this, but is there any use for 
+such a scheme?
+
+This gives us context-aware behavior. 
 
 Example
 
@@ -79,12 +106,4 @@ Useful for fluid let values, debuggers, profilers, steppers.
 
 Explain use in fluid lets and steppers.
 
-I propose that continuation marks have a monadic semantics.
-
-Behavioral semantics given for continuation marks. Will prove equivalence.
-Monads have specific laws that must be satisfied. Will prove they hold.
-
-(return x) >>= f = f x (left identity)
-m >>= return = m (right identity)
-(m >>= f) >>= g = m >>= (\x -> f x >>= g) (associativity)
 
