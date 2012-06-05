@@ -1,0 +1,91 @@
+As with a traditional CPS transform, our transform will add an argument at each call site. However, this argument is not a continuation or even a function, so our transform is more in the 
+security-passing style [cite sec passing] in that we pass data, not computation. The data we pass is a list of the current marks. As the continuation grows, we necessarily nest deeper into 
+evaluation.
+
+Consider this
+
+wcm m [e] ms -> e m:ms
+
+or something like that.
+
+We encode the marks as a list.
+
+The definition of ccm becomes very simple:
+
+ccm ms = ms
+
+An expression wcm m e receives an additional argument, the current marks: wcm m e ms. If the context is also a wcm, the inner is equivalent to
+
+wcm m' e m:ms = e m':ms
+
+If not, the continuation has grown and it is equivalent to
+
+wcm m' e m:ms = e m':m:ms.
+
+Our choice in definition affects how easily keyed marks are expressible in an unkeyed world.
+
+To express keyed marks with the just given definition, consider each mark a map. When adding a mark, we obtain the current marks, push a mark, and obtain the marks again. If a mark was added, 
+we know we are dealing with a new mark and can push a singleton map. If a mark wasn't added, we replaced one, in which case we modify the top mark and push it.
+
+However, we may too eagerly pare outer marks--perhaps by not installing them at all. This is fine when all marks are created equal but keyed marks are transparent to marks keyed differently. This 
+is violated when mark installation is foregone unnecessarily.
+
+One possible way to be properly tail recursive is to make the marks argument a pair of a wcm flag and a list. wcm expressions unilaterally set the flag true in addition to mark manipulation (which 
+depends on the value of the flag). other calls unilaterally set the flag false. if a wcm expression encounters a false flag, it adds a new mark. If it encounters a true flag, it replaces the mark. 
+This is slightly reminiscent of Clement and Felleisen's Tail Recursive Stack Inspection Machine--only vaguely though.
+
+(wcm 1 (wcm 2 (+ 1 (+ 1 1)) ->
+
+(F,[])
+(T,[1])
+(T,[2])
+(F,[2])
+(F,[2])
+
+Of course, this example doesn't illustrate what we want.
+
+(wcm 1 (+ 1 (wcm 2 (wcm 3 2))))
+
+A trace of the flag/continuation mark pair looks like
+
+(F,[])
+(T,[1])
+(F,[1])
+(T,[2,1])
+(T,[3,1])
+
+I'm confident this is what we want.
+
+Let's consider the factorial function.
+
+(define fact (lambda (n)
+  (if (= n 0)
+      1
+      (wcm n (* n (fact (- n 1))))))
+
+(fact 2)
+(wcm 2 (* 2 (fact 1)))
+(wcm 2 (* 2 (wcm 1 (* 1 (fact 0)))
+(wcm 2 (* 2 (wcm 1 (* 1 1))
+
+(F,[])
+(T,[2])
+(F,[2])
+(T,[1,2])
+(F,[1,2])
+
+(define fact-tr (lambda (n acc)
+  (if (= n 0)
+      acc
+      (wcm n (fact (- n 1) (* n acc)))))
+
+(fact-tr 2 1)
+(wcm 2 (fact-tr 1 2)
+(wcm 2 (wcm 1 (fact-tr 0 2)))
+(wcm 2 (wcm 1 2))
+
+(F,[])
+(T,[2])
+(T,[1])
+
+It has the behavior we want.

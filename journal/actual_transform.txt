@@ -1,0 +1,111 @@
+lambda_cm has five forms
+
+x - variables
+\x.e - abstractions
+e f - applications
+wcm e f - with-continuation-mark
+ccm - current-continuation-mark
+
+abstractions are modified to receive an additional argument and applications are modified to provide 
+one--the current continuation marks
+
+wcm and ccm also receive this additional argument.
+
+This works because the continuation grows precisely when calls are nested! As nested calls return, the 
+discarding of the continuation marks within them is reflected by, well, the scope and immutability of 
+the marks list.
+
+then wcm m e y where x=(f,ms) becomes
+if fst y then e (true,(cons m (tail (snd y)))) else e (true,(cons m (snd y)))
+
+or better yet
+
+e (true,(cons m (if fst x then (tail (snd y)) else (snd y))))
+
+ccm y where y=(f,ms) becomes
+snd y
+
+if y is an argument to the current function, a call within becomes
+(false,snd y)
+
+that is, applications of the form e f become e f (false,snd y)
+
+abstractions \x.e should become \x.\y.e
+
+The transform:
+
+C[x] = \y.x
+C[\x.e] = \x.\y.C[e]
+C[e f] = \y.C[e] (C[f] (false,snd y)) (false,snd y)
+C[wcm m e] = \y.C[e] (true,(cons m (if fst y then (tail (snd y)) else (snd y)))
+C[ccm] = \y.snd y
+
+\x.x \y.y <list>
+
+C[\x.x ccm]
+\y.C[\x.x] C[ccm] y
+\y.\x.\y.C[x] C[ccm] y
+\y.\x.\y.x C[ccm] y
+\y.\x.\y.x \y.snd y y
+
+evaluation
+\y.\x.\y.x \y.snd y y (f,[])
+
+\x.\y.x \y.snd y (f,[])
+\y.snd y (f,[])
+
+C[\x.x 5]
+\y.C[\x.x] C[5] y
+\y.\x.\y.C[x] C[5] y
+\y.\x.\y.x C[5] y
+\y.\x.\y.x 5 y
+
+evaluation
+
+\y.\x.\y.x 5 y (f,[])
+\x.\y.x 5 (f,[])
+\y.5 (f,[])
+5
+
+C[\x.x 5]
+\y.C[\x.x] (C[5] (false,snd y)) (false,snd y)
+\y.\x.\y.C[x] (C[5] (false,snd y)) (false,snd y)
+\y.\x.\y.x (C[5] (false,snd y)) (false,snd y)
+\y.\x.\y.x (\y.5 (false,snd y)) (false,snd y)
+
+evaluation
+
+\y.\x.\y.x (\y.5 (false,snd y)) (false,snd y) (false,[])
+\x.\y.x (\y.5 (false,[])) (false,snd [])
+\x.\y.x 5 (false,snd [])
+\y.5 (false,snd [])
+5
+
+
+
+C[x] = \y.x
+C[\x.e] = \x.\y.C[e] y
+
+C[e v] = \y.C[e] C[v] ~y
+C[e f] = \y.C[e] (C[f] ~y)
+
+where ~y = (false,snd y)
+
+C[\x.x 5] (false,[])
+\y.C[\x.x] (C[5] ~y) ~y (false,[])
+\y.\x.\y.C[x] (C[5] ~y) ~y (false,[])
+\y.\x.\y.\y.x (C[5] ~y) ~y (false,[])
+\y.\x.\y.\y.x (\y.5 ~y) ~y (false,[])
+\x.\y.\y.x (\y.5 (false,[])) (false,[])
+\x.\y.\y.x 5 (false,[])
+\y.\y.5 (false,[])
+\y.5
+
+C[x] = \y.x
+C[n] = \y.n [numbers are values, like closures]
+C[x.e] = \x.\y.C[e] ~y
+C[e f] = \y.C[e] (C[f] ~y) ~y
+C[wcm m e] = \y.C[e] (true,(cons m (if fst y then (tail (snd y)) else (snd y)))
+C[ccm] = \y.snd y
+
+application might be wrong but the rest is right, I'm pretty sure
