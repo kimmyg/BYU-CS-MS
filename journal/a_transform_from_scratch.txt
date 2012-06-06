@@ -1,0 +1,31 @@
+terms in the lambda calculus can take one of three forms:
+
+x, variables drawn from an infinite set
+for terms M and N, M N (the application of M to N) is also a term
+for a variable x and term M, \x.M is also a term
+
+cm has two additional forms:
+
+wcm M N
+ccm
+
+the S and K combinators form a basis for the lambda calculus. if they can be transformed correctly, so can any term in the lambda calculus.
+we stress that there is no reason to believe that such a result will be a minimal transform in any meaningful sense.
+
+S, generalized application, is equivalent to \x.\y.\z.((x z) (y z))
+K, the contstant combinator, is equivalent to \x.\y.x
+
+
+\x.\y.\z.
+
+our transform is specific to the scheme syntax
+we want a transform on the abstract syntax
+
+the S combinator in abstract syntax is ABS x 1 where 1 is ABS y 2 where 2 is ABS z 3 where 3 is APP 4 5 where 4 is APP x z and 5 is APP y z 
+
+
+
+
+learn emacs
+learn redex
+use konquerer?

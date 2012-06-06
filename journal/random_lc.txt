@@ -1,0 +1,15 @@
+
+
+; length of terms denoted by |.|
+; |x| = 1
+; |\x.e| = |x|+|e| = 1 + |e|
+; |e f| = |e| + |f|
+; if forms occur uniformly,
+; P[|e| = 1] = 1/3
+; P[|e| = 2] = 1/3*1/3 + 1/3*1/3*1/3 = 4/27
+; P[|e| = 3] = 1/3*
+
+; call let P[|e|=1] be written P[1]
+; P[1]=1/2
+; P[2]=1/3P[1] + 1/3P[1]P[1]
+; P[3]=1/3P[2] + 1/3P[1]P[2] + 1/3P[2]P[1]

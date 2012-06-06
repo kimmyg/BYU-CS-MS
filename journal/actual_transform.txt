@@ -109,3 +109,70 @@ C[wcm m e] = \y.C[e] (true,(cons m (if fst y then (tail (snd y)) else (snd y)))
 C[ccm] = \y.snd y
 
 application might be wrong but the rest is right, I'm pretty sure
+
+the evaluation of an expression has (False,[]) passed as an argument
+it is not yet determined where this should be
+
+consider
+
+\x.\y.(...) a b
+
+\x.\y.\z.(...) a b (False,[])
+
+vs.
+
+\z.\x.\y. (False,[]) a b
+
+things we know:
+x (alone!) -> \Y.x so that \Y.x (False,[]) -> x
+\x.y -> \Y.\x.y so that \Y.\x.y (False,[]) -> \x.y
+\x.x y -> \x.\Y.x y so that \x.\Y.x y (False,[]) -> \Y.y (False,[]) -> y
+
+T[\x.\y.e] = \x.T[\y.e]
+(recursion in definition)
+or possibly
+T[\x.e] = \x.T[e]
+T[x] = \Y.x
+
+suppose we have a program like this:
+\x.\y.(x y) z -> \y.(z y)
+
+the result of the program is an abstraction. i.e., the initial abstraction was deeper than the arguments given. with that the case, 
+we cannot dumbly append the new argument to this program. however, this program consists of an application, which are transformed in 
+a certain way. so maybe it's not a dumb append.
+
+T[\x.\y.(x y) z]=G(T[\x.\y.(x y)],T[z])
+
+\Y.(\Y.\x.\y.(x y)) ~Y (\Y.z ~Y)
+
+\x.\y.\z.((x y) z)
+vs.
+(\x.\y.\z.(x y)) z
+
+both can be written \x.\y.\z.x y z
+
+
+
+\f.(\x.f (x x)) (\x.f (x x))
+
+
+TRUE = function( x ) { return function( y ) { return x; } }
+FALSE = function( x ) { return function( y ) { return y; } }
+IFTHENELSE = function( b ) { return function( x ) { return function( y ) { return b( x )( y ); } } }
+ZERO = FALSE;
+IS_ZERO = function( m ) { return m( function( x ) { return FALSE; } )( TRUE ); }
+SUCC = function( m ) { return function( f ) { return function( x ) { return f( m( f )( x ) ); } } }
+PRED = function( m ) { return function( f ) { return function( x ) { return m( function( g ) { return function( h ) { return h( g( f ) ); } } )( function( u ) { return x; } )( function( u ) { return u; } ) } } }
+ADD = function( m ) { return function( n ) { return function( f ) { return function( x ) { return m( f )( n( f )( x ) ); } } } }
+MUL = function( m ) { return function( n ) { return function( f ) { return m( n( f ) ); } } }
+c_to_b = function( b ) { return b( true )( false ); }
+c_to_n = function( n ) { return n( function( x ) { return x + 1; } )( 0 ); }
+
+
+\n.\f.\x n (\g.\h h (g f)) (\u.x) (\u.u) \f.\x.x
+
+\f.\x. \f.\x.x (\g.\h h (g f)) (\u.x) (\u.u)
+\f.\x. \x.x (\u.x) (\u.u)
+\f.\x. \u.x \u.u
+\f.\x. x
+
