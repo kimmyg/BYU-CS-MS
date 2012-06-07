@@ -1,4 +1,9 @@
 #lang racket
+(require racket/include)
+
+(include "lc.rkt")
+(include "cm.rkt")
+(include "transform.rkt")
 
 ; cm-program->cm-parsed-program->(cm-parsed-value->cm-value,lc-parsed-program->(lc-program,lc-parsed-value->lc-value))
 
@@ -30,3 +35,7 @@
 (newline)
 (display lc-value)
 (newline)
+
+(define program `((λ (x) x) y))
+
+(display (lc-emit (lc-eval (lc-parse program))))

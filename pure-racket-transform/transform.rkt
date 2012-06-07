@@ -1,6 +1,6 @@
-#lang racket
+(require racket/include)
 
-; require church
+(include "church.rkt")
 
 (define cm-transform-var
   (λ (var)

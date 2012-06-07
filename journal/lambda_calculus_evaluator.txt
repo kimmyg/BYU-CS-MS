@@ -1,0 +1,24 @@
+when evaluating an application in the lambda calculus such as
+
+\x.E F
+
+we replace all occurrences of x in E with F. (we can write this as E[x:=F].
+there is a subtlety that we must account for, though. if E is itself an 
+application--say \y.E'--we must ensure y doesn't occur freely in F. to 
+perform the substitution, we must rename one of the clashing variables.
+if we choose to rename the binder y in E', we must also rename all 
+variables bound by it. this is not difficult: it requires the same logic 
+as substitution; namely, the ability to determine whether a particular 
+variable is bound by a particular binder. the alternative approach, 
+renaming variables in F, entails renaming the free occurrences in such a 
+way that they will not be captured by any binders. For instance, if F is
+
+\y.x
+
+x is free in F. we can rename it to anything that will not be captured by 
+y, i.e., \y.z is ok; \y.y is not. here is a concrete example to reason 
+about:
+
+\x.\y.(x y) \z.x
+
+

@@ -1,5 +1,3 @@
-#lang racket
-
 (define TRUE
   '(λ (x)
     (λ (y)
