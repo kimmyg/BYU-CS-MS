@@ -1,3 +1,6 @@
+;(require racket/include)
+;(include "fresh-variable.rkt")
+
 ;cm
 ;E is
 ;x
@@ -52,128 +55,121 @@
 (define cm-emit
   (λ (e)
     (if (list? e)
-        (cond
-          ((eq? (first e) 'var) (second e))
-          ((eq? (first e) 'abs) `(λ (,(second e)) ,(cm-emit (third e))))
-          ((eq? (first e) 'app) `(,(cm-emit (second e)) ,(cm-emit (third e))))
-          ((eq? (first e) 'wcm) `(wcm ,(cm-emit (second e)) ,(cm-emit (third e))))
-          ((eq? (first e) 'ccm) `(ccm))
-          (else (error "unrecognized tag " (first e))))
+        (let ((tag (first e)))
+          (cond
+            ((eq? tag 'var) (second e))
+            ((eq? tag 'abs) `(λ (,(second e)) ,(cm-emit (third e))))
+            ((eq? tag 'app) `(,(cm-emit (second e)) ,(cm-emit (third e))))
+            ((eq? tag 'wcm) `(wcm ,(cm-emit (second e)) ,(cm-emit (third e))))
+            ((eq? tag 'ccm) `(ccm))
+            (else (error "cm-emit unrecognized tag " (first e)))))
         (error "expected a list, got " e))))
 
-(define fresh-variable
-  (let ((seed 0))
-    (λ ()
-      (let ((x (string->symbol (string-append "x" (number->string seed)))))
-        (begin
-          (set! seed (+ seed 1))
-          x)))))
-
-(define rename-var
+(define cm-rename-var
   (λ (var x y)
     (if (eq? (second var) x)
         `(var ,y)
         var)))
 
-(define rename-abs
+(define cm-rename-abs
   (λ (abs x y)
     (if (eq? (second abs) x)
         abs
-        `(abs ,(second abs) ,(rename (third abs) x y)))))
+        `(abs ,(second abs) ,(cm-rename (third abs) x y)))))
 
-(define rename-app
+(define cm-rename-app
   (λ (app x y)
-    `(app ,(rename (second app) x y) ,(rename (third app) x y))))
+    `(app ,(cm-rename (second app) x y) ,(cm-rename (third app) x y))))
 
-(define rename-wcm
+(define cm-rename-wcm
   (λ (wcm x y)
-    `(wcm ,(rename (second wcm) x y) ,(rename (third wcm) x y))))
+    `(wcm ,(cm-rename (second wcm) x y) ,(cm-rename (third wcm) x y))))
 
-(define rename-ccm
+(define cm-rename-ccm
   (λ (ccm x y)
     ccm))
 
 ; change x to y in e
-(define rename
+(define cm-rename
   (λ (e x y)
     (let ((tag (first e)))
       (cond
-        ((eq? tag 'var) (rename-var e x y))
-        ((eq? tag 'abs) (rename-abs e x y))
-        ((eq? tag 'app) (rename-app e x y))
-        ((eq? tag 'wcm) (rename-wcm e x y))
-        ((eq? tag 'ccm) (rename-ccm e x y))
-        (else (error "unrecognized tag " e))))))
+        ((eq? tag 'var) (cm-rename-var e x y))
+        ((eq? tag 'abs) (cm-rename-abs e x y))
+        ((eq? tag 'app) (cm-rename-app e x y))
+        ((eq? tag 'wcm) (cm-rename-wcm e x y))
+        ((eq? tag 'ccm) (cm-rename-ccm e x y))
+        (else (error "cm-rename unrecognized tag " e))))))
 
-(define occurs-free-in-var
+(define cm-occurs-free-in-var
   (λ (var x)
     (eq? (second var) x)))
 
-(define occurs-free-in-abs
+(define cm-occurs-free-in-abs
   (λ (abs x)
     (if (eq? (second abs) x)
         #f
-        (occurs-free-in (third abs) x))))
+        (cm-occurs-free-in (third abs) x))))
 
-(define occurs-free-in-app
+(define cm-occurs-free-in-app
   (λ (app x)
-    (or (occurs-free-in (second app) x) (occurs-free-in (third app) x))))
+    (or (cm-occurs-free-in (second app) x) (cm-occurs-free-in (third app) x))))
 
-(define occurs-free-in-wcm
+(define cm-occurs-free-in-wcm
   (λ (wcm x)
-    (or (occurs-free-in (second wcm) x) (occurs-free-in (third wcm) x))))
+    (or (cm-occurs-free-in (second wcm) x) (cm-occurs-free-in (third wcm) x))))
 
-(define occurs-free-in-ccm
+(define cm-occurs-free-in-ccm
   (λ (ccm x)
     #f))
 
-(define occurs-free-in
+(define cm-occurs-free-in
   (λ (e x)
     (let ((tag (first e)))
       (cond
-        ((eq? tag 'var) (occurs-free-in-var e x))
-        ((eq? tag 'abs) (occurs-free-in-abs e x))
-        ((eq? tag 'app) (occurs-free-in-app e x))
-        ((eq? tag 'wcm) (occurs-free-in-wcm e x))
-        ((eq? tag 'ccm) (occurs-free-in-ccm e x))
-        (else (error "unrecognized tag " e))))))
+        ((eq? tag 'var) (cm-occurs-free-in-var e x))
+        ((eq? tag 'abs) (cm-occurs-free-in-abs e x))
+        ((eq? tag 'app) (cm-occurs-free-in-app e x))
+        ((eq? tag 'wcm) (cm-occurs-free-in-wcm e x))
+        ((eq? tag 'ccm) (cm-occurs-free-in-ccm e x))
+        (else (error "cm-occurs-free-in unrecognized tag " e))))))
 
-(define substitute-var
+(define cm-substitute-var
   (λ (e x f)
     (if (eq? (second e) x)
         f
         e)))
 
-(define substitute-abs
+(define cm-substitute-abs
   (λ (e x f)
     (if (eq? (second e) x)
         e
-        (if (occurs-free-in f (second e))
-            `(abs ,(second e) ,(substitute (third e) x (rename f (second e) (fresh-variable))))
-            `(abs ,(second e) ,(substitute (third e) x f))))))
+        (if (cm-occurs-free-in f (second e))
+            `(abs ,(second e) ,(cm-substitute (third e) x (cm-rename f (second e) (fresh-variable))))
+            `(abs ,(second e) ,(cm-substitute (third e) x f))))))
 
-(define substitute-app
+(define cm-substitute-app
   (λ (app x f)
-    `(app ,(substitute (second app) x f) ,(substitute (third app) x f))))
+    `(app ,(cm-substitute (second app) x f) ,(cm-substitute (third app) x f))))
 
-(define substitute-wcm
+(define cm-substitute-wcm
   (λ (wcm x f)
-    `(wcm ,(substitute (second wcm) x f) ,(substitute (third wcm) x f))))
+    `(wcm ,(cm-substitute (second wcm) x f) ,(cm-substitute (third wcm) x f))))
 
-(define substitute-ccm
+(define cm-substitute-ccm
   (λ (ccm x f)
     ccm))
 
-(define substitute
+(define cm-substitute
   (λ (e x f)
     (let ((tag (first e)))
       (cond
-        ((eq? tag 'var) (substitute-var e x f))
-        ((eq? tag 'abs) (substitute-abs e x f))
-        ((eq? tag 'app) (substitute-app e x f))
-        ((eq? tag 'wcm) (substitute-wcm e x f))
-        ((eq? tag 'ccm) (substitute-ccm e x f))
-        (else (error "unrecognized tag " tag))))))
+        ((eq? tag 'var) (cm-substitute-var e x f))
+        ((eq? tag 'abs) (cm-substitute-abs e x f))
+        ((eq? tag 'app) (cm-substitute-app e x f))
+        ((eq? tag 'wcm) (cm-substitute-wcm e x f))
+        ((eq? tag 'ccm) (cm-substitute-ccm e x f))
+        (else (error "cm-substitute unrecognized tag " tag))))))
 
 (define cm-eval-var
   (λ (var k)
@@ -184,23 +180,24 @@
     abs))
 
 (define cm-eval-app
-  (λ (app)
-    (let ((rator (cm-eval (second app))))
+  (λ (app k)
+    (let ((rator (cm-eval-inner (second app) k)))
       (if (eq? (first rator) 'abs)
-          (substitute (third rator) (second rator) (third app))
+          (cm-substitute (third rator) (second rator) (third app))
           `(app ,rator ,(third app))))))
 
 (define cm-eval-wcm
   (λ (wcm k)
     (if (eq? (first (third wcm)) 'wcm)
         (cm-eval-wcm (third wcm) k)
-        (cm-eval (third wcm) `(abs z (app (app (var z) ,(cm-eval (second wcm) k)) ,k))))))
+        (cm-eval-inner (third wcm) (cm-eval-inner `(app (app (abs x (abs y (abs z (app (app (var z) (var x)) (var y))))) ,(second wcm)) ,k) k)))))
+        ;(cm-eval-inner (third wcm) `(abs z (app (app (var z) ,(cm-eval-inner (second wcm) k)) ,k))))))
 
 (define cm-eval-ccm
   (λ (ccm k)
     k))
 
-(define cm-eval
+(define cm-eval-inner
   (λ (e k)
     (let ((tag (first e)))
       (cond
@@ -209,4 +206,8 @@
         ((eq? tag 'app) (cm-eval-app e k))
         ((eq? tag 'wcm) (cm-eval-wcm e k))
         ((eq? tag 'ccm) (cm-eval-ccm e k))
-        (else (error "unrecognized tag " tag))))))
+        (else (error "cm-eval-inner unrecognized tag " tag))))))
+
+(define cm-eval
+  (λ (e)
+    (cm-emit (cm-eval-inner (cm-parse e) (cm-parse '(λ (x) (λ (y) y)))))))

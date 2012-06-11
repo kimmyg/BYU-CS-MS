@@ -1,0 +1,6 @@
+it must be possible to define the transform inductively, as programs are arbitrarily deep. however, a ``level'' 
+may be defined as any of A BA CB CCA, etc. meaning that there are logical boundaries and only structural in 
+a loose sense.
+
+x -> x -> x?
+x -> \y.x (...) -> x

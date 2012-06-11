@@ -1,3 +1,6 @@
+;(require racket/include)
+;(include "fresh-variable.rkt")
+
 ;lc
 ;E is
 ;x
@@ -42,92 +45,84 @@
           ((eq? (first e) 'var) (second e))
           ((eq? (first e) 'abs) `(λ (,(second e)) ,(lc-emit (third e))))
           ((eq? (first e) 'app) `(,(lc-emit (second e)) ,(lc-emit (third e))))
-          (else (error "unrecognized tag " (first e))))
+          (else (error "lc-emit unrecognized tag " (first e))))
         (error "expected a list, got " e))))
 
-
-(define fresh-variable
-  (let ((seed 0))
-    (λ ()
-      (let ((x (string->symbol (string-append "x" (number->string seed)))))
-        (begin
-          (set! seed (+ seed 1))
-          x)))))
-
-(define rename-var
+(define lc-rename-var
   (λ (var x y)
     (if (eq? (second var) x)
         `(var ,y)
         var)))
 
-(define rename-abs
+(define lc-rename-abs
   (λ (abs x y)
     (if (eq? (second abs) x)
         abs
-        `(abs ,(second abs) ,(rename (third abs) x y)))))
+        `(abs ,(second abs) ,(lc-rename (third abs) x y)))))
 
-(define rename-app
+(define lc-rename-app
   (λ (app x y)
-    `(app ,(rename (second app) x y) ,(rename (third app) x y))))
+    `(app ,(lc-rename (second app) x y) ,(lc-rename (third app) x y))))
 
 ; change x to y in e
-(define rename
+(define lc-rename
   (λ (e x y)
-    (cond
-      ((eq? (first e) 'var) (rename-var e x y))
-      ((eq? (first e) 'abs) (rename-abs e x y))
-      ((eq? (first e) 'app) (rename-app e x y))
-      (else (error "unrecognized tag " e)))))
+    (let ((tag (first e)))
+      (cond
+        ((eq? tag 'var) (lc-rename-var e x y))
+        ((eq? tag 'abs) (lc-rename-abs e x y))
+        ((eq? tag 'app) (lc-rename-app e x y))
+        (else (error "lc-rename unrecognized tag " e))))))
 
-(define occurs-free-in-var
+(define lc-occurs-free-in-var
   (λ (var x)
     (eq? (second var) x)))
 
-(define occurs-free-in-abs
+(define lc-occurs-free-in-abs
   (λ (abs x)
     (if (eq? (second abs) x)
         #f
-        (occurs-free-in (third abs) x))))
+        (lc-occurs-free-in (third abs) x))))
 
-(define occurs-free-in-app
+(define lc-occurs-free-in-app
   (λ (app x)
-    (or (occurs-free-in (second app) x) (occurs-free-in (third app) x))))
+    (or (lc-occurs-free-in (second app) x) (lc-occurs-free-in (third app) x))))
 
-(define occurs-free-in
+(define lc-occurs-free-in
   (λ (e x)
     (let ((tag (first e)))
       (cond
-        ((eq? tag 'var) (occurs-free-in-var e x))
-        ((eq? tag 'abs) (occurs-free-in-abs e x))
-        ((eq? tag 'app) (occurs-free-in-app e x))
-        (else (error "unrecognized tag " e))))))
+        ((eq? tag 'var) (lc-occurs-free-in-var e x))
+        ((eq? tag 'abs) (lc-occurs-free-in-abs e x))
+        ((eq? tag 'app) (lc-occurs-free-in-app e x))
+        (else (error "lc-occurs-free-in unrecognized tag " e))))))
 
-(define substitute-var
+(define lc-substitute-var
   (λ (var x f)
     (if (eq? (second var) x)
         f
         var)))
 
-(define substitute-abs
+(define lc-substitute-abs
   (λ (abs x f)
     (if (eq? (second abs) x)
         abs
-        (if (occurs-free-in f (second abs))
-            `(abs ,(second abs) ,(substitute (third abs) x (rename f (second abs) (fresh-variable))))
-            `(abs ,(second abs) ,(substitute (third abs) x f))))))
+        (if (lc-occurs-free-in f (second abs))
+            `(abs ,(second abs) ,(lc-substitute (third abs) x (lc-rename f (second abs) (fresh-variable))))
+            `(abs ,(second abs) ,(lc-substitute (third abs) x f))))))
 
-(define substitute-app
+(define lc-substitute-app
   (λ (app x f)
-    `(app ,(substitute (second app) x f) ,(substitute (third app) x f))))
+    `(app ,(lc-substitute (second app) x f) ,(lc-substitute (third app) x f))))
 
-(define substitute
+(define lc-substitute
   (λ (e x f)
     (let ((tag (first e)))
       (cond
-        ((eq? tag 'var) (substitute-var e x f))
-        ((eq? tag 'abs) (substitute-abs e x f))
-        ((eq? tag 'app) (substitute-app e x f))
-        (else (error "unrecognized tag " tag))))))
+        ((eq? tag 'var) (lc-substitute-var e x f))
+        ((eq? tag 'abs) (lc-substitute-abs e x f))
+        ((eq? tag 'app) (lc-substitute-app e x f))
+        (else (error "lc-substitute unrecognized tag " tag))))))
 
 (define lc-eval-var
   (λ (var)
@@ -139,16 +134,20 @@
 
 (define lc-eval-app
   (λ (app)
-    (let ((rator (lc-eval (second app))))
+    (let ((rator (lc-eval-inner (second app))))
       (if (eq? (first rator) 'abs)
-          (substitute (third rator) (second rator) (third app))
+          (lc-substitute (third rator) (second rator) (third app))
           `(app ,rator ,(third app))))))
         
-(define lc-eval
+(define lc-eval-inner
   (λ (e)
     (let ((tag (first e)))
       (cond
         ((eq? tag 'var) (lc-eval-var e))
         ((eq? tag 'abs) (lc-eval-abs e))
         ((eq? tag 'app) (lc-eval-app e))
-        (else (error "unrecognized tag " tag))))))
+        (else (error "lc-eval-inner unrecognized tag " tag))))))
+
+(define lc-eval
+  (λ (e)
+    (lc-emit (lc-eval-inner (lc-parse e)))))
