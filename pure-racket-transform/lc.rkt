@@ -137,7 +137,7 @@
     (let ((rator (lc-eval-inner (second app)))
           (rand (lc-eval-inner (third app))))
       (if (eq? (first rator) 'abs)
-          (lc-substitute (third rator) (second rator) rand)
+          (lc-eval-inner (lc-substitute (third rator) (second rator) rand))
           `(app ,rator ,rand)))))
         
 (define lc-eval-inner

@@ -46,4 +46,4 @@
           (test-transform (random-cm-term))
           (test-transform-n (- n 1))))))
 
-(test-transform-n 100)
+(test-transform '(wcm (λ (x) (λ (y) x)) (ccm)))

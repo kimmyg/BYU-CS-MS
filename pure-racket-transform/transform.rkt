@@ -21,7 +21,7 @@
 (define cm-transform-wcm
   (λ (wcm)
     (let ((k (fresh-variable)))
-      `(abs ,k (app ,(cm-transform-inner (third wcm)) (var ,k))))))
+      (cm-parse `(λ (,k) (,(lc-emit (cm-transform-inner (third wcm))) ((,PAIR ,TRUE) ((,PAIR ,(lc-emit `(app ,(cm-transform-inner (second wcm)) (var ,k)))) (,SND (((,IF (,FST ,k)) (,SND ,k)) ,k))))))))))
 
 (define cm-transform-ccm
   (λ (ccm)
