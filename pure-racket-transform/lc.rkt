@@ -130,14 +130,15 @@
 
 (define lc-eval-abs
   (λ (abs)
-    abs))
+    `(abs ,(second abs) ,(lc-eval-inner (third abs)))))
 
 (define lc-eval-app
   (λ (app)
-    (let ((rator (lc-eval-inner (second app))))
+    (let ((rator (lc-eval-inner (second app)))
+          (rand (lc-eval-inner (third app))))
       (if (eq? (first rator) 'abs)
-          (lc-substitute (third rator) (second rator) (third app))
-          `(app ,rator ,(third app))))))
+          (lc-substitute (third rator) (second rator) rand)
+          `(app ,rator ,rand)))))
         
 (define lc-eval-inner
   (λ (e)
@@ -151,3 +152,28 @@
 (define lc-eval
   (λ (e)
     (lc-emit (lc-eval-inner (lc-parse e)))))
+
+(define random-lc-var
+  (λ ()
+    (let ((i (random 3)))
+      (cond
+        ((= i 0) 'x)
+        ((= i 1) 'y)
+        (else    'z)))))
+
+(define random-lc-abs
+  (λ ()
+    `(λ (,(random-lc-var)) ,(random-lc-term))))
+
+(define random-lc-app
+  (λ ()
+    `(,(random-lc-term) ,(random-lc-term))))
+
+(define random-lc-term
+  (λ ()
+    (let ((i (random 3)))
+      (cond
+        ((= i 0) (random-lc-var))
+        ((= i 1) (random-lc-abs))
+        (else    (random-lc-app))))))
+

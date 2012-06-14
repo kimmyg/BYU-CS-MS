@@ -4,19 +4,24 @@
 
 (define cm-transform-var
   (λ (var)
-    `(abs ,(fresh-variable) (var ,(second var)))))
+    (let ((k (fresh-variable)))
+      `(abs ,k ,var))))
 
 (define cm-transform-abs
   (λ (abs)
-    abs))
+    (let ((k (fresh-variable)))
+      `(abs ,k (abs ,(second abs) (app ,(cm-transform-inner (third abs)) (var ,k)))))))
+      ;`(abs ,k ,(cm-transform-inner (third abs))))))
 
 (define cm-transform-app
   (λ (app)
-    app))
-
+    (let ((k (fresh-variable)))
+      `(abs ,k (app (app ,(cm-transform-inner (second app)) (var ,k)) (app ,(cm-transform-inner (third app)) (var ,k)))))))
+                      
 (define cm-transform-wcm
   (λ (wcm)
-    '()))
+    (let ((k (fresh-variable)))
+      `(abs ,k (app ,(cm-transform-inner (third wcm)) (var ,k))))))
 
 (define cm-transform-ccm
   (λ (ccm)
@@ -34,5 +39,5 @@
 
 (define cm-transform
   (λ (term)
-    ;(lc-emit `(app ,(cm-transform-inner (cm-parse term)) (abs z (app (app (var z) (abs x (abs y (var y)))) (abs x (abs y (var y)))))))))
-    (lc-emit (cm-transform-inner (cm-parse term)))))
+    (lc-emit `(app ,(cm-transform-inner (cm-parse term)) (abs z (app (app (var z) (abs x (abs y (var y)))) (abs x (abs y (var y)))))))))
+    ;(lc-emit (cm-transform-inner (cm-parse term)))))

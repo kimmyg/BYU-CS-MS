@@ -177,25 +177,27 @@
 
 (define cm-eval-abs
   (λ (abs k)
-    abs))
+    `(abs ,(second abs) ,(cm-eval-inner (third abs) k))))
 
 (define cm-eval-app
   (λ (app k)
-    (let ((rator (cm-eval-inner (second app) k)))
+    (let ((rator (cm-eval-inner (second app) k))
+          (rand (cm-eval-inner (third app) k)))
       (if (eq? (first rator) 'abs)
-          (cm-substitute (third rator) (second rator) (third app))
-          `(app ,rator ,(third app))))))
+          (cm-substitute (third rator) (second rator) rand)
+          `(app ,rator ,rand)))))
 
 (define cm-eval-wcm
   (λ (wcm k)
     (if (eq? (first (third wcm)) 'wcm)
-        (cm-eval-wcm (third wcm) k)
-        (cm-eval-inner (third wcm) (cm-eval-inner `(app (app (abs x (abs y (abs z (app (app (var z) (var x)) (var y))))) ,(second wcm)) ,k) k)))))
+        (cm-eval-inner (third wcm) k)
+        (cm-eval-inner (third wcm) k))))
+        ;(cm-eval-inner (third wcm) (cm-eval-inner `(app (app (abs x (abs y (abs z (app (app (var z) (var x)) (var y))))) ,(second wcm)) ,k) k)))))
         ;(cm-eval-inner (third wcm) `(abs z (app (app (var z) ,(cm-eval-inner (second wcm) k)) ,k))))))
 
 (define cm-eval-ccm
   (λ (ccm k)
-    k))
+    `(app ,k (abs x (abs y (var y))))))
 
 (define cm-eval-inner
   (λ (e k)
@@ -210,4 +212,38 @@
 
 (define cm-eval
   (λ (e)
-    (cm-emit (cm-eval-inner (cm-parse e) (cm-parse '(λ (x) (λ (y) y)))))))
+    (cm-emit (cm-eval-inner (cm-parse e) '(abs z (app (app (var z) (abs x (abs y (var y)))) (abs x (abs y (var y)))))))))
+
+(define random-cm-var
+  (λ ()
+    (let ((i (random 3)))
+      (cond
+        ((= i 0) 'x)
+        ((= i 1) 'y)
+        (else    'z)))))
+
+(define random-cm-abs
+  (λ ()
+    `(λ (,(random-cm-var)) ,(random-cm-term))))
+
+(define random-cm-app
+  (λ ()
+    `(,(random-cm-term) ,(random-cm-term))))
+
+(define random-cm-wcm
+  (λ ()
+    `(wcm ,(random-cm-term) ,(random-cm-term))))
+
+(define random-cm-ccm
+  (λ ()
+    `(ccm)))
+
+(define random-cm-term
+  (λ ()
+    (let ((i (random 5)))
+      (cond
+        ((= i 0) (random-cm-var))
+        ((= i 1) (random-cm-abs))
+        ((= i 2) (random-cm-app))
+        ((= i 3) (random-cm-wcm))
+        (else    (random-cm-ccm))))))

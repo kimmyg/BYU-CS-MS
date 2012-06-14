@@ -1,7 +1,7 @@
-#lang racket
-(require racket/include)
+;#lang racket
+;(require racket/include)
 
-(include "lc.rkt")
+;(include "lc.rkt")
 
 (define random-lc-var
   (λ ()
@@ -51,7 +51,7 @@
             ;(newline)
             (test-lc-eval (- n 1)))))))
 
-(test-lc-eval 100)
+;(test-lc-eval 100)
 
 ;(define program '((λ (x) (λ (y) (x y))) (x y)))
 
