@@ -1,5 +1,8 @@
 #lang racket
 
+(require "lc-emit.rkt")
+(require "lc-parse.rkt")
+
 (define lc-rename-var
   (λ (var x y)
     (if (eq? (second var) x)
@@ -60,7 +63,7 @@
     (if (eq? (second abs) x)
         abs
         (if (lc-occurs-free-in f (second abs))
-            `(abs ,(second abs) ,(lc-substitute (third abs) x (lc-rename f (second abs) (fresh-variable))))
+            `(abs ,(second abs) ,(lc-substitute (third abs) x (lc-rename f (second abs) (gensym 'x))))
             `(abs ,(second abs) ,(lc-substitute (third abs) x f))))))
 
 (define lc-substitute-app

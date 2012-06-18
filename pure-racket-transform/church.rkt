@@ -1,3 +1,5 @@
+#lang racket
+
 (define TRUE
   '(λ (x)
     (λ (y)
@@ -77,3 +79,21 @@
 (define TAIL
   `(λ (z)
     (,SND (,SND z))))
+
+(provide TRUE)
+(provide FALSE)
+(provide IF)
+(provide ZERO)
+(provide ISZERO)
+(provide SUCC)
+(provide PRED)
+(provide ADD)
+(provide TIMES)
+(provide PAIR)
+(provide FST)
+(provide SND)
+(provide NIL)
+(provide ISNIL)
+(provide CONS)
+(provide HEAD)
+(provide TAIL)

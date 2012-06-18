@@ -1,10 +1,9 @@
 #lang racket
-(require racket/include)
 
-(include "fresh-variable.rkt")
-(include "lc.rkt")
-(include "cm.rkt")
-(include "transform.rkt")
+(require "church.rkt")
+(require "cm-eval.rkt")
+(require "lc-eval.rkt")
+(require "transform.rkt")
 
 ; cm-program -> cm-parsed-program -> (cm-parsed-value)
 
@@ -38,6 +37,8 @@
             (newline)
             #f)))))
 
+
+(require "cm-random.rkt")
 (define test-transform-n
   (λ (n)
     (if (= n 0)
@@ -46,4 +47,38 @@
           (test-transform (random-cm-term))
           (test-transform-n (- n 1))))))
 
-(test-transform '(wcm (λ (x) (λ (y) x)) (ccm)))
+;(test-transform '(wcm (wcm y (λ (z) (λ (z) (λ (x) (ccm))))) ((λ (z) (λ (y) (wcm (wcm (ccm) (λ (x) x)) (ccm)))) (ccm))))
+;(display (lc-parse '(λ (y) (λ (z) ((z (λ (x) x)) (λ (z) ((z (λ (z) (λ (z) (λ (x) (λ (z) ((z y) (λ (x) (λ (y) y)))))))) (λ (x) (λ (y) y)))))))))
+;(test-transform-n 100)
+
+;(map test-transform (cm-terms-of-length 4))
+
+(lc-eval 
+ (cm-transform 
+  '(wcm (λ (f) (λ (z) z))
+        ((λ (ignored)
+           (wcm (λ (f) (λ (z) (f z)))
+                (ccm)))
+         (λ (x) x)))))
+"should be 1:nil"
+(lc-eval
+ (cm-transform
+  '(wcm (λ (f) (λ (z) z))
+        ((λ (ignored)
+           ((λ (x) x)
+            (wcm (λ (f) (λ (z) (f z)))
+                 (ccm))))
+         (λ (x) x)))))
+"should be 1:0:nil"
+(lc-eval
+ (cm-transform
+  `(wcm (λ (f) (λ (z) (f z)))
+        (((,HEAD (ccm))
+          (λ (zero)
+            (wcm (λ (f) (λ (z) z))
+                 (((,HEAD (ccm)) ;;; we want ccm = 0:nil, now its 1:nil, but don't want 0:1:nil
+                   (λ (zero)
+                     (λ (f) (λ (z) (f z)))))
+                  zero))))
+         (λ (f) (λ (z) z))))))
+"should be 0"
