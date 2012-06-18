@@ -1,69 +1,7 @@
-;(require racket/include)
-;(include "fresh-variable.rkt")
+#lang racket
 
-;cm
-;E is
-;x
-;(λ (x) E)
-;(E F)
-;(wcm E F)
-;(ccm)
-
-(define cm-parse-var
-  (λ (var)
-    `(var ,var)))
-
-(define cm-parse-abs
-  (λ (abs)
-    `(abs ,(first (second abs)) ,(cm-parse (third abs)))))
-
-(define cm-parse-app
-  (λ (app)
-    `(app ,(cm-parse (first app)) ,(cm-parse (second app)))))
-
-(define cm-parse-wcm
-  (λ (wcm)
-    `(wcm ,(cm-parse (second wcm)) ,(cm-parse (third wcm)))))
-
-(define cm-parse-ccm
-  (λ (ccm)
-    `(ccm)))
-
-(define cm-parse
-  (λ (e)
-    (if (symbol? e)
-        (cm-parse-var e)
-        (if (list? e)
-            (cond
-              ((= (length e) 1) (if (eq? (first e) 'ccm)
-                                    (cm-parse-ccm e)
-                                    (error "expected ccm, got " (first e))))
-              ((= (length e) 2) (cm-parse-app e))
-              ((= (length e) 3) (cond
-                                  ((eq? (first e) 'λ) (if (list? (second e))
-                                                          (if (= (length (second e)) 1)
-                                                              (if (symbol? (first (second e)))
-                                                                  (cm-parse-abs e)
-                                                                  (error "expected symbol as formal parameter, got " (first (second e))))
-                                                              (error "expected single parameter, got " (second e)))
-                                                          (error "expected parameter list, got " (second e))))
-                                  ((eq? (first e) 'wcm) (cm-parse-wcm e))
-                                  (else (error "expected λ or wcm, got " (first e)))))
-              (else error "expected list of length 2 or 3, got " e))
-            (error "expected symbol or list, got" e)))))
-
-(define cm-emit
-  (λ (e)
-    (if (list? e)
-        (let ((tag (first e)))
-          (cond
-            ((eq? tag 'var) (second e))
-            ((eq? tag 'abs) `(λ (,(second e)) ,(cm-emit (third e))))
-            ((eq? tag 'app) `(,(cm-emit (second e)) ,(cm-emit (third e))))
-            ((eq? tag 'wcm) `(wcm ,(cm-emit (second e)) ,(cm-emit (third e))))
-            ((eq? tag 'ccm) `(ccm))
-            (else (error "cm-emit unrecognized tag " (first e)))))
-        (error "expected a list, got " e))))
+(require "cm-emit.rkt")
+(require "cm-parse.rkt")
 
 (define cm-rename-var
   (λ (var x y)
@@ -99,7 +37,7 @@
         ((eq? tag 'app) (cm-rename-app e x y))
         ((eq? tag 'wcm) (cm-rename-wcm e x y))
         ((eq? tag 'ccm) (cm-rename-ccm e x y))
-        (else (error "cm-rename unrecognized tag " e))))))
+        (else (error "unrecognized tag " e))))))
 
 (define cm-occurs-free-in-var
   (λ (var x)
@@ -132,7 +70,7 @@
         ((eq? tag 'app) (cm-occurs-free-in-app e x))
         ((eq? tag 'wcm) (cm-occurs-free-in-wcm e x))
         ((eq? tag 'ccm) (cm-occurs-free-in-ccm e x))
-        (else (error "cm-occurs-free-in unrecognized tag " e))))))
+        (else (error "unrecognized tag " e))))))
 
 (define cm-substitute-var
   (λ (e x f)
@@ -145,7 +83,7 @@
     (if (eq? (second e) x)
         e
         (if (cm-occurs-free-in f (second e))
-            `(abs ,(second e) ,(cm-substitute (third e) x (cm-rename f (second e) (fresh-variable))))
+            `(abs ,(second e) ,(cm-substitute (third e) x (cm-rename f (second e) (gensym 'x))))
             `(abs ,(second e) ,(cm-substitute (third e) x f))))))
 
 (define cm-substitute-app
@@ -182,7 +120,7 @@
 (define cm-eval-app
   (λ (app k)
     (let ((rator (cm-eval-inner (second app) k))
-          (rand (cm-eval-inner (third app) k)))
+          (rand  (cm-eval-inner (third  app) k)))
       (if (eq? (first rator) 'abs)
           (cm-eval-inner (cm-substitute (third rator) (second rator) rand) k)
           `(app ,rator ,rand)))))
@@ -191,7 +129,8 @@
   (λ (wcm k)
     (if (eq? (first (third wcm)) 'wcm)
         (cm-eval-inner (third wcm) k)
-        (cm-eval-inner (third wcm) `(abs z (app (app (var z) ,(cm-eval-inner (second wcm) k)) ,k))))))
+        (let ((z (gensym 'x)))
+          (cm-eval-inner (third wcm) `(abs ,z (app (app (var ,z) ,(cm-eval-inner (second wcm) k)) ,k)))))))
 
 (define cm-eval-ccm
   (λ (ccm k)
@@ -206,42 +145,10 @@
         ((eq? tag 'app) (cm-eval-app e k))
         ((eq? tag 'wcm) (cm-eval-wcm e k))
         ((eq? tag 'ccm) (cm-eval-ccm e k))
-        (else (error "cm-eval-inner unrecognized tag " tag))))))
+        (else (error "unrecognized tag " tag))))))
 
 (define cm-eval
   (λ (e)
     (cm-emit (cm-eval-inner (cm-parse e) '(abs x (abs y (var y)))))))
 
-(define random-cm-var
-  (λ ()
-    (let ((i (random 3)))
-      (cond
-        ((= i 0) 'x)
-        ((= i 1) 'y)
-        (else    'z)))))
-
-(define random-cm-abs
-  (λ ()
-    `(λ (,(random-cm-var)) ,(random-cm-term))))
-
-(define random-cm-app
-  (λ ()
-    `(,(random-cm-term) ,(random-cm-term))))
-
-(define random-cm-wcm
-  (λ ()
-    `(wcm ,(random-cm-term) ,(random-cm-term))))
-
-(define random-cm-ccm
-  (λ ()
-    `(ccm)))
-
-(define random-cm-term
-  (λ ()
-    (let ((i (random 5)))
-      (cond
-        ((= i 0) (random-cm-var))
-        ((= i 1) (random-cm-abs))
-        ((= i 2) (random-cm-app))
-        ((= i 3) (random-cm-wcm))
-        (else    (random-cm-ccm))))))
+(provide cm-eval)
