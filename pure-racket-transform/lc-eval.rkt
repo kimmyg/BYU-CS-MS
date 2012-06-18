@@ -1,52 +1,4 @@
-;(require racket/include)
-;(include "fresh-variable.rkt")
-
-;lc
-;E is
-;x
-;(λ (x) E)
-;(E F)
-
-(define lc-parse-var
-  (λ (var)
-    `(var ,var)))
-
-(define lc-parse-abs
-  (λ (abs)
-    `(abs ,(first (second abs)) ,(lc-parse (third abs)))))
-
-(define lc-parse-app
-  (λ (app)
-    `(app ,(lc-parse (first app)) ,(lc-parse (second app)))))
-    
-(define lc-parse
-  (λ (e)
-    (if (symbol? e)
-        (lc-parse-var e)
-        (if (list? e)
-            (cond
-              ((= (length e) 2) (lc-parse-app e))
-              ((= (length e) 3) (if (eq? (first e) 'λ)
-                                    (if (list? (second e))
-                                        (if (= (length (second e)) 1)
-                                            (if (symbol? (first (second e)))
-                                                (lc-parse-abs e)
-                                                (error "expected symbol as formal parameter, got " (first (second e))))
-                                            (error "expected single parameter, got " (second e)))
-                                        (error "expected parameter list, got " (second e)))
-                                    (error "expected λ symbol, got " (first e))))
-              (else error "expected list of length 2 or 3, got " e))
-            (error "expected symbol or list, got" e)))))
-
-(define lc-emit
-  (λ (e)
-    (if (list? e)
-        (cond
-          ((eq? (first e) 'var) (second e))
-          ((eq? (first e) 'abs) `(λ (,(second e)) ,(lc-emit (third e))))
-          ((eq? (first e) 'app) `(,(lc-emit (second e)) ,(lc-emit (third e))))
-          (else (error "lc-emit unrecognized tag " (first e))))
-        (error "expected a list, got " e))))
+#lang racket
 
 (define lc-rename-var
   (λ (var x y)
@@ -72,7 +24,7 @@
         ((eq? tag 'var) (lc-rename-var e x y))
         ((eq? tag 'abs) (lc-rename-abs e x y))
         ((eq? tag 'app) (lc-rename-app e x y))
-        (else (error "lc-rename unrecognized tag " e))))))
+        (else (error "unrecognized tag " e))))))
 
 (define lc-occurs-free-in-var
   (λ (var x)
@@ -95,7 +47,7 @@
         ((eq? tag 'var) (lc-occurs-free-in-var e x))
         ((eq? tag 'abs) (lc-occurs-free-in-abs e x))
         ((eq? tag 'app) (lc-occurs-free-in-app e x))
-        (else (error "lc-occurs-free-in unrecognized tag " e))))))
+        (else (error "unrecognized tag " e))))))
 
 (define lc-substitute-var
   (λ (var x f)
@@ -122,7 +74,7 @@
         ((eq? tag 'var) (lc-substitute-var e x f))
         ((eq? tag 'abs) (lc-substitute-abs e x f))
         ((eq? tag 'app) (lc-substitute-app e x f))
-        (else (error "lc-substitute unrecognized tag " tag))))))
+        (else (error "unrecognized tag " tag))))))
 
 (define lc-eval-var
   (λ (var)
@@ -147,33 +99,10 @@
         ((eq? tag 'var) (lc-eval-var e))
         ((eq? tag 'abs) (lc-eval-abs e))
         ((eq? tag 'app) (lc-eval-app e))
-        (else (error "lc-eval-inner unrecognized tag " tag))))))
+        (else (error "unrecognized tag " tag))))))
 
 (define lc-eval
   (λ (e)
     (lc-emit (lc-eval-inner (lc-parse e)))))
 
-(define random-lc-var
-  (λ ()
-    (let ((i (random 3)))
-      (cond
-        ((= i 0) 'x)
-        ((= i 1) 'y)
-        (else    'z)))))
-
-(define random-lc-abs
-  (λ ()
-    `(λ (,(random-lc-var)) ,(random-lc-term))))
-
-(define random-lc-app
-  (λ ()
-    `(,(random-lc-term) ,(random-lc-term))))
-
-(define random-lc-term
-  (λ ()
-    (let ((i (random 3)))
-      (cond
-        ((= i 0) (random-lc-var))
-        ((= i 1) (random-lc-abs))
-        (else    (random-lc-app))))))
-
+(provide lc-eval)
