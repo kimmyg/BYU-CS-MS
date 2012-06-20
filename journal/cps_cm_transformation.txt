@@ -1,0 +1,197 @@
+cps transformation
+cps transformation with continuation marks
+optimized version
+
+CPS transformation
+
+C[x] = \k.(k x)
+C[\x.E] = \k.(k (\x.C[E]))
+C[E F] = \k.(C[E] (\e.C[F] (\f.((e f) k))))
+
+cps with cm
+
+C[x] = \k.\m.(k x)
+C[\x.E] = \k.\m.(k (\x.C[E]
+
+
+
+C[x] = \k.\m.(k x)
+C[\x.E] = \k.\m.\x.((C[E] k) m)
+C[E F] = \k.\m.((C[E] (\e.((C[F] (\f.(((e f) k) m))) m))) m)
+C[wcm N E] = \k.\m.((C[N] (\n.((C[E] k) g(n,m)) m)
+C[ccm] = \k.\m.(snd m)
+
+where g(n,m) = (true,(cons n snd (if fst m then snd m else m)))
+
+Evaluation in the lambda calculus
+
+Reduction is evaluation. Reduction occurs in applications which can appear in 
+any term.
+
+If no evaluation can be performed on a term, it is a value. (What does 
+evaluation mean?)
+
+Thus,
+
+x
+\x.x
+\x.\y.x
+
+and even
+
+y x
+
+are all values;
+
+\x.x y
+\x.\y.x y z
+\x.(\y.y z)
+
+are not.
+
+This allows us to define tail position with respect to the lambda calculus.
+
+Recall that a subexpression E' is in tail position within an expression E if 
+E evaluates to E' in all cases. (Is this true?)
+
+Variables and abstractions--even abstractions that are not values--are in tail 
+position. This is unsurprising, since evaluation is reduction, and reduction 
+occurs in application.
+
+Consider
+
+\x.x y.
+
+Is y in tail position?
+
+\x.\y.x z w
+
+Is z in tail position?
+
+What is the relationship between a reduction regime and tail position?
+
+We know that we reduce wcm M E to wcm m E to wcm m v to v. Is this an artifact 
+of a strict language?
+
+The Church-Rosser property of the lambda calculus ensures that reduction order 
+will not affect values /for terminating reductions/. For instance,
+
+\x.(x x) \x.(x x)
+
+does not terminate. However,
+
+\y.z (\x.(x x) \x.(x x))
+
+terminates if the outer term is reduced before the argument, but fails to 
+terminate if the argument is reduced first. From this, we see that the 
+termination property can depend on the reduction order.
+
+One of the properties of a continuation-passing characterization is that it 
+imposes a reduction order. (It is this that allowed Plotkin to simulate the 
+call-by-name lambda calculus with the call-by-value and vice versa.) When we 
+consider the application 
+
+E F
+
+for instance, we are assuming that both E and F need to be evaluated before 
+application. Fischer's CPS transformation of this makes this clear:
+
+C[E F]=\k.(C[E] (\e.C[F] (\f.((e f) k))))
+
+An invariant of the transform is that formal parameters will be substituted 
+with values. (This can be shown by induction.)
+
+Consider the CPS transformation of omega:
+
+C[x]=\k.(k x)
+
+and is reduced.
+
+C[x x]=\k.(C[x] (\e.(C[x] (\f. ((e f) k)))))
+      =\k.(\k.(k x) (\e.(\k.(k x) (\f.((e f) k)))))
+
+and reduces to
+
+x x.
+
+C[\x.(x x)]=\k.(k (\x.C[x x]))
+C[\x.(x x) \x.(x x)]=\k.(C[\x.(x x)] (\e.C[\x.(x x)] (\f ((e f) k))))
+
+...
+
+Our transformation of a wcm form utilizes this:
+
+C[wcm M F]=C[M] (\m....)
+
+Recall the semantics for lambda cm.
+
+the evaluation of (wcm (\x.x 0) (wcm (\x.x 1) (ccm))
+
+(wcm 0 (wcm (\x.x 1) (ccm)))
+(wcm 0 (wcm 1 (ccm)))
+(wcm 1 (ccm))
+(wcm 1 X[(wcm 1 [])])
+(wcm 1 1:X[[]])
+(wcm 1 1:[])
+1:[]
+
+Consider the correct behavior of this:
+
+(wcm 0 (wcm (wcm 1 (ccm)) (ccm)))
+(wcm 0 (wcm (wcm 1 X[(wcm 1 [])]) (ccm)))
+(wcm 0 (wcm (wcm 1 1:X[[]]) (ccm)))
+(wcm 0 (wcm (wcm 1 1:[]) (ccm)))
+(wcm 0 (wcm 1:[] (ccm)))
+(wcm 1:[] (ccm)))
+(wcm 1:[] X[(wcm 1:[] [])])
+(wcm 1:[] (1:[]):X[[]])
+(wcm 1:[] (1:[]):[])
+(1:[]):[]
+
+Now consider the correct behavior of this:
+
+(wcm 0 (\x.(wcm 1 x) (ccm)))
+(wcm 0 (\x.(wcm 1 x) X[(wcm 0 (\x.(wcm 1 x) []))])
+(wcm 0 (\x.(wcm 1 x) 0:X[(\x.(wcm 1 x) [])])
+(wcm 0 (\x.(wcm 1 x) 0:X[[]])
+(wcm 0 (\x.(wcm 1 x) 0:[])
+(wcm 0 (wcm 1 0:[]))
+(wcm 1 0:[])
+0:[]
+
+The below paragraph is actually not correct!
+
+The definition X([]) refers to the value of the outermost "context", i.e., the top level. The evaluation of the 
+X metafunction proceeds outwards.
+
+C[x]=\k.\m.(k x)
+C[\x.E]=\k.\m.(k \x.C[E])
+C[E F]=\k.\m.((C[E] (\e.((C[F] (\f.(((e f) k) m))) g(m))) g(m))
+C[wcm E F]=\k.\m.((C[E] (\e.((C[F] k) t(e,m)) m)
+C[ccm]=\k.\m.(k (snd m))
+
+t(e,m)=(true,cons e (if (first m) then (tail (snd m)) else (snd m)))
+g(m)=(false,snd m)
+
+
+
+the non-continuation-passing transform
+
+C[x]=\m.x
+C[\x.E]=\m.\x.C[E] m
+C[E F]=\m.C[E] f(m) (C[F] f(m)) -- but once evaluation of E and F is done, we 
+want the actual application to take m
+
+Let C be the transformation function, L be the lambda calculus evaluation 
+function, and M be the continuation mark evaluation function.
+
+M[ccm]=\x.\y.y (nil)
+C[M[ccm]]=\k.\m.(k \x.\k.\m.(k \y.\k.\m.(k y)))
+
+(\y.(\x.x y) z)
+\x.x z
+z
+
+don't evaluate under abstractions: this has to do with laziness, apparently
+the [] in the evaluation refers to the hole, not the outermost context. observe 
+that this puts the marks in an opposite order.
