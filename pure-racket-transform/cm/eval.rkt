@@ -27,6 +27,9 @@
   (λ (ccm x y)
     ccm))
 
+(define (rename-num num x y)
+  num)
+
 ; change x to y in e
 (define rename
   (λ (e x y)
@@ -37,6 +40,7 @@
         ((eq? tag 'app) (rename-app e x y))
         ((eq? tag 'wcm) (rename-wcm e x y))
         ((eq? tag 'ccm) (rename-ccm e x y))
+        ((eq? tag 'num) (rename-num e x y))
         (else (error "unrecognized tag " e))))))
 
 (define occurs-free-in-var
@@ -61,6 +65,9 @@
   (λ (ccm x)
     #f))
 
+(define (occurs-free-in-num num x)
+  #f)
+
 (define occurs-free-in
   (λ (e x)
     (let ((tag (first e)))
@@ -70,6 +77,7 @@
         ((eq? tag 'app) (occurs-free-in-app e x))
         ((eq? tag 'wcm) (occurs-free-in-wcm e x))
         ((eq? tag 'ccm) (occurs-free-in-ccm e x))
+        ((eq? tag 'num) (occurs-free-in-num e x))
         (else (error "unrecognized tag " e))))))
 
 (define substitute-var
@@ -98,6 +106,9 @@
   (λ (ccm x f)
     ccm))
 
+(define (substitute-num num x f)
+  num)
+
 (define substitute
   (λ (e x f)
     (let ((tag (first e)))
@@ -107,6 +118,7 @@
         ((eq? tag 'app) (substitute-app e x f))
         ((eq? tag 'wcm) (substitute-wcm e x f))
         ((eq? tag 'ccm) (substitute-ccm e x f))
+        ((eq? tag 'num) (substitute-num e x f))
         (else (error "unrecognized tag " tag))))))
 
 (define (eval-var var k)
@@ -137,6 +149,9 @@
 (define (eval-ccm ccm k)
   (chi (cdr k)))
 
+(define (eval-num num k)
+  num)
+
 (define (eval-inner e k)
   (let ((tag (first e)))
     (cond
@@ -145,6 +160,7 @@
       ((eq? tag 'app) (eval-app e k))
       ((eq? tag 'wcm) (eval-wcm e k))
       ((eq? tag 'ccm) (eval-ccm e k))
+      ((eq? tag 'num) (eval-num e k))
       (else (error "unrecognized tag " tag)))))
 
 (define (eval e)
