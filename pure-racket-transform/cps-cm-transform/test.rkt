@@ -10,14 +10,18 @@
     (begin
       (display value1)
       (newline)
+      (newline)
       (display value2)
+      (newline)
       (newline))))
 
-;(test-transform '((λ (x) x) y))
+(define program '(ccm))
+
+(test-transform program)
 
 (define HEAD '(λ (p) (p (λ (x) (λ (y) x)))))
 
-(lc-eval 
+#|(lc-eval 
  (transform 
   '(wcm (λ (f) (λ (z) z))
         ((λ (ignored)
@@ -45,4 +49,4 @@
                      (λ (f) (λ (z) (f z)))))
                   zero))))
          (λ (f) (λ (z) z))))))
-"should be 0"
+"should be 0"|#

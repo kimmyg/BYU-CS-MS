@@ -23,6 +23,17 @@
                  ,(second abs) 
                  ,(transform-inner (third abs))))))))
 
+(define TRUE  '(abs x (abs y (var x))))
+(define FALSE '(abs x (abs y (var y))))
+(define IF    '(abs b (abs t (abs f (app (app (var b) (var t)) (var f))))))
+(define PAIR  '(abs a (abs b (abs z (app (app (var z) (var a)) (var b))))))
+(define FST   `(abs p (app (var p) ,TRUE)))
+(define SND   `(abs p (app (var p) ,FALSE)))
+(define CONS  PAIR)
+(define HEAD  TRUE)
+(define TAIL  FALSE)
+(define NIL   FALSE)
+
 (define (transform-app app)
   (let ((k (gensym 'k))
         (m (gensym 'm))
@@ -44,20 +55,9 @@
                                (var ,e) 
                                (var ,f)) 
                               (var ,k))
-                             (var ,m))))
-                      (var ,m))))
+                             (app (app ,PAIR ,FALSE) (var ,m)))))
+                      (app (app ,PAIR ,FALSE) (var ,m)))))
                 (var ,m))))))
-
-(define TRUE  '(abs x (abs y (var x))))
-(define FALSE '(abs x (abs y (var y))))
-(define IF    '(abs b (abs t (abs f (app (app (var b) (var t)) (var f))))))
-(define PAIR  '(abs a (abs b (abs z (app (app (var z) (var a)) (var b))))))
-(define FST   `(abs p (app (var p) ,TRUE)))
-(define SND   `(abs p (app (var p) ,FALSE)))
-(define CONS  PAIR)
-(define HEAD  TRUE)
-(define TAIL  FALSE)
-(define NIL   FALSE)
 
 (define (transform-wcm wcm)
   (let ((k (gensym 'k))
@@ -84,16 +84,13 @@
                               (app ,FST (var ,m))) 
                              (app ,TAIL (app ,SND (var ,m)))) (app ,SND (var ,m))))))))
                 (var ,m))))))
-                                                                       
 
 (define (transform-ccm ccm)
   (let ((k (gensym 'k))
         (m (gensym 'm)))
     `(abs ,k 
           (abs ,m 
-               (app 
-                ,SND 
-                (var ,m))))))
+                ,(transform-inner `(app ,SND (var ,m)))))))
 
 ; takes cm terms to lc terms
 (define (transform-inner term)
@@ -109,6 +106,6 @@
       (error "expected list, got" term)))
 
 (define (transform term)
-  (emit (transform-inner (parse term))))
+  (emit (transform-inner (parse term))));(emit `(app (app ,(transform-inner (parse term)) (abs x (var x))) (abs x (abs y (var y))))))
 
 (provide transform)

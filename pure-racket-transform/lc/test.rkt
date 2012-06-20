@@ -1,9 +1,10 @@
-;#lang racket
-;(require racket/include)
+#lang racket
 
-;(include "lc.rkt")
+(require "emit.rkt")
+(require "eval.rkt")
+(require "parse.rkt")
 
-(define random-lc-var
+(define random-var
   (λ ()
     (let ((i (random 3)))
       (cond
@@ -11,28 +12,31 @@
         ((= i 1) 'y)
         (else    'z)))))
 
-(define random-lc-abs
+(define random-abs
   (λ ()
-    `(λ (,(random-lc-var)) ,(random-lc-term))))
+    `(λ (,(random-var)) ,(random-term))))
 
-(define random-lc-app
+(define random-app
   (λ ()
-    `(,(random-lc-term) ,(random-lc-term))))
+    `(,(random-term) ,(random-term))))
 
-(define random-lc-term
-  (λ ()
-    (let ((i (random 3)))
-      (cond
-        ((= i 0) (random-lc-var))
-        ((= i 1) (random-lc-abs))
-        (else    (random-lc-app))))))
+(define (random-num)
+  (random 10))
+
+(define (random-term)
+  (let ((i (random 4)))
+    (cond
+      ((= i 0) (random-var))
+      ((= i 1) (random-abs))
+      ((= i 2) (random-app))
+      (else    (random-num)))))
 
 (define test-lc-emit-parse
   (λ (n)
     (if (= n 0)
         (print "done")
         (let ((term (random-lc-term)))
-          (if (equal? (lc-emit (lc-parse term)) term)
+          (if (equal? (emit (lc-parse term)) term)
               (test-lc-emit-parse (- n 1))
               (error "expected " term ", got" (lc-emit (lc-parse term))))))))
 

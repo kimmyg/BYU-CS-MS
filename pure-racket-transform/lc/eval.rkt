@@ -19,6 +19,10 @@
   (λ (app x y)
     `(app ,(rename (second app) x y) ,(rename (third app) x y))))
 
+(define (rename-num num)
+  num)
+
+
 ; change x to y in e
 (define rename
   (λ (e x y)
@@ -27,6 +31,7 @@
         ((eq? tag 'var) (rename-var e x y))
         ((eq? tag 'abs) (rename-abs e x y))
         ((eq? tag 'app) (rename-app e x y))
+        ((eq? tag 'num) (rename-num e x y))
         (else (error "unrecognized tag " e))))))
 
 (define occurs-free-in-var
@@ -43,6 +48,9 @@
   (λ (app x)
     (or (occurs-free-in (second app) x) (occurs-free-in (third app) x))))
 
+(define (occurs-free-in-num num x)
+  #f)
+
 (define occurs-free-in
   (λ (e x)
     (let ((tag (first e)))
@@ -50,6 +58,7 @@
         ((eq? tag 'var) (occurs-free-in-var e x))
         ((eq? tag 'abs) (occurs-free-in-abs e x))
         ((eq? tag 'app) (occurs-free-in-app e x))
+        ((eq? tag 'num) (occurs-free-in-num e x))
         (else (error "unrecognized tag " e))))))
 
 (define substitute-var
@@ -70,6 +79,9 @@
   (λ (app x f)
     `(app ,(substitute (second app) x f) ,(substitute (third app) x f))))
 
+(define (substitute-num num x f)
+  num)
+
 (define substitute
   (λ (e x f)
     (let ((tag (first e)))
@@ -77,24 +89,25 @@
         ((eq? tag 'var) (substitute-var e x f))
         ((eq? tag 'abs) (substitute-abs e x f))
         ((eq? tag 'app) (substitute-app e x f))
+        ((eq? tag 'num) (substitute-num e x f))
         (else (error "unrecognized tag " tag))))))
 
-(define eval-var
-  (λ (var)
-    var))
+(define (eval-var var)
+  var)
 
-(define eval-abs
-  (λ (abs)
-    `(abs ,(second abs) ,(eval-inner (third abs)))))
+(define (eval-abs abs)
+  abs)
 
-(define eval-app
-  (λ (app)
-    (let ((rator (eval-inner (second app)))
-          (rand (eval-inner (third app))))
-      (if (eq? (first rator) 'abs)
-          (eval-inner (substitute (third rator) (second rator) rand))
-          `(app ,rator ,rand)))))
-        
+(define (eval-app app)
+  (let ((rator (eval-inner (second app)))
+        (rand (eval-inner (third app))))
+    (if (eq? (first rator) 'abs)
+        (eval-inner (substitute (third rator) (second rator) rand))
+        `(app ,rator ,rand))))
+
+(define (eval-num num)
+  num)
+
 (define eval-inner
   (λ (e)
     (let ((tag (first e)))
@@ -102,6 +115,7 @@
         ((eq? tag 'var) (eval-var e))
         ((eq? tag 'abs) (eval-abs e))
         ((eq? tag 'app) (eval-app e))
+        ((eq? tag 'num) (eval-num e))
         (else (error "unrecognized tag " tag))))))
 
 (define eval
