@@ -1,0 +1,23 @@
+C[x]=\k.\m.(k x)
+C[\x.E]=\k.\m.(k \x.C[E])
+C[E F]=\k.\m.((C[E] (\e.((C[F] (\f.(((e f) k) m))) (false,rst m))) (cons false (rst m))))
+C[n]=\k.\m.(k n)
+C[cons E F]=\k.\m.((C[E] (\e.((C[F] (\f.(k (cons e f)))) (false,rst m))) (false,rst m))
+C[nil]=\k.\m.(k nil)
+C[wcm E F]=\k.\m.((C[E] (\e.((C[F] k) (true,cons e rst (if fst m then rst m else m))))) (cons false (rst m)))
+C[ccm]=\k.\m.(k (rst m))
+
+In general, we will use bracketed functions to denote a syntactic transformation and parenthesized functions 
+to denote an evaluation.
+
+Let T'[x,m]=cons TRUE (cons x (rst (if (fst m) then (rst m) else m)))
+Let F'[m]=cons FALSE (rst m)
+
+C[x]=\k.m.(k x)
+C[\x.E]=\k.\m.(k \x.C[E])
+C[E F]=\k.\m.((C[E] (\e.((C[F] (\f.(((e f) k) m))) F'[m])) F'[m])
+C[n]=\k.\m.(k n)
+C[cons E F]=\k.\m.((C[E] (\e.((C[F] (\f.(k (cons e f)))) F'[m])) F'[m])
+C[nil]=\k.\m.(k nil)
+C[wcm E F]\k.\m.((C[E] (\e.((C[F] k) T'[e,m]))) F'[m])
+C[ccm]=\k.\m.(k (rst m))
