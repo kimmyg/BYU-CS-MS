@@ -195,3 +195,17 @@ z
 don't evaluate under abstractions: this has to do with laziness, apparently
 the [] in the evaluation refers to the hole, not the outermost context. observe 
 that this puts the marks in an opposite order.
+
+Recall that variables and abstractions are values; neither can be reduced, 
+according to our rules. With this in mind:
+
+L[C[x]]=L[\k.(k x)]=\k.(k x)
+C[L[x]]=C[x]=\k.(k x)
+
+L[C[\x.E]]=L[\k.(k \x.C[E])]=\k.(k \x.C[E])
+C[L[\x.E]]=C[\x.E]=\k.(k \x.C[E])
+
+L[C[E F]]=L[\k.(C[E] (\e.(C[F] (\f.((e f) k)))))]=\k.(C[E] (\e.(C[F] (\f.((e f) k)))))
+C[L[\x.E F]]=C[L[E[x<-F]]]
+
+
