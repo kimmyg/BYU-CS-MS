@@ -4,7 +4,7 @@
 (require "transform.rkt")
 
 (define (test-transform program)
-  (let ((value1 (transform (eval program)))
+  (let ((value1 (eval `(,(transform (eval program)) (λ (x) x))))
         (value2 (eval `(,(transform program) (λ (x) x)))))
     (begin
       (display value1)
@@ -12,5 +12,4 @@
       (display value2)
       (newline))))
 
-(test-transform '((λ (x) ((λ (x) x) x)) y))
-(test-transform '(λ (x) x))
+(test-transform '(cons 1 nil))

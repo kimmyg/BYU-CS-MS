@@ -5,23 +5,22 @@
 (require "transform.rkt")
 
 (define (test-transform program)
-  (let ((value1 (lc-eval (transform program)))  ; E -> C[E] -> C[v]
-        (value2 (transform (cm-eval program)))) ; E ->  v   -> C[v]
+  (let ((value1 (lc-eval `((,(transform program) (λ (x) x)) (cons (λ (x) (λ (y) y)) nil))))  ; E -> C[E] -> C[v]
+        (value2 (lc-eval `((,(transform (cm-eval program)) (λ (x) x)) (cons (λ (x) (λ (y) y)) nil))))) ; E ->  v   -> C[v]
     (begin
       (display value1)
       (newline)
-      (newline)
       (display value2)
-      (newline)
       (newline))))
 
-(define program '(ccm))
+"should be 1:nil"
+(test-transform '(wcm 0 ((λ (ignore) (wcm 1 (ccm))) 0)))
+"should be 1:0:nil"
+(test-transform '(wcm 0 ((λ (ignore) ((λ (x) x) (wcm 1 (ccm)))) (λ (x) x))))
 
-(test-transform program)
+#|((define HEAD '(λ (p) (p (λ (x) (λ (y) x)))))
 
-(define HEAD '(λ (p) (p (λ (x) (λ (y) x)))))
-
-#|(lc-eval 
+lc-eval 
  (transform 
   '(wcm (λ (f) (λ (z) z))
         ((λ (ignored)

@@ -55,42 +55,128 @@
                                (var ,e) 
                                (var ,f)) 
                               (var ,k))
-                             (app (app ,PAIR ,FALSE) (var ,m)))))
-                      (app (app ,PAIR ,FALSE) (var ,m)))))
-                (var ,m))))))
+                             (var ,m))))
+                      (cons ,FALSE (rst (var ,m))))))
+                (cons ,FALSE (rst (var ,m))))))))
+
+(define (transform-num num)
+  (let ((k (gensym 'k))
+        (m (gensym 'm)))
+    `(abs ,k (abs ,m (app (var ,k) ,num)))))
+
+(define (transform-cons kons)
+  (let ((k (gensym 'k))
+        (m (gensym 'm))
+        (e (gensym 'e))
+        (f (gensym 'f)))
+    `(abs ,k
+          (abs ,m
+               (app
+                (app
+                 ,(transform-inner (second kons))
+                 (abs ,e
+                      (app
+                       (app
+                        ,(transform-inner (third kons))
+                        (abs ,f
+                             (app
+                              (var ,k)
+                              (cons (var ,e) (var ,f)))))
+                       (var ,m))))
+                (cons ,FALSE (rst (var ,m))))))))
+
+(define (transform-nil nil)
+  (let ((k (gensym 'k))
+        (m (gensym 'm)))
+    `(abs ,k (abs ,m (app (var ,k) ,nil)))))
+
+(define (transform-fst fst)
+  (let ((k (gensym 'k))
+        (m (gensym 'm))
+        (e (gensym 'e)))
+    `(abs ,k
+          (abs ,m
+               (app
+                (var ,k)
+                (app
+                 (app
+                  ,(transform-inner (second fst))
+                  (abs ,e
+                       (app
+                        (var ,k)
+                        (fst (var ,e)))))
+                 (cons ,FALSE (rst (var ,m)))))))))
+                  
+(define (transform-rst rst)
+  (let ((k (gensym 'k))
+        (m (gensym 'm))
+        (e (gensym 'e)))
+    `(abs ,k
+          (abs ,m
+               (app
+                (var ,k)
+                (app
+                 (app
+                  ,(transform-inner (second rst))
+                  (abs ,e
+                       (app
+                        (var ,k)
+                        (rst (var ,e)))))
+                 (cons ,FALSE (rst (var ,m)))))))))
+
+(define (transform-isnil? isnil?)
+  (let ((k (gensym 'k))
+        (m (gensym 'm))
+        (e (gensym 'e)))
+    `(abs ,k
+          (abs ,m
+               (app
+                (var ,k)
+                (app
+                 (app
+                  ,(transform-inner (second isnil?))
+                  (abs ,e
+                       (app
+                        (var ,k)
+                        (isnil? (var ,e)))))
+                 (cons ,FALSE (rst (var ,m)))))))))
 
 (define (transform-wcm wcm)
   (let ((k (gensym 'k))
-        (m (gensym 'm)))
+        (m (gensym 'm))
+        (e (gensym 'e)))
     `(abs ,k
           (abs ,m
                (app
                 (app
                  ,(transform-inner (second wcm))
-                 (abs n (app 
-                         (app 
-                          ,(transform-inner (third wcm)) 
-                          (var ,k))
-                         (app 
-                          (app ,PAIR ,TRUE) 
-                          (app 
-                           (app 
-                            ,CONS 
-                            (var n)) 
-                           (app 
-                            (app 
-                             (app 
-                              ,IF 
-                              (app ,FST (var ,m))) 
-                             (app ,TAIL (app ,SND (var ,m)))) (app ,SND (var ,m))))))))
-                (var ,m))))))
+                 (abs ,e
+                      (app
+                       (app
+                        ,(transform-inner (third wcm))
+                        (var ,k))
+                       (cons
+                          ,TRUE
+                          (cons
+                           (var ,e)
+                           (rst
+                            (app
+                             (app
+                              (app
+                               ,IF
+                               (fst (var ,m)))
+                              (rst (var ,m)))
+                             (var ,m))))))))
+                 (cons ,FALSE (rst (var ,m))))))))
 
 (define (transform-ccm ccm)
   (let ((k (gensym 'k))
         (m (gensym 'm)))
     `(abs ,k 
           (abs ,m 
-                ,(transform-inner `(app ,SND (var ,m)))))))
+               (app
+                (var ,k)
+                (rst (var ,m)))))))
 
 ; takes cm terms to lc terms
 (define (transform-inner term)
@@ -99,6 +185,13 @@
         (cond
           ((eq? tag 'var) (transform-var term))
           ((eq? tag 'abs) (transform-abs term))
+          ((eq? tag 'app) (transform-app term))
+          ((eq? tag 'num) (transform-num term))
+          ((eq? tag 'cons) (transform-cons term))
+          ((eq? tag 'nil) (transform-nil term))
+          ((eq? tag 'fst) (transform-fst term))
+          ((eq? tag 'rst) (transform-rst term))
+          ((eq? tag 'isnil?) (transform-isnil? term))
           ((eq? tag 'app) (transform-app term))
           ((eq? tag 'wcm) (transform-wcm term))
           ((eq? tag 'ccm) (transform-ccm term))

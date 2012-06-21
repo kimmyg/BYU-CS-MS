@@ -33,47 +33,4 @@
         (λ (f) (λ (z) z)))))
 "should be 0"
 
-; non church
-
-(eval 
- '(wcm
-   0
-   (
-    (λ (x) 
-      (wcm 
-       1
-       (ccm)))
-    (λ (x) x))))
-"should be 1:nil"
-(eval
- '(wcm
-   0
-   ((λ (x)
-      (
-       (λ (x) x)
-       (wcm
-        1
-        (ccm))))
-    (λ (x) x))))
-"should be 1:0:nil"
-(eval
- `(wcm
-   1
-   (
-    (
-     (
-      ,HEAD
-      (ccm))
-     (λ (x)
-       (wcm
-        0
-        (
-         (
-          (
-           ,HEAD 
-           (ccm)) ;;; we want ccm = 0:nil, now its 1:nil, but don't want 0:1:nil
-          (λ (x)
-            1))
-         x))))
-        0)))
-"should be 0"
+(eval '(isnil? (fst (cons 1 nil))))
