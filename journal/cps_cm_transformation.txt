@@ -208,4 +208,99 @@ C[L[\x.E]]=C[\x.E]=\k.(k \x.C[E])
 L[C[E F]]=L[\k.(C[E] (\e.(C[F] (\f.((e f) k)))))]=\k.(C[E] (\e.(C[F] (\f.((e f) k)))))
 C[L[\x.E F]]=C[L[E[x<-F]]]
 
+We are finally ready to define our transformation in full CPS style. We will make some 
+informal arguments as we go, verifying that this transform is correct.
 
+C[x]=\k.\m.(k x)
+
+Fortunately, there is essentially no difference between the CPS CM transform and the 
+vanilla CPS transform since there is no difference between a variable in lambda cm 
+and a variable in the lambda calculus.
+
+C[\x.E]=\k.\m.(k \x.C[E])
+
+Once again, we fall back to the vanilla CPS transform. We can be somewhat confident 
+to disregard the parameter m, as the vanilla CPS does not induce any evaluation in 
+this case. This is because abstractions are values.
+
+We can perform a sanity check to make sure simple cases work how we expect. According 
+to the definition so far,
+
+C[\x.x]=\k.\m.(k \x.C[x])
+       =\k.\m.(k \x.\k.\m.x)
+.
+Now consider the CPS transformation of the same term
+
+C[\x.x]=\k.(k \x.\k.x)
+
+and the ``evaluation'' of that term by passing the identity
+
+(\k.(k \x.\k.x) \y.y)=(\y.y \x.\k.x)
+                     =\x.\k.x
+.
+Evaluation in a CPS term is initiated by an application to the identity function which 
+triggers a cascade of reductions. We might consider values to be more stable as they 
+don't give way to an avalanche of reduction.
+
+Similarly, our constructed value \k.\m.(k \x.\k.\m.x) is stable against an initiating 
+application of the identity function and the empty list, yielding \x.\k.\m.x.
+
+C[E F]=\k.\m.((C[pair false (snd m)] (\m'.((C[E] (\e.((C[F] (\f.(((e f) k) m))) m')) m')) m)
+
+We must take care not to transform terms multiple times. While evaluation is idempotent:
+
+E[E[1+1]]=E[1+1]
+
+transformation is not:
+
+C[x]=\k.\m.(k x)
+C[C[x]]=C[\k.\m.(k x)]=\k.\m.\k.(k \k.C[\m.(k x)])
+
+To assist us to this end, we maintain an invariant: every argument is fully evaluated 
+before reduction occurs. The Plotkin-Fischer CPS transform accomplishes just that, and 
+we adopt its mechanism.
+
+This is most apparent with the (forthcoming) definition of the transformation of ccm.
+
+C[ccm]=\k.\m.((C[snd m] (\m'.(k m'))) m)
+
+where snd is \p.(p \x.\y.y)
+
+Then the full transformation of the program ccm is
+
+C[ccm]=\k.\m.((C[snd m] (\m'.(k m'))) m)
+C[snd m]=\k.\m.
+
+try this
+
+C[ccm]=\k.\m.(CPS[snd m] (\m'.(k m')))
+CPS[snd m]=\k.(CPS[snd] (\snd'.(CPS[m] (\m'.((snd' m') k))))
+
+C[E[ccm]]=C[\x.\y.y]=\k.\m.(k \x.\k.\m.(k \y.\k.\m.(k y)))
+E[C[ccm]]=E[\k.\m.(CPS[snd m] k)]
+
+CPS[snd m]=\k.(CPS[snd] (\snd'.(CPS[m] (\m'.((snd' m') k))))
+CPS[snd]=\k.(k \x.\k.(k \y.\k.(k y)))
+
+((C[ccm] \x.x) \p.((p \x.\y.y) \x.\y.y))
+
+we want this to be C[E[ccm]] (see above)
+
+C[\p.((p \x.\y.y) \x.\y.y)]=\k.\m.(k \p.C[((p \x.\y.y) \x.\y.y)])
+C[((p \x.\y.y) \x.\y.y]=\k.\m.(k
+
+snd \k.\m.(k \x.\k.\m.(k \y.\k.\m.(k y))
+
+Conceptually, C[ccm]=\k.\m.(k (snd m)). \k.\m.((C[snd m] k) ?) will not work, least of all 
+for the continuation mark argument necessary.
+
+C[E_cm[ccm]]=C[\x.\y.y]=\k.\m.(k \x.\k.\m.(k \y.\k.\m.(k y)))
+
+E_lc[C[ccm]]=...=\k.\m.(k \x.\k.\m.(k \y.\k.\m.(k y)))
+
+
+
+=((\k.\m.(k (m \x.\y.x)) \x.x) \p.((p \k.\m.(k \x.\k.\m.(k \y.\k.\m.(k y)))) \k.\m.(k \x.\k.\m.(k \y.\k.\m.(k y)))))
+=\k.\m.(k \x.\k.\m.(k \y.\k.\m.(k y)))
+
+\k.\m.(k \p.
