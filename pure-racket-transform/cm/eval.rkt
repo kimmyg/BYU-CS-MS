@@ -112,8 +112,8 @@
 
 (define (chi k)
   (if (empty? k)
-      '(nil)
-      `(cons ,(first k) ,(chi (rest k)))))
+      '(abs x (abs y (var y)))
+      `(abs p (app (app (var p) ,(first k)) ,(chi (rest k))))))
 
 (define (eval-ccm ccm k)
   (chi (cdr k)))

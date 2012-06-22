@@ -2,6 +2,7 @@
 
 (require "../lc/emit.rkt")
 (require "../cm/parse.rkt")
+(require (prefix-in cps- "../cps-transform/transform.rkt"))
 
 (define (transform-var var)
   (let ((k (gensym 'k))
@@ -155,20 +156,29 @@
                        (app
                         ,(transform-inner (third wcm))
                         (var ,k))
-                       (cons
-                          ,TRUE
-                          (cons
-                           (var ,e)
-                           (rst
+                       (abs p ; cons true (cons e (snd (if (fst m) then (snd m) else m)))
                             (app
                              (app
-                              (app
-                               ,IF
-                               (fst (var ,m)))
-                              (rst (var ,m)))
-                             (var ,m))))))))
-                 (cons ,FALSE (rst (var ,m))))))))
-
+                              (var p)
+                              ,TRUE)
+                             (abs p ; cons e (snd (if (fst m) then (snd m) else m))
+                                  (app
+                                   (app
+                                    (var p)
+                                    (var ,e))
+                                   (app ; snd (if (fst m) then (snd m) else m)
+                                    (app ; if (fst m) then (snd m) else m
+                                     (app
+                                      (app ; fst m
+                                       (var ,m)
+                                       ,TRUE)
+                                      (app ; snd m
+                                       (var ,m)
+                                       ,FALSE))
+                                     (var ,m)) ; m
+                                    ,FALSE))))))))
+                (var ,m))))))
+                             
 (define (transform-ccm ccm)
   (let ((k (gensym 'k))
         (m (gensym 'm)))
@@ -176,7 +186,9 @@
           (abs ,m 
                (app
                 (var ,k)
-                (rst (var ,m)))))))
+                (app
+                 (var ,m)
+                 (abs x (abs y (var y)))))))))
 
 ; takes cm terms to lc terms
 (define (transform-inner term)
