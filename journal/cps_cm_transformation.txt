@@ -304,3 +304,16 @@ E_lc[C[ccm]]=...=\k.\m.(k \x.\k.\m.(k \y.\k.\m.(k y)))
 =\k.\m.(k \x.\k.\m.(k \y.\k.\m.(k y)))
 
 \k.\m.(k \p.
+
+let's take another crack at the direct style transform. it will take two marks arguments (representing static 
+and dynamic continuation?)
+
+C[x]=\m.\n.x
+C[\x.E]=\m.\n.\x.((C[E] m) n)
+
+so \x.x goes to \m.\n.\x.((\m.\n.x m) n)
+it may be better to just do \m.\n.\x.C[E]
+
+C[E F]=\m.\n.((C[E] (false,snd m)) m) ((C[F] (false,snd m)) m)
+
+this is not fruitful.
