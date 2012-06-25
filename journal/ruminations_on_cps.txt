@@ -1,0 +1,97 @@
+One of the reasons CPS is useful is that is allows evaluation order to be controlled. This is done by 
+a definitional invariant: every term applied to a continuation returns a value. We will visit each 
+case of the definition and verify this property. Before doing so, we emphasize that no reduction is 
+performed by effect of the transformation.
+
+T[x]=\k.(k x)
+
+Variables are values, so the property holds immediately here.
+
+T[\x.E]=\k.(k \x.T[E])
+
+Here we reason inductively by assuming that the property holds for E. Abstractions are values, so the 
+property holds in this case also.
+
+T[E F]=\k.(T[E] (\e.(T[F] (\f.((e f) k))))
+
+Once again, we assume that the property holds for E and F. Then e and f are values. In order to conclude 
+that the property holds for the application, we must establish that the application of values yields a 
+value. The key lies in a case analysis of the operator. It must be either a variable or an abstraction.
+
+First, consider the application of a variable to a variable.
+
+x y
+
+This is fully reduced according to direct application.
+
+T[x y]=\k.(T[x] (\e.T[y] (\f.((e f) k))))
+T[x y]=\k.(\k.(k x) (\e.T[y] (\f.((e f) k))))
+T[x y]=\k.(\k.(k x) (\e.\k.(k y) (\f.((e f) k))))
+
+We can evaluate this expression by applying it to the identity function \z.z.
+
+\k.(\k.(k x) (\e.\k.(k y) (\f.((e f) k)))) \z.z
+\k.(k x) (\e.\k.(k y) (\f.((e f) \z.z)))
+\e.\k.(k y) (\f.((e f) \z.z)) x
+\k.(k y) (\f.((x f) \z.z))
+\f.((x f) \z.z) y
+(x y) \z.z
+
+Similar to a direct-style application, we remain stuck.
+
+Now, consider the application of an abstraction to a variable.
+
+\x.x y
+
+This reduces to y, of course, when directly applied.
+
+T[\x.x y]=\k.(T[\x.x] (\e.(T[y] (\f.((e f) k))))
+         =\k.(\k.(k \x.T[x]) (\e.(T[y] (\f.((e f) k))))
+         =\k.(\k.(k \x.\k.(k x)) (\e.(T[y] (\f.((e f) k))))
+         =\k.(\k.(k \x.\k.(k x)) (\e.\k.(k y) (\f.((e f) k))))
+
+Apply the identity function \z.z to this term.
+
+\k.(\k.(k \x.\k.(k x)) (\e.\k.(k y) (\f.((e f) k)))) \z.z
+\k.(k \x.\k.(k x)) (\e.\k.(k y) (\f.((e f) \z.z)))
+(\e.\k.(k y) (\f.((e f) \z.z))) \x.\k.(k x)
+\k.(k y) (\f.((\x.\k.(k x) f) \z.z))
+\f.((\x.\k.(k x) f) \z.z) y
+(\x.\k.(k x) y) \z.z
+\k.(k y) \z.z
+\z.z y
+y
+
+We observe that, at the time of application, the remnant of the transformation of \x.x took the form 
+\x.\k.(k x). This is a term which, when applied, will yield a value. We can generalize our reasoning 
+to establish this property for all applications by considering
+
+T[\x.E F]
+
+and noting that E also satisfies this property.
+
+[could perhaps do something more detailed and formal here]
+
+Suppose we want to embed direct-style terms in CPS terms. We are interested in what cases we can induce 
+reduction.
+
+As an example which will become useful later, suppose we want to deal with a Church encoding of lists 
+directly.
+
+Recall that we can represent \emph{nil} as [the Church encoding of] \emph{false} and \emph{cons a b} as 
+\p.((p a) b).
+
+Like [the transformation] T, C has a similar property which we quickly verify:
+
+C[x]=\k.\m.(k x)
+C[\x.E]=\k.\m.(k \x.C[E])
+C[E F]=\k.\m.((C[E] (\e.((C[F] (\f.(((e f) k) m))) g[m]))) g[m])
+C[wcm E F]=\k.\m.((C[E] (\e.((C[F] k) h[e,m]))) g[m])
+C[ccm]=\k.\m.(k i[m])
+
+where g[m]=cons false (snd m)
+and h[e,m]=cons true (if fst m then rest (snd m) else snd m)
+and i[m]=snd m
+
+We use the definitions $g$, $h$, and $i$ to emphasize that these facilities enjoy privileged status 
+in the transformation definition and are invisible to the program.
