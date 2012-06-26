@@ -2,7 +2,8 @@
 
 (require "eval.rkt")
 
-(define program '(wcm (λ (x) x) (ccm)))
+(define program '(wcm 1 (ccm)))
+(eval program)
 
 (define HEAD '(λ (p) (p (λ (x) (λ (y) x)))))
 
@@ -32,5 +33,3 @@
                  zero))))
         (λ (f) (λ (z) z)))))
 "should be 0"
-
-(eval '(isnil? (fst (cons 1 nil))))

@@ -1,19 +1,26 @@
 #lang racket
 
-(require (prefix-in lc- "../lc/eval.rkt"))
-(require (prefix-in cm- "../cm/eval.rkt"))
-(require "transform.rkt")
+(require (prefix-in lc- "../lc/eval.rkt")
+         (prefix-in cm- "../cm/eval.rkt")
+         "transform.rkt"
+         racket/pretty)
+
+(define (init-program program)
+  `((,program (λ (x) x)) (λ (p) ((p (λ (x) (λ (y) y))) ,(transform '(λ (x) (λ (y) y)))))))
 
 (define (test-transform program)
-  (let ((value1 (lc-eval `((,(transform program) (λ (x) x)) (λ (p) ((p ,(transform '(λ (x) (λ (y) y)))) ,(transform '(λ (x) (λ (y) y))))))))  ; E -> C[E] -> C[v]
+  (let ((value1 (lc-eval (init-program (transform program))))  ; E -> C[E] -> C[v]
         (value2 (transform (cm-eval program)))) ; E ->  v   -> C[v]
     (begin
-      (display value1)
+      (pretty-print value1)
+      #;(printf "~v\n" (((eval value1 (make-base-namespace)) (λ (x) x)) #f))
       (newline)
-      (display value2)
+      (pretty-print value2)
       (newline))))
 
-(test-transform '(wcm 1 (ccm)))
+
+(test-transform '(ccm))
+(test-transform '(wcm z (ccm)))
 
 ;"should be 1:nil"
 ;(test-transform '(wcm 0 ((λ (ignore) (wcm 1 (ccm))) 0)))

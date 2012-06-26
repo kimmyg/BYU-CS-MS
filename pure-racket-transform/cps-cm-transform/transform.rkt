@@ -57,8 +57,8 @@
                                (var ,f)) 
                               (var ,k))
                              (var ,m))))
-                      (cons ,FALSE (rst (var ,m))))))
-                (cons ,FALSE (rst (var ,m))))))))
+                      (abs p (app (app (var p) ,FALSE) (var ,m))))))
+                (abs p (app (app (var p) ,FALSE) (var ,m))))))))
 
 (define (transform-num num)
   (let ((k (gensym 'k))
@@ -142,6 +142,39 @@
                         (isnil? (var ,e)))))
                  (cons ,FALSE (rst (var ,m)))))))))
 
+(define (wcm-combine e m)
+  `(abs p ; cons true (cons e (snd (if (fst m) then (snd m) else m)))
+       (app
+        (app
+         (var p)
+         ,TRUE)
+        (abs p ; cons e (snd (if (fst m) then (snd m) else m))
+             (app
+              (app
+               (var p)
+               (var ,e))
+              (app ; snd (if (fst m) then (snd m) else m)
+               (app ; if (fst m) then (snd m) else m
+                (app
+                 (app ; fst m
+                  (var ,m)
+                  ,TRUE)
+                 (app ; snd m
+                  (var ,m)
+                  ,FALSE))
+                (var ,m)) ; m
+               ,FALSE))))))
+
+(define (pair-with-false m)
+  `(abs p
+        (app
+         (app
+          (var p)
+          ,FALSE)
+         (app
+          (var ,m)
+          ,FALSE))))
+  
 (define (transform-wcm wcm)
   (let ((k (gensym 'k))
         (m (gensym 'm))
@@ -156,28 +189,8 @@
                        (app
                         ,(transform-inner (third wcm))
                         (var ,k))
-                       (abs p ; cons true (cons e (snd (if (fst m) then (snd m) else m)))
-                            (app
-                             (app
-                              (var p)
-                              ,TRUE)
-                             (abs p ; cons e (snd (if (fst m) then (snd m) else m))
-                                  (app
-                                   (app
-                                    (var p)
-                                    (var ,e))
-                                   (app ; snd (if (fst m) then (snd m) else m)
-                                    (app ; if (fst m) then (snd m) else m
-                                     (app
-                                      (app ; fst m
-                                       (var ,m)
-                                       ,TRUE)
-                                      (app ; snd m
-                                       (var ,m)
-                                       ,FALSE))
-                                     (var ,m)) ; m
-                                    ,FALSE))))))))
-                (var ,m))))))
+                       ,(wcm-combine e m))))
+                ,(pair-with-false m))))))
                              
 (define (transform-ccm ccm)
   (let ((k (gensym 'k))
