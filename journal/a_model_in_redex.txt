@@ -1,0 +1,87 @@
+Redex [cite redex] is a domain-specific language for exploring language semantics. It lives very 
+close to the semantics notation we have used in this discussion. To illustrate how easily langagues 
+can be defined in Redex, we will examine a Redex program which defines a toy language. In contrast to 
+a Redex tutorial, we will not concern ourselves with the syntax and structure of roads not taken and 
+will instead briefly explain each component of the program.
+
+\begin{verbatim}
+(define-language toy
+  (x variable-not-otherwise-mentioned)
+  (v number undefined) 
+  (e (+ e e) (with (x e) e) x v)
+  (E hole (+ E e) (+ v E) (with (x E) e)))
+\end{verbatim}
+
+This expression defines the abstract syntactic structure of a language named \emph{toy}. There are 
+four categories of structures: $x$, $v$, $e$, and $E$. The category $x$ is defined to contain any 
+token not otherwise mentioned in the definition. The category $v$ is defined to contain numbers 
+and the token \emph{undefined}. The category $e$ is defined to contain the expression forms of 
+the language, of which there are four: addition expressions, \emph{with} expressions, lone 
+variables, and lone values. The last category, $E$, does not define abstract syntax but instead 
+reduction contexts. A reduction context, according to this definition, is either a hole (a special 
+token in Redex) which is the destination of a result [say that better] or ... various forms which 
+dictate evaluation order.
+
+\begin{verbatim}
+(define toy-rr
+  (reduction-relation
+   toy
+   (--> (in-hole E (+ number_1 number_2))
+        (in-hole E ,(+ (term number_1) (term number_2)))
+        "+")
+   (--> (in-hole E (with (x_1 v_1) e_1))
+        (in-hole E (substitute x_1 v_1 e_1))
+        "with")
+   (--> (in-hole E x_1)
+        (in-hole E undefined)
+        "free variable")
+   (--> (in-hole E (+ undefined e_1))
+        (in-hole E undefined)
+        "undefined in first position")
+   (--> (in-hole E (+ number_1 undefined))
+        (in-hole E undefined)
+        "undefined in second position")))
+\end{verbatim}
+
+This term defines the reduction relation of the \emph{toy} language. The five defined reductions, 
+signalled by \texttt{-->}, match specified patterns and manipulate them according to the defined 
+rules. These define: the addition of two numbers; the substitution of a \emph{with} expression; 
+a lone variable; the addition of an undefined value on the left; and the addition of an undefined 
+value on the right.
+
+(define-metafunction toy
+  substitute : x v e -> e
+  [(substitute x_1 v_1 (+ e_1 e_2))
+   (+ (substitute x_1 v_1 e_1) (substitute x_1 v_1 e_2))]
+  [(substitute x_1 v_1 (with (x_1 e_1) e_2))
+   (with (x_1 (substitute x_1 v_1 e_1)) e_2)]
+  [(substitute x_1 v_1 (with (x_2 e_1) e_2))
+   (with (x_2 (substitute x_1 v_1 e_1)) (substitute x_1 v_1 e_2))]
+  [(substitute x_1 v_1 x_1)
+   v_1]
+  [(substitute x_1 v_1 x_2)
+   x_2]
+  [(substitute x_1 v_1 v_2)
+   v_2])
+
+(define value? (redex-match toy v))
+(define variable? (redex-match toy x))
+
+(define (reduces-to-one-value-or-variable? e)
+  (let ((results (apply-reduction-relation* toy-rr e)))
+    (and (= (length results) 1)
+         (or (value? (first results))
+             (variable? (first results))))))
+
+(define (reduces-to-one-value? e)
+  (begin
+    (display e)
+    (newline)
+    (let ((results (apply-reduction-relation* toy-rr e)))
+      (and (= (length results) 1)
+           (value? (first results))))))
+
+(redex-check toy
+             e
+             (reduces-to-one-value? (term e)))
+\end{verbatim}
