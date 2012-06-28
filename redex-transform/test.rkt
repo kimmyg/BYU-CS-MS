@@ -6,7 +6,7 @@
          "transform.rkt")
 
 
-#;(define-metafunction λcm_l
+#;(define-metafunction λcm
   transform : any -> any
   [(transform x)
    ,(term-let ([k (variable-not-in (term x) 'k)]
@@ -37,6 +37,20 @@
   [(transform number)
    (λ (k) (λ (m) (k number)))])
 
-(transform
+(eval 
+ '(wcm (λ (f) (λ (z) z))
+       ((λ (ignored)
+          (wcm (λ (f) (λ (z) (f z)))
+               (ccm)))
+        (λ (x) x))))
+"should be 1:nil"
+(eval
+ '(wcm (λ (f) (λ (z) z))
+       ((λ (ignored)
+          ((λ (x) x)
+           (wcm (λ (f) (λ (z) (f z)))
+                (ccm))))
+        (λ (x) x))))
+"should be 1:0:nil"
 
-(emit (parse '(λ (x) x)))
+(traces λv-rr (transform '(wcm 2 (wcm 1 (ccm)))))

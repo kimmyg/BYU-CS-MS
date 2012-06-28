@@ -1,16 +1,16 @@
 #lang racket
 (require redex)
 
-(define-language λcm_l
+(define-language λcm
   (e (e e) (wcm e e) (ccm) x v)
   (x variable-not-otherwise-mentioned)
   (v number (λ (x) e))
   (E (wcm v F) F)
   (F (E e) (v E) (wcm E e) hole))
 
-(define λcm_l-rr
+(define λcm-rr
   (reduction-relation
-   λcm_l
+   λcm
    (--> (in-hole E ((λ (x) e) v))
         (in-hole E (subst-n (x v) e))
         "βv")
@@ -27,15 +27,15 @@
         (in-hole E (chi E))
         "chi")))
 
-(define-metafunction λcm_l
-  chi : E -> lv
-  [(chi hole)          (λ (x) (λ (y) y))]
-  [(chi (E_1 e_1))     (chi E_1)]
-  [(chi (v_1 E_1))     (chi E_1)]
-  [(chi (wcm E_1 e_1)) (chi E_1)]
-  [(chi (wcm v_1 E_1)) (λ (p) ((p v_1) (chi E_1)))])
+(define-metafunction λcm
+  chi : E -> v
+  [(chi hole)      (λ (x) (λ (y) y))]
+  [(chi (E e))     (chi E)]
+  [(chi (v E))     (chi E)]
+  [(chi (wcm E e)) (chi E)]
+  [(chi (wcm v E)) (λ (p) ((p v) (chi E)))])
 
-(define-metafunction λcm_l
+(define-metafunction λcm
   subst : x any any -> any
   ;; 1. x_1 bound, so don't continue in λ body
   [(subst x_1 any_1 (λ (x_2 ... x_1 x_3 ...) any_2))
@@ -58,7 +58,7 @@
    ((subst x_1 any_1 any_2) ...)]
   [(subst x_1 any_1 any_2) any_2])
 
-(define-metafunction λcm_l
+(define-metafunction λcm
   subst-vars : (x any) ... any -> any
   [(subst-vars (x_1 any_1) x_1) any_1]
   [(subst-vars (x_1 any_1) (any_2 ...)) 
@@ -86,5 +86,5 @@
   [(substitute x_1 v_1 (λ (x_2) e_1))
 |#
 
-(provide λcm_l
-         λcm_l-rr)
+(provide λcm
+         λcm-rr)

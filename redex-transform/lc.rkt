@@ -1,15 +1,15 @@
 #lang racket
 (require redex)
 
-(define-language λ_l
+(define-language λv
   (e (e e) x v)
   (x variable-not-otherwise-mentioned)
   (v number (λ (x) e))
   (E (E e) (v E) hole))
 
-(define λ_l-rr
+(define λv-rr
   (reduction-relation
-   λ_l
+   λv
    (--> (in-hole E ((λ (x) e) v))
         (in-hole E (subst-n (x v) e))
         "βv")
@@ -17,13 +17,13 @@
         (in-hole E (subst-n (x_1 x_2) e))
         "βv-v")))
 
-(define-metafunction λ_l
+(define-metafunction λv
   subst-n : (x any) ... any -> any
   [(subst-n (x_1 any_1) (x_2 any_2) ... any_3)
    (subst x_1 any_1 (subst-n (x_2 any_2) ... any_3))]
   [(subst-n any_3) any_3])
 
-(define-metafunction λ_l
+(define-metafunction λv
   subst : x any any -> any
   ;; 1. x_1 bound, so don't continue in λ body
   [(subst x_1 any_1 (λ (x_2 ... x_1 x_3 ...) any_2))
@@ -46,7 +46,7 @@
    ((subst x_1 any_1 any_2) ...)]
   [(subst x_1 any_1 any_2) any_2])
 
-(define-metafunction λ_l
+(define-metafunction λv
   subst-vars : (x any) ... any -> any
   [(subst-vars (x_1 any_1) x_1) any_1]
   [(subst-vars (x_1 any_1) (any_2 ...)) 
@@ -57,5 +57,5 @@
                (subst-vars (x_2 any_2) ... any_3))]
   [(subst-vars any) any])
 
-(provide λ_l
-         λ_l-rr)
+(provide λv
+         λv-rr)
