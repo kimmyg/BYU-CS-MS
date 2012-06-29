@@ -3,54 +3,40 @@
 
 (require "cm.rkt"
          "lc.rkt"
-         "transform.rkt")
+         "transform.rkt"
+         "alpha.rkt")
+
+(define (transform-test program)
+  (let* ((value (first (apply-reduction-relation* λcm-rr program)))
+         (value1 (transform value))
+         (value2 (first (apply-reduction-relation* λv-rr (init (transform program))))))
+    (if (alpha-eq? value1 value2)
+        #t
+        (begin
+          (display value)
+          (newline)
+          (display value1)
+          (newline)
+          (display value2)
+          (newline)
+          #f))))
+
+(transform-test '(wcm (λ (x) x) (ccm)))
+
+#|
+pass in λp.((p λx.λy.y) ,(transform-abs 'λx.λy.y)
+
+\p.((p E) F)
+
+\k.\m.(k \p.T[((p E) F)])
+\k.\m.(k \p.T[((p E) F)])
+
+ (abs ,f (app (app (app (var ,e) (var ,f)) (var ,k)) (var ,m)))) (abs p (app (app (var p) (abs x (abs y (var y)))) (var ,snd_m)))))) (abs p (app (app (var p) (abs x (abs y (var y)))) (var ,snd_m))))))))))
+\k.\m.(\k.(k (m \x.\y.y))) \snd_m.((T[E] (\e.((T[F] (\f.(((e f) k) m)) <marks>))) <marks>))
+
+(abs ,k (abs ,m (app (abs ,k (app (var ,k) (app (var ,m) (abs x (abs y (var y)))))) (abs ,snd_m (app (app T[(p E)] (abs ,e (app (app T[F] (abs ,f (app (app (app (var ,e) (var ,f)) (var ,k)) (var ,m)))) (abs p (app (app (var p) (abs x (abs y (var y)))) (var ,snd_m)))))) (abs p (app (app (var p) (abs x (abs y (var y)))) (var ,snd_m))))))))))
+(abs k (abs m (app (var k) (abs p (abs ,k (abs ,m (app (abs ,k (app (var ,k) (app (var ,m) (abs x (abs y (var y)))))) (abs ,snd_m (app (app (abs ,k (abs ,m (app (abs ,k (app (var ,k) (app (var ,m) (abs x (abs y (var y)))))) (abs ,snd_m (app (app (abs k (abs m (app (var k) (var p)))) (abs ,e (app (app (var ,tail_m) (abs ,f (app (app (app (var ,e) (var ,f)) (var ,k)) (var ,m)))) (abs p (app (app (var p) (abs x (abs y (var y)))) (var ,snd_m)))))) (abs p (app (app (var p) (abs x (abs y (var y)))) (var ,snd_m))))))))))))))
 
 
-#;(define-metafunction λcm
-  transform : any -> any
-  [(transform x)
-   ,(term-let ([k (variable-not-in (term x) 'k)]
-               [m (variable-not-in (term x) 'm)])
-              (term (λ (k) (λ (m) (k x)))))]
-  [(transform (λ (x) e))
-   ,(term-let ([k (variable-not-in (term (λ (x) e)) 'k)]
-               [m (variable-not-in (term (λ (x) e)) 'm)])
-              (term (λ (k) (λ (m) (k (transform e))))))]
-  [(transform (e_1 e_2))
-   ,(term-let ([k (variable-not-in (term (e_1 e_2)) 'k)]
-               [m (variable-not-in (term (e_1 e_2)) 'm)]
-               [e (variable-not-in (term (e_1 e_2)) 'e)]
-               [f (variable-not-in (term (e_1 e_2)) 'f)]
-               [snd_m (variable-not-in (term (e_1 e_2)) 'snd_m)])
-              (λ (k) (λ (m) ((λ (k) (k (m (λ (x) (λ (y) y))))) (λ (snd_m) (((term (transform e_1)) (λ (e) (((term (transform e_2)) (λ (f) (((e f) k) m))) (λ (p) ((p (λ (x) (λ (y) y))) snd_m))))) (λ (p) ((p (λ (x) (λ (y) y))) snd_m))))))))]
-  [(transform (wcm e_1 e_2))
-   ,(term-let ([k (variable-not-in (term (wcm e_1 e_2)) 'k)]
-               [m (variable-not-in (term (wcm e_1 e_2)) 'm)]
-               [mark (variable-not-in (term (wcm e_1 e_2)) 'mark)]
-               [fst_m (variable-not-in (term (wcm e_1 e_2)) 'fst_m)]
-               [snd_m (variable-not-in (term (wcm e_1 e_2)) 'snd_m)]
-               [tail_m (variable-not-in (term (wcm e_1 e_2)) 'tail_m)]
-               [proper_tail_m (variable-not-in (term (wcm e_1 e_2)) 'proper_tail_m)])
-              (λ (k) (λ (m) ((λ (k) (k (m (λ (x) (λ (y) y))))) (λ (snd_m) (((term (transform e_1)) (λ (mark) ((λ (k) (k (m (λ (x) (λ (y) x))))) (λ (fst_m) ((λ (k) (k ((fst_m snd_m) m)))) (λ (tail_m) ((λ (k) (k (tail_m (λ (x) (λ (y) y))))) (λ (proper_tail_m) ((λ (k) (k (λ (p) ((p (λ (x) (λ (y) x))) (λ (p) ((p mark) proper_tail_m)))))) (λ (n) (((term (transform e_2)) k) n)))))))))) (λ (p) ((p (λ (x) (λ (y) y))) snd_m))))))))]
-  [(transform (ccm))
-   (λ (k) (λ (m) (k (m (λ (x) (λ (y) y))))))]
-  [(transform number)
-   (λ (k) (λ (m) (k number)))])
 
-(eval 
- '(wcm (λ (f) (λ (z) z))
-       ((λ (ignored)
-          (wcm (λ (f) (λ (z) (f z)))
-               (ccm)))
-        (λ (x) x))))
-"should be 1:nil"
-(eval
- '(wcm (λ (f) (λ (z) z))
-       ((λ (ignored)
-          ((λ (x) x)
-           (wcm (λ (f) (λ (z) (f z)))
-                (ccm))))
-        (λ (x) x))))
-"should be 1:0:nil"
-
-(traces λv-rr (transform '(wcm 2 (wcm 1 (ccm)))))
+|#

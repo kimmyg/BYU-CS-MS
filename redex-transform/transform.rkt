@@ -66,6 +66,10 @@
       (else (error "unrecognized tag" tag)))))
       
 (define (transform e)
-  (emit `(app (app ,(transform-inner (parse e)) (abs x (var x))) (abs p (app (app (var p) (abs x (abs y (var y)))) (abs x (abs y (var y))))))))
+  (emit (transform-inner (parse e))))
 
-(provide transform)
+(define (init e)
+  `((,e (λ (x) x)) (λ (p) ((p (λ (x) (λ (y) y))) ,(transform '(λ (x) (λ (y) y)))))))
+
+(provide transform
+         init)

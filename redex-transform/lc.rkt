@@ -15,7 +15,7 @@
         "βv")
    (--> (in-hole E ((λ (x_1) e) x_2))
         (in-hole E (subst-n (x_1 x_2) e))
-        "βv-v")))
+        "βv-x")))
 
 (define-metafunction λv
   subst-n : (x any) ... any -> any

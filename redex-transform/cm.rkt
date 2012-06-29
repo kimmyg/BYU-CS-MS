@@ -16,7 +16,7 @@
         "βv")
    (--> (in-hole E ((λ (x_1) e) x_2))
         (in-hole E (subst-n (x_1 x_2) e))
-        "βv-v")
+        "βv-x")
    (--> (in-hole E (wcm v_1 v_2))
         (in-hole E v_2)
         "wcm")
@@ -34,6 +34,12 @@
   [(chi (v E))     (chi E)]
   [(chi (wcm E e)) (chi E)]
   [(chi (wcm v E)) (λ (p) ((p v) (chi E)))])
+
+(define-metafunction λcm
+  subst-n : (x any) ... any -> any
+  [(subst-n (x_1 any_1) (x_2 any_2) ... any_3)
+   (subst x_1 any_1 (subst-n (x_2 any_2) ... any_3))]
+  [(subst-n any_3) any_3])
 
 (define-metafunction λcm
   subst : x any any -> any
