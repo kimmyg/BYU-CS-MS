@@ -13,13 +13,17 @@
         (m (gensym 'm)))
     `(abs ,k (abs ,m (app (var ,k) (abs ,(second abs) ,(transform-inner (third abs))))))))
 
-(define (transform-app app)
+(define (substitute-app rator rand)
   (let ((k (gensym 'k))
         (m (gensym 'm))
         (e (gensym 'e))
         (f (gensym 'f))
         (snd_m (gensym 'snd_m)))
-    `(abs ,k (abs ,m (app (abs ,k (app (var ,k) (app (var ,m) (abs x (abs y (var y)))))) (abs ,snd_m (app (app ,(transform-inner (second app)) (abs ,e (app (app ,(transform-inner (third app)) (abs ,f (app (app (app (var ,e) (var ,f)) (var ,k)) (var ,m)))) (abs p (app (app (var p) (abs x (abs y (var y)))) (var ,snd_m)))))) (abs p (app (app (var p) (abs x (abs y (var y)))) (var ,snd_m))))))))))
+    `(abs ,k (abs ,m (app (abs ,k (app (var ,k) (app (var ,m) (abs x (abs y (var y)))))) (abs ,snd_m (app (app ,rator (abs ,e (app (app ,rand (abs ,f (app (app (app (var ,e) (var ,f)) (var ,k)) (var ,m)))) (abs p (app (app (var p) (abs x (abs y (var y)))) (var ,snd_m)))))) (abs p (app (app (var p) (abs x (abs y (var y)))) (var ,snd_m))))))))))
+
+
+(define (transform-app app)
+  (substitute-app (transform-inner (second app)) (transform-inner (third app))))
 
 (define (transform-wcm wcm)
   (let ((k (gensym 'k))
@@ -40,7 +44,7 @@
                                                                     (abs ,tail_m (app
                                                                                   (abs ,k (app (var ,k) (app (var ,tail_m) (abs x (abs y (var y))))))
                                                                                   (abs ,proper_tail_m (app
-                                                                                                       (abs ,k (app (var ,k) (abs p (app (app (var p) (abs x (abs y (var x)))) (abs p (app (app (var p) (var ,mark)) (var ,proper_tail_m)))))))
+                                                                                                       (abs ,k (app (var ,k) (abs p (app (app (var p) (abs x (abs y (var x)))) (abs ,k (abs ,m (app (var ,k) (abs p ,(substitute-app (substitute-app `(abs ,k (abs ,m (app (var ,k) (var p)))) `(abs ,k (abs ,m (app (var ,k) (var ,mark))))) `(var ,proper_tail_m))))))))))
                                                                                                        (abs ,n (app (app ,(transform-inner (third wcm)) (var ,k)) (var ,n)))))))))))) (abs p (app (app (var p) (abs x (abs y (var y)))) (var ,snd_m))))))))))
 
   
