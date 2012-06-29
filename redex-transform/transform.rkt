@@ -30,22 +30,22 @@
         (m (gensym 'm))
         (n (gensym 'n))
         (mark (gensym 'mark))
-        (fst_m (gensym 'fst_m))
-        (snd_m (gensym 'snd_m))
-        (tail_m (gensym 'tail_m))
-        (proper_tail_m (gensym 'proper_tail_m)))
+        (flag (gensym 'flag))
+        (marks (gensym 'marks))
+        (tail_marks (gensym 'tail_marks))
+        (rest_marks (gensym 'rest_marks)))
     `(abs ,k (abs ,m (app
                       (abs ,k (app (var ,k) (app (var ,m) (abs x (abs y (var y)))))) ; (k (snd m))
-                      (abs ,snd_m (app (app ,(transform-inner (second wcm))
-                                            (abs ,mark (app
-                                                       (abs ,k (app (var ,k) (app (var ,m) (abs x (abs y (var x)))))) ; (k (fst m))
-                                                       (abs ,fst_m (app
-                                                                    (abs ,k (app (var ,k) (app (app (var ,fst_m) (var ,snd_m)) (var ,m))))
-                                                                    (abs ,tail_m (app
-                                                                                  (abs ,k (app (var ,k) (app (var ,tail_m) (abs x (abs y (var y))))))
-                                                                                  (abs ,proper_tail_m (app
-                                                                                                       (abs ,k (app (var ,k) (abs p (app (app (var p) (abs x (abs y (var x)))) (abs ,k (abs ,m (app (var ,k) (abs p ,(substitute-app (substitute-app `(abs ,k (abs ,m (app (var ,k) (var p)))) `(abs ,k (abs ,m (app (var ,k) (var ,mark))))) `(var ,proper_tail_m))))))))))
-                                                                                                       (abs ,n (app (app ,(transform-inner (third wcm)) (var ,k)) (var ,n)))))))))))) (abs p (app (app (var p) (abs x (abs y (var y)))) (var ,snd_m))))))))))
+                      (abs ,marks (app
+                                   (abs ,k (app (var ,k) (app (app (app (var ,marks) (abs x (var x))) (abs x (var x))) (abs x (abs y (var y))))))
+                                   (abs ,tail_marks (app (app ,(transform-inner (second wcm))
+                                                              (abs ,mark (app
+                                                                          (abs ,k (app (var ,k) (app (var ,m) (abs x (abs y (var x)))))) ; (k (fst m))
+                                                                          (abs ,flag (app
+                                                                                       (abs ,k (app (var ,k) (app (app (var ,flag) (var ,tail_marks)) (var ,marks))))
+                                                                                       (abs ,rest_marks (app
+                                                                                                         (abs ,k (app (var ,k) (abs p (app (app (var p) (abs x (abs y (var x)))) (abs ,k (abs ,m (app (var ,k) (abs p ,(substitute-app (substitute-app `(abs ,k (abs ,m (app (var ,k) (var p)))) `(abs ,k (abs ,m (app (var ,k) (var ,mark))))) `(var ,rest_marks))))))))))
+                                                                                                         (abs ,n (app (app ,(transform-inner (third wcm)) (var ,k)) (var ,n)))))))))) (abs p (app (app (var p) (abs x (abs y (var y)))) (var ,marks))))))))))))
 
   
 (define (transform-ccm ccm)

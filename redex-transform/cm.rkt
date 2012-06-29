@@ -24,16 +24,16 @@
         (in-hole E (wcm v_2 e))
         "tail")
    (--> (in-hole E (ccm))
-        (in-hole E (chi E))
+        (in-hole E (chi E (λ (x) (λ (y) y))))
         "chi")))
 
 (define-metafunction λcm
-  chi : E -> v
-  [(chi hole)      (λ (x) (λ (y) y))]
-  [(chi (E e))     (chi E)]
-  [(chi (v E))     (chi E)]
-  [(chi (wcm E e)) (chi E)]
-  [(chi (wcm v E)) (λ (p) ((p v) (chi E)))])
+  chi : E v -> v
+  [(chi hole v_ms)      v_ms]
+  [(chi (E e) v_ms)     (chi E v_ms)]
+  [(chi (v E) v_ms)     (chi E v_ms)]
+  [(chi (wcm E e) v_ms) (chi E v_ms)]
+  [(chi (wcm v E) v_ms) (chi E (λ (p) ((p v) v_ms)))])
 
 (define-metafunction λcm
   subst-n : (x any) ... any -> any

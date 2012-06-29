@@ -15,25 +15,27 @@
         (begin
           (display value)
           (newline)
-          (display (term->static-distance value1))
+          (display (term->first-alpha value1))
           (newline)
-          (display (term->static-distance value2))
+          (display (term->first-alpha value2))
           (newline)
           #f))))
 
-(transform-test '(ccm))
-(transform-test '(wcm 1 (ccm)))
+;(transform-test '(ccm))
+;(transform-test '(wcm 1 (ccm)))
+;(transform-test '(wcm (λ (x) (λ (y) x)) (ccm)))
+;(transform-test '(wcm 0 (wcm 1 (ccm))))
 
-#|
-pass in λp.((p λx.λy.y) ,(transform-abs 'λx.λy.y)
+#;(transform-test '(wcm 0
+       ((λ (ignored)
+          ((λ (x) x)
+           (wcm 1
+                (ccm))))
+        (λ (x) x))))
 
-\p.((p E) F)
-
-\k.\m.(k \p.T[((p E) F)])
-
-
-
-
-
-
-|#
+(transform-test '(wcm (λ (f) (λ (z) z))
+       ((λ (ignored)
+          ((λ (x) x)
+           (wcm (λ (f) (λ (z) (f z)))
+                (ccm))))
+        (λ (x) x))))
