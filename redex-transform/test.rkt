@@ -33,9 +33,14 @@
                 (ccm))))
         (λ (x) x))))
 
-(transform-test '(wcm (λ (f) (λ (z) z))
+#;(transform-test '(wcm (λ (f) (λ (z) z))
        ((λ (ignored)
           ((λ (x) x)
            (wcm (λ (f) (λ (z) (f z)))
                 (ccm))))
         (λ (x) x))))
+
+
+(define program (transform '(λ (p) ((p a) b))))
+(traces λv-rr `(((((,program (λ (r) r)) (λ (x) x)) (λ (five) (λ (k) (λ (m) (k (λ (y) (λ (k) (λ (m) (k y))))))))) (λ (x) x)) (λ (p) ((p fst_) snd_))))
+
