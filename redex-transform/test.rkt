@@ -21,10 +21,15 @@
           (newline)
           #f))))
 
-;(transform-test '(ccm))
-;(transform-test '(wcm 1 (ccm)))
-;(transform-test '(wcm (λ (x) (λ (y) x)) (ccm)))
-;(transform-test '(wcm 0 (wcm 1 (ccm))))
+(define (trace program)
+  (traces λv-rr (init (transform program))))
+
+(transform-test '(ccm))
+(transform-test '(wcm 1 (ccm)))
+(transform-test '(wcm (λ (x) (λ (y) x)) (ccm)))
+(transform-test '(wcm 0 (wcm 1 (ccm))))
+
+;(trace '(wcm 1 (ccm)))
 
 #;(transform-test '(wcm 0
        ((λ (ignored)
@@ -42,5 +47,6 @@
 
 
 (define program (transform '(λ (p) ((p a) b))))
-(traces λv-rr `(((((,program (λ (r) r)) (λ (x) x)) (λ (five) (λ (k) (λ (m) (k (λ (y) (λ (k) (λ (m) (k y))))))))) (λ (x) x)) (λ (p) ((p fst_) snd_))))
+;(traces λv-rr `(((((,program (λ (r) r)) (λ (x) x)) (λ (x) (λ (k) (λ (m) (k (λ (y) (λ (k) (λ (m) (k y))))))))) (λ (x) x)) (λ (p) ((p fst_) snd_))))
 
+;(traces λv-rr (init (transform '(wcm 1 (wcm 2 (ccm))))))

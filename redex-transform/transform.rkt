@@ -37,7 +37,8 @@
     `(abs ,k (abs ,m (app
                       (abs ,k (app (var ,k) (app (var ,m) (abs x (abs y (var y)))))) ; (k (snd m))
                       (abs ,marks (app
-                                   (abs ,k (app (var ,k) (app (app (app (var ,marks) (abs x (var x))) (abs x (var x))) (abs x (abs y (var y))))))
+                                   (abs ,k (app (app (app (app (app (var ,marks) (abs x (var x))) (abs x (var x))) (abs x (abs ,k (abs ,m (app (var ,k) (abs y (abs ,k (abs ,m (app (var ,k) (var y)))))))))) (var ,k)) (abs p (app (app (var p) (var x)) (var y)))))
+                                   ;(abs ,k (app (var ,k) (app (app (app (var ,marks) (abs x (var x))) (abs x (var x))) (abs x (abs y (var y))))))
                                    (abs ,tail_marks (app (app ,(transform-inner (second wcm))
                                                               (abs ,mark (app
                                                                           (abs ,k (app (var ,k) (app (var ,m) (abs x (abs y (var x)))))) ; (k (fst m))
