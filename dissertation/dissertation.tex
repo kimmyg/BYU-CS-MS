@@ -227,6 +227,7 @@ Note that there is a blank line between paragraphs, here.
 \usepackage{microtype}
 
 \usepackage{amsmath}
+\usepackage{slatex}
 
 \begin{document}
 
@@ -635,19 +636,86 @@ in the transformation definition and are invisible to the program.
 -reference CPS due to Fischer/Plotkin
 -properties
 
+\chapter{$\lambda_{cm}$}
+
+We consider an extension of the call-by-value $\lambda$-calculus with facilities to
+manipulate continuation marks, introduced by Pettyjohn et al.
+\cite{pettyjohn2005continuations}, which we term $\lambda_{cm}$.
+
+\section{Definition of $\lambda_{cm}$}
+
+Figure \ref{language-syntax} presents the syntactic definition of $\lambda_{cm}$.
+Definitions of $E$ and $F$ signify computation contexts.The non-terminal $E$ is simply any
+term in the language but for the constraint that evaluation contexts interleave \emph{wcm}
+directives. The definition of $e$ establishes the forms of valid expressions in the
+language: applications, variables, values, \emph{wcm} forms, and \emph{ccm} forms. The
+definition of $v$ denotes that values in the language are $\lambda$-abstractions. (Also,
+notice that \emph{wcm} and \emph{ccm} have one parameter fewer than the forms introduced
+earlier. This is because $\lambda_{cm}$ expresses unkeyed marks. While it can be shown
+that a language with keyed marks can be expressed in terms of a language with unkeyed
+marks, such as $\lambda_{cm}$, this is not our concern.)
+
+\begin{figure}
+\begin{align*}
+E = &(\mathrm{wcm}\,v\,F) & e = &(e\,e)\\
+    &F                    &     &x\\
+F = &[]                   &     &v\\
+    &(E\,e)               &     &(\mathrm{wcm}\,e\,e)\\
+    &(v\,E)               &     &(\mathrm{ccm})\\
+    &(\mathrm{wcm}\,E\,e) & v = & \lambda x. e
+\end{align*}
+\caption{$\lambda_{cm}$ syntax}
+\label{language-syntax}
+\end{figure}
+
+Figure \ref{language-semantics} presents the semantics of $\lambda_{cm}$. The definitions
+therein establish the proper interpretation of various expressions. The first follows the
+typical definition of application. The second defines the tail behavior of the \emph{wcm}
+form. The third expresses that the \emph{wcm} form takes on the value of its body.
+Finally, the fourth defines the value of the \emph{ccm} form in terms of the $\chi$
+metafunction which definition is given in figure \ref{chi-metafunction}. The $\chi$
+metafunction is defined over syntactic forms of the language, so its definition
+corresponds closely to the definition of $\lambda_{cm}$ found in figure
+\ref{language-grammar}.
+
+\begin{figure}
+\begin{align*}
+E[(\lambda x.e)\,v]                         &\rightarrow E[e[x\leftarrow v]]\\
+E[(\mathrm{wcm}\,v\,(\mathrm{wcm}\,v'\,e))] &\rightarrow E[(\mathrm{wcm}\,v'\,e)]\\
+E[(\mathrm{wcm}\,v\,v')]                    &\rightarrow E[v']\\
+E[(\mathrm{ccm})]                           &\rightarrow E[\chi(E)]
+\end{align*}
+\caption{$\lambda_{cm}$ evaluation rules}
+\label{language-semantics}
+\end{figure}
+
+\begin{figure}
+\begin{align*}
+\chi([])                   &= \mathrm{empty}\\
+\chi((E\,e))               &= \chi(E)\\
+\chi((v\,E))               &= \chi(E)\\
+\chi((\mathrm{wcm}\,E\,e)) &= \chi(E)\\
+\chi((\mathrm{wcm}\,v\,E)) &= v : \chi(E)
+\end{align*}
+\caption{Definition of $\chi$ metafunction}
+\label{chi-metafunction}
+\end{figure}
+
+\section{A Redex interpreter for $\lambda_{cm}$}
+
 Redex [cite redex] is a domain-specific language for exploring language semantics. It lives very 
 close to the semantics notation we have used in this discussion. To illustrate how easily langagues 
 can be defined in Redex, we will examine a Redex program which defines a toy language. In contrast to 
 a Redex tutorial, we will not concern ourselves with the syntax and structure of roads not taken and 
 will instead briefly explain each component of the program.
 
-\begin{verbatim}
+\begin{schemedisplay}
 (define-language toy
   (x variable-not-otherwise-mentioned)
   (v number undefined) 
   (e (+ e e) (with (x e) e) x v)
   (E hole (+ E e) (+ v E) (with (x E) e)))
-\end{verbatim}
+\end{schemedisplay}
 
 This expression defines the abstract syntactic structure of a language named \emph{toy}. There are 
 four categories of structures: $x$, $v$, $e$, and $E$. The category $x$ is defined to contain any 
@@ -724,13 +792,98 @@ value on the right.
              (reduces-to-one-value? (term e)))
 \end{verbatim}
 
-Plotkin's CPS transformation abstracts each term in the $\lambda$-calculus: lone variables wait on a continuation, abstractions receive a degree of indirection, and even applications, the sole reduction facility of the $\lambda$-calculus, become abstractions. In essence, terms become suspended in wait of a continuation argument. By priming a term so-transformed with a continuation function, even as simple as the identity, we instigate a cascade of computation. In the case of lone variables and applications, we see that this transformation has no effect on the result. However, the values of the $\lambda$-calculus--abstractions--are contaminated by the transform. For example
+
+
+
+
+
+
+
+
+
+
+
+We will present a transformation in the spirit of CPS from $\lambda_{cm}$ to 
+the plain call-by-value $\lambda$-calculus. Furthermore, we will provide and 
+prove a meaning-preservation theorem.
+
+\subsection{Example CPS transform}
+
+As an example of a CPS transform definition, we supply Fischer's transform 
+(which we call $\mathcal{F}$) of the $\lambda$-calculus 
+\cite{fischer1972lambda} below. Recall that terms in 
+the $\lambda$-calculus take the form of lone variables $x$, 
+$\lambda$-abstractions $\lambda x.M$, and applications 
+$M\,N$ where $M$ and $N$ are themselves $\lambda$-calculus terms.
+
+\begin{align*}
+\mathcal{F}[x]           &= \lambda k.k\,x\\
+\mathcal{F}[\lambda x.M] &= \lambda k.k(\lambda x.\mathcal{F}[M])\\
+\mathcal{F}[M\,N]       &= \lambda k.\mathcal{F}[M](\lambda m.\mathcal{F}[N](\lambda n.(m\,n)\,k))
+\end{align*}
+
+The term binding induced by this transform allowed Plotkin to simulate the call-by-value
+dialect of the $\lambda$-calculus by the call-by-name and vice versa
+\cite{plotkin1975call}.
+
+
+
+Plotkin's CPS transformation abstracts each term in the $\lambda$-calculus: lone variables
+wait on a continuation, abstractions receive a degree of indirection, and even
+applications, the sole reduction facility of the $\lambda$-calculus, become abstractions.
+In essence, terms become suspended in wait of a continuation argument. By priming a term
+so-transformed with a continuation function, even as simple as the identity, we instigate
+a cascade of computation. In the case of lone variables and applications, we see that this
+transformation has no effect on the result. However, the values of the
+$\lambda$-calculus--abstractions--are contaminated by the transform. For example
 
 \[
 T[\lambda x.x]=\lambda k.(k \lambda x.\lambda k.(k x))
 \].
 
 It is for this reason that we must take special care with our transform which is based on Plotkin's.
+
+Our use of call-by-value $\lambda$-calculus has assumed a distinction between terms which
+represent values and terms which do not. A term is a \emph{value} if it cannot be reduced
+further. This alone is not a satisfactory definition because it depends on when reduction
+can occur. In our definition, we consider both $\lambda x.x$ and $\lambda
+x.(\lambda y.y\,x)$ to be fully reduced (we consider them to be values, we cannot reduce
+either of these terms). [something about weak head normal form here] The Fischer-Plotkin 
+CPS transform allows us to transform the latter term into a term which can be evaluated as 
+fully as we would expect while still respecting our notion of reduction contexts. It may 
+be beneficial to show this:
+
+\begin{align*}
+\mathcal{F}[\lambda x.(\lambda y.y\,x)] &= \lambda k.(k\,\lambda x.\mathcal{F}[\lambda y.y\, x])\\
+&= \lambda k.(k\, \lambda x.(()))
+\end{align*}
+
+The evaluation rules for $\lambda_{cm}$ require us to distinguish between expressions and values
+
+For simple variables and abstractions, we use Plotkin's definitions almost exactly.
+
+\begin{align*}
+C[x]    &= \lambda k.\lambda m.(k\,x)\\
+C[\lambda x.M] &= \lambda k.\lambda m.(k\,\lambda x.C[M])
+\end{align*}
+
+In the $\lambda$-calculus, evaluation occurs during reduction, and reduction is merely application. Reduction is where evaluation occurs in the $\lambda$-calculus
+
+-introduce lambdacm once again with its syntactic forms and evaluation rules (semantics)
+-introduce redex implementation of lambdacm
+ -discuss reduction contexts and values
+ -discuss call-by-value lambda calculus
+
+-discuss transformation of lambdacm to lambdav at a high level
+ -discuss choice of CPS (evaluation control)
+-discuss properties the transformation should have
+
+-discuss intuitive approach to transformation
+-reason informally about special considerations
+
+-present transformation
+-formalize properties and state as theorems
+-prove each theorem
 
 \section{C}
 \subsection{properties of C}

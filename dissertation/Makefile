@@ -1,5 +1,7 @@
+SLATEX=~/bin/slatex/slatex
+
 pdf:
-	pdflatex dissertation.tex
+	$(SLATEX) dissertation.tex
 	bibtex dissertation
-	pdflatex dissertation.tex
-	pdflatex dissertation.tex
+	$(SLATEX) dissertation.tex
+	$(SLATEX) dissertation.tex
