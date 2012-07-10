@@ -1,4 +1,4 @@
-SLATEX=~/bin/slatex/slatex
+SLATEX=pdflatex
 
 pdf:
 	$(SLATEX) dissertation.tex
