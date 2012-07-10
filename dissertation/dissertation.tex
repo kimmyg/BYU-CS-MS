@@ -227,7 +227,7 @@ Note that there is a blank line between paragraphs, here.
 \usepackage{microtype}
 
 \usepackage{amsmath}
-\usepackage{slatex}
+%\usepackage{slatex}
 
 \begin{document}
 
@@ -417,10 +417,16 @@ evaluation context. In this instance, the previous mark is overwritten with the 
 
 \section{CPS transformations}
 
-The CPS transformation is a family of language transformations derived from Plotkin \cite{plotkin1975call} and designed to simplify  programs by representing all data and control flow uniformly and explicitly, in turn simplifying compiler construction and analyses such as optimization and verification \cite{sabry1994formal}. The standard variation adds a formal parameter to every function definition and an argument to every call site.
+The CPS transformation is a family of language transformations derived from Plotkin
+\cite{plotkin1975call} and designed to simplify  programs by representing all data and
+control flow uniformly and explicitly, in turn simplifying compiler construction and
+analyses such as optimization and verification \cite{sabry1994formal}. The standard
+variation adds a formal parameter to every function definition and an argument to every
+call site.
 
-As an example, consider once again the two variants of the factorial function, sans continuation 
-marks, given earlier. In CPS, the properly recursive variant can be expressed as
+As an example, consider once again the two variants of the factorial function, sans
+continuation marks, given earlier. In CPS, the properly recursive variant can be expressed
+as
 \begin{verbatim}
 (define (fact n k) 
   (if (= n 0)
@@ -433,26 +439,27 @@ and the tail-recursive variant as
   (if (= n 0)
       (k acc)
       (fact-tr (- n 1) (* n acc) k)))
-\end{verbatim}. (For clarity, we have treated ``primitive'' functions--equality 
-comparison, subtraction, and multiplication--in a direct manner. In contrast, a 
-full CPS transformation would affect \emph{every} function.)
+\end{verbatim}. 
+(For clarity, we have treated ``primitive'' functions--equality comparison, subtraction,
+and multiplication--in a direct manner. In contrast, a full CPS transformation would
+affect \emph{every} function.)
 
-Notice that, in the first variation, each recursive call receives a newly-constructed 
-$k$ encapsulating additional work to be performed at the completion of the recursive 
-computation. In the second, $k$ is passed unmodified, so while computation occurs 
-within each context, no \emph{additional} computation pends. From this example, we 
-see that the CPS representation is ideal for understanding tail-call behavior as it 
-is explicit that the continuation is preserved by the tail call.
+Notice that, in the first variation, each recursive call receives a newly-constructed $k$
+encapsulating additional work to be performed at the completion of the recursive
+computation. In the second, $k$ is passed unmodified, so while computation occurs within
+each context, no \emph{additional} computation pends. From this example, we see that the
+CPS representation is ideal for understanding tail-call behavior as it is explicit that
+the continuation is preserved by the tail call.
 
-The purpose of CPS does not lie solely in pedagogy, however. The reification of and 
-consequent ability to directly manipulate the continuation is a powerful ability, 
-analogous in power to the ability to \emph{capture} a continuation which some 
-languages provide. In Scheme, this is accomplished with \emph{call/cc}, short for 
-``call with current continuation''. This call takes one argument which itself is a 
-function of one argument. \emph{call/cc} calls its argument, passing in a functional 
-representation of the current continuation--the continuation present when \emph{call/cc} 
-was invoked. This continuation function takes one argument which is treated as the result 
-of \emph{call/cc} and runs this continuation to completion.
+The purpose of CPS does not lie solely in pedagogy, however. The reification of and
+consequent ability to directly manipulate the continuation is a powerful ability,
+analogous in power to the ability to \emph{capture} a continuation which some languages
+provide. In Scheme, this is accomplished with \emph{call/cc}, short for ``call with
+current continuation''. This call takes one argument which itself is a function of one
+argument. \emph{call/cc} calls its argument, passing in a functional representation of the
+current continuation--the continuation present when \emph{call/cc} was invoked. This
+continuation function takes one argument which is treated as the result of \emph{call/cc}
+and runs this continuation to completion.
 
 As a simple example,
 \begin{verbatim}
@@ -460,24 +467,23 @@ As a simple example,
        (lambda (k)
          (k 1))))
 \end{verbatim}
-returns $2$. In effect, invoking $k$ with the value 1 is the same as replacing 
-the entire \emph{call/cc} invocation with the value 1.
+returns $2$. In effect, invoking $k$ with the value 1 is the same as replacing the entire
+\emph{call/cc} invocation with the value 1.
 
-Much of the power of \emph{call/cc} lies in the manifestation of the continuation 
-as a function, giving it first-class status. It can be passed as an argument in 
-function calls, invoked, and, amazingly, reinvoked at leisure. It is this 
-reinvokeability that makes \emph{call/cc} the fundamental unit of control from 
-which all other control structures can be built, including generators, coroutines, 
-and threads.
+Much of the power of \emph{call/cc} lies in the manifestation of the continuation as a
+function, giving it first-class status. It can be passed as an argument in function calls,
+invoked, and, amazingly, reinvoked at leisure. It is this reinvokeability that makes
+\emph{call/cc} the fundamental unit of control from which all other control structures can
+be built, including generators, coroutines, and threads.
 
-%\emph{call/cc} is erroneously seen as incredibly heavyweight and overkill for 
-%control (cite something). This conception probably comes from the conceptualization 
-%of the continuation as the call stack and continuation capture as stack copy while 
-%continuation call is stack installation. It is also seen as a form of \emph{goto} 
-%which is known to obfuscate control flow and impede analysis (cite something). 
-%[Can't and shouldn't talk much about the second. Probably take it out.] Bearing in 
-%mind that the CPS transformation aids compilers, it is useful to investigate the 
-%characterization of \emph{call/cc} within the standard CPS transformation.
+%\emph{call/cc} is erroneously seen as incredibly heavyweight and overkill for %control
+(cite something). This conception probably comes from the conceptualization %of the
+continuation as the call stack and continuation capture as stack copy while %continuation
+call is stack installation. It is also seen as a form of \emph{goto} %which is known to
+obfuscate control flow and impede analysis (cite something). %[Can't and shouldn't talk
+much about the second. Probably take it out.] Bearing in %mind that the CPS transformation
+aids compilers, it is useful to investigate the %characterization of \emph{call/cc} within
+the standard CPS transformation.
 
 In direct style, the definition of \emph{call/cc} is conceptually 
 \begin{verbatim}
@@ -485,39 +491,35 @@ In direct style, the definition of \emph{call/cc} is conceptually
   (lambda (f)
     (f (get-function-representing-continuation))))
 \end{verbatim}
-where \emph{get-function-representing-continuation} is an opaque function which 
-leverages sweeping knowledge of the language implementation. The CPS definition 
-is notably easier:
+where \emph{get-function-representing-continuation} is an opaque function which leverages
+sweeping knowledge of the language implementation. The CPS definition is notably easier:
 \begin{verbatim}
 (define call/cc
   (lambda (f k)
     (f k k)))
 \end{verbatim}
 
-Variations on the standard CPS transformation can make the expression of certain 
-control structures more straightforward. For instance, the ``double-barrelled'' 
-CPS transformation is a variation wherein each function signature receives not 
-one but two additional formal parameters, each a continuation. One application 
-of this particular variation is error handling with one continuation argument 
-representing the remainder of a successful computation and the other representing 
-the failure contingency. It is especially useful in modelling exceptions and 
-other non-local transfers of control in situations where the computation might fail.
-In general, the nature of the CPS transformation allows it to untangle 
-complicated, intricate control structures.
+Variations on the standard CPS transformation can make the expression of certain control
+structures more straightforward. For instance, the ``double-barrelled'' CPS transformation
+is a variation wherein each function signature receives not one but two additional formal
+parameters, each a continuation. One application of this particular variation is error
+handling with one continuation argument representing the remainder of a successful
+computation and the other representing the failure contingency. It is especially useful in
+modelling exceptions and other non-local transfers of control in situations where the
+computation might fail. In general, the nature of the CPS transformation allows it to
+untangle complicated, intricate control structures.
 
-Similar transformations exist which express other programming language features 
-such as security annotations \cite{wallach2000safkasi} and control structures 
-such as procedures, exceptions, labelled jumps, coroutines, and 
-backtracking. On top of other offerings, this places it in a category of tools 
-to describe and analyze programming language features. (This category is also 
-occupied by Moggi's computational lambda calculus--monads 
+Similar transformations exist which express other programming language features such as
+security annotations \cite{wallach2000safkasi} and control structures such as procedures,
+exceptions, labelled jumps, coroutines, and backtracking. On top of other offerings, this
+places it in a category of tools to describe and analyze programming language features.
+(This category is also occupied by Moggi's computational lambda calculus--monads
 \cite{moggi1989computational}.)
 
-
-One of the reasons CPS is useful is that is allows evaluation order to be controlled. This is done by 
-a definitional invariant: every term applied to a continuation returns a value. We will visit each 
-case of the definition and verify this property. Before doing so, we emphasize that no reduction is 
-performed by effect of the transformation.
+One of the reasons CPS is useful is that is allows evaluation order to be controlled. This
+is done by a definitional invariant: every term applied to a continuation returns a value.
+We will visit each case of the definition and verify this property. Before doing so, we
+emphasize that no reduction is performed by effect of the transformation.
 
 \[
 T[x]=\lambda k.(k x)
@@ -676,7 +678,7 @@ Finally, the fourth defines the value of the \emph{ccm} form in terms of the $\c
 metafunction which definition is given in figure \ref{chi-metafunction}. The $\chi$
 metafunction is defined over syntactic forms of the language, so its definition
 corresponds closely to the definition of $\lambda_{cm}$ found in figure
-\ref{language-grammar}.
+\ref{language-syntax}.
 
 \begin{figure}
 \begin{align*}
@@ -703,29 +705,31 @@ E[(\mathrm{ccm})]                           &\rightarrow E[\chi(E)]
 
 \section{A Redex interpreter for $\lambda_{cm}$}
 
-Redex [cite redex] is a domain-specific language for exploring language semantics. It lives very 
-close to the semantics notation we have used in this discussion. To illustrate how easily langagues 
-can be defined in Redex, we will examine a Redex program which defines a toy language. In contrast to 
-a Redex tutorial, we will not concern ourselves with the syntax and structure of roads not taken and 
-will instead briefly explain each component of the program.
+Redex \cite{findler2010redex} is a domain-specific language for exploring language
+semantics. It lives very close to the semantics notation we have used in this discussion.
+To illustrate how easily langagues can be defined in Redex, we will examine a Redex
+program which defines a toy language. In contrast to a Redex tutorial, we will not concern
+ourselves with the syntax and structure of roads not taken and will instead briefly
+explain each component of the program.
 
-\begin{schemedisplay}
+\begin{verbatim}
 (define-language toy
   (x variable-not-otherwise-mentioned)
   (v number undefined) 
   (e (+ e e) (with (x e) e) x v)
   (E hole (+ E e) (+ v E) (with (x E) e)))
-\end{schemedisplay}
+\end{verbatim}
 
-This expression defines the abstract syntactic structure of a language named \emph{toy}. There are 
-four categories of structures: $x$, $v$, $e$, and $E$. The category $x$ is defined to contain any 
-token not otherwise mentioned in the definition. The category $v$ is defined to contain numbers 
-and the token \emph{undefined}. The category $e$ is defined to contain the expression forms of 
-the language, of which there are four: addition expressions, \emph{with} expressions, lone 
-variables, and lone values. The last category, $E$, does not define abstract syntax but instead 
-reduction contexts. A reduction context, according to this definition, is either a hole (a special 
-token in Redex) which is the destination of a result [say that better] or ... various forms which 
-dictate evaluation order.
+This expression defines the abstract syntactic structure of a language named \emph{toy}.
+There are four categories of structures: $x$, $v$, $e$, and $E$. The category $x$ is
+defined to contain any token not otherwise mentioned in the definition. The category $v$
+is defined to contain numbers and the token \emph{undefined}. The category $e$ is defined
+to contain the expression forms of the language, of which there are four: addition
+expressions, \emph{with} expressions, lone variables, and lone values. The last category,
+$E$, does not define abstract syntax but instead reduction contexts. A reduction context,
+according to this definition, is either a hole (a special token in Redex) which is the
+destination of a result [say that better] or ... various forms which dictate evaluation
+order.
 
 \begin{verbatim}
 (define toy-rr
@@ -748,11 +752,11 @@ dictate evaluation order.
         "undefined in second position")))
 \end{verbatim}
 
-This term defines the reduction relation of the \emph{toy} language. The five defined reductions, 
-signalled by \texttt{-->}, match specified patterns and manipulate them according to the defined 
-rules. These define: the addition of two numbers; the substitution of a \emph{with} expression; 
-a lone variable; the addition of an undefined value on the left; and the addition of an undefined 
-value on the right.
+This term defines the reduction relation of the \emph{toy} language. The five defined
+reductions, signalled by \texttt{-->}, match specified patterns and manipulate them
+according to the defined rules. These define: the addition of two numbers; the
+substitution of a \emph{with} expression; a lone variable; the addition of an undefined
+value on the left; and the addition of an undefined value on the right.
 
 \begin{verbatim}
 (define-metafunction toy
@@ -809,12 +813,11 @@ prove a meaning-preservation theorem.
 
 \subsection{Example CPS transform}
 
-As an example of a CPS transform definition, we supply Fischer's transform 
-(which we call $\mathcal{F}$) of the $\lambda$-calculus 
-\cite{fischer1972lambda} below. Recall that terms in 
-the $\lambda$-calculus take the form of lone variables $x$, 
-$\lambda$-abstractions $\lambda x.M$, and applications 
-$M\,N$ where $M$ and $N$ are themselves $\lambda$-calculus terms.
+As an example of a CPS transform definition, we supply Fischer's transform (which we call
+$\mathcal{F}$) of the $\lambda$-calculus \cite{fischer1972lambda} below. Recall that terms
+in the $\lambda$-calculus take the form of lone variables $x$, $\lambda$-abstractions
+$\lambda x.M$, and applications $M\,N$ where $M$ and $N$ are themselves $\lambda$-calculus
+terms.
 
 \begin{align*}
 \mathcal{F}[x]           &= \lambda k.k\,x\\
@@ -822,13 +825,8 @@ $M\,N$ where $M$ and $N$ are themselves $\lambda$-calculus terms.
 \mathcal{F}[M\,N]       &= \lambda k.\mathcal{F}[M](\lambda m.\mathcal{F}[N](\lambda n.(m\,n)\,k))
 \end{align*}
 
-The term binding induced by this transform allowed Plotkin to simulate the call-by-value
-dialect of the $\lambda$-calculus by the call-by-name and vice versa
-\cite{plotkin1975call}.
 
-
-
-Plotkin's CPS transformation abstracts each term in the $\lambda$-calculus: lone variables
+Fischer's CPS transformation abstracts each term in the $\lambda$-calculus: lone variables
 wait on a continuation, abstractions receive a degree of indirection, and even
 applications, the sole reduction facility of the $\lambda$-calculus, become abstractions.
 In essence, terms become suspended in wait of a continuation argument. By priming a term
@@ -867,7 +865,164 @@ C[x]    &= \lambda k.\lambda m.(k\,x)\\
 C[\lambda x.M] &= \lambda k.\lambda m.(k\,\lambda x.C[M])
 \end{align*}
 
-In the $\lambda$-calculus, evaluation occurs during reduction, and reduction is merely application. Reduction is where evaluation occurs in the $\lambda$-calculus
+In the $\lambda$-calculus, evaluation occurs during reduction, and reduction is merely
+application. There is, however, some subtlety in which contexts we allow applications to 
+be reduced. For example, in the call-by-value $\lambda$-calculus, $\lambda y.y\,x$ is 
+reducible; by contrast, $\lambda x.(\lambda y.y\,x)$ is not. We might imagine a system in 
+which we, by convention, reduce beneath abstractions. In such a system, the latter term, 
+when applied to $z$, would reduce as
+
+\begin{align*}
+            &\lambda x.(\lambda y.y\, x)\,z\\
+\rightarrow &\lambda x.x\,z\\
+\rightarrow &z
+\end{align*}
+
+whereas a call-by-value reduction would reduce as
+
+\begin{align*}
+            &\lambda x.(\lambda y.y\, x)\,z\\
+\rightarrow &\lambda y.y\,z\\
+\rightarrow &z
+\end{align*}
+
+Although both terms reduce to the same term in this example, this distinction is not 
+merely pedantic: terms may reduce definitively in some reduction regimes and fail to 
+reduce completely in others! [talk about reduction orders giving rise to call-by-value 
+and call-by-name] [talk about CPS allowing us to simulate on in the other The term binding induced by this transform allowed Plotkin to simulate the call-by-value
+dialect of the $\lambda$-calculus by the call-by-name and vice versa
+\cite{plotkin1975call}.]
+
+We assume a call-by-value reduction convention in $\lambda_{cm}$ and similarly in our 
+target language, the $\lambda$-calculus, which we will denote $\lambda_{v}$.
+
+
+\section{Language translation}
+
+$\lambda_{cm}$ is a strict superset of $\lambda_{v}$; there are within $\lambda_{cm}$ 
+syntactic forms inscrutable to a $\lambda_{v}$ interpreter. Additionally, evaluation 
+order in $\lambda_{cm}$ is significant and differs from the call-by-value regime of the 
+target language somewhat (which is to say, we cannot simply inherit it). Recall that one 
+feature of the CPS transform, due to Plotkin \cite{plotkin1975call}, is to control 
+evaluation order. We will use this facility in our transformation to express terms in 
+$\lambda_{cm}$ in terms of $\lambda_{v}$. [Other analysis which the CPS transformation 
+affords us \cite{appel2007compiling} is incidental.]
+
+The work of the transformation then is to express the five syntactic forms of
+$\lambda_{cm}$ ($e$-terms in figure \ref{language-syntax}) in the three syntactic forms of
+$\lambda_{v}$ (the first three $e$-terms of that same figure) in a semantics-preserving
+way. Much of the effort of our analysis and justification will be in demonstrating that
+the semantics are indeed preserved, namely the tail-call behavior.
+
+In continuation-passing style, every term takes an additional argument, the continuation,
+into which the evaluation is passed. Our approach to a semantics-preserving
+transformation, which we call $\mathcal{C}$, takes this a step further. Intuitively, we
+will pass not only a continuation but also a list of the current continuation marks. The
+\emph{wcm} form will add a mark to this list and the \emph{ccm} form will simply return it.
+
+\subsection{First pass toward $\mathcal{C}$}
+
+Let us denote a first pass toward $\mathcal{C}$ as $\mathcal{C}_{1}$. We might define 
+$\mathcal{C}_{1}$ formally as 
+
+\begin{align*}
+\mathcal{C}_{1}[x]           &= \lambda k.\lambda m.(k\,x)\\
+\mathcal{C}_{1}[\lambda x.E] &= \lambda k.\lambda m.(k\,\lambda x.\mathcal{C}_{1}[E])\\
+\mathcal{C}_{1}[E\,F]        &= \lambda k.\lambda m.((\mathcal{C}_{1}[E]\,(\lambda e.((\mathcal{C}_{1}[F]\,(\lambda n.(((e\,f)\,k)\,m)))\,m)))\,m)\\
+\mathcal{C}_{1}[wcm\,E\,F]   &= \lambda k.\lambda m.((\mathcal{C}_{1}[E]\,(\lambda e.((\mathcal{C}_{1}[F]\,k)\,\lambda p.((p\,e)\,m))))\,m)\\
+\mathcal{C}_{1}[ccm]         &= \lambda k.\lambda m.(k\,m)
+\end{align*}
+
+Despite its gross deficiencies, this definition captures some of the critical aspects of a
+correct transform, namely, the explicit ordering of evaluation in the \emph{wcm} form and
+the conceptual simplicity of the \emph{ccm} form by virtue of our continuation
+mark-passing approach.
+
+\subsection{What do you mean ``equivalent''?}
+
+At this point, it may be profitable to discuss the properties of a correct transform from
+$\lambda_{cm}$ to $\lambda_{v}$. Because $\lambda_{cm}$ is a superset of $\lambda_{v}$, we
+should expect terms of $\lambda_{cm}$ that are also in $\lambda_{v}$ to be equivalent in
+some sense. What sense? Consider the term
+\[
+\lambda x.x
+\]
+in $\lambda_{cm}$. As an abstraction, this term denotes a value and would expect, at very
+least, it to be transformed into a value in $\lambda_{v}$. However, we need to keep in
+mind that in continuation-passing style, \emph{all} terms are abstractions, and therefore
+values. For, consider the term
+\[
+\lambda x.x\,\lambda y.y
+\]
+also in $\lambda_{cm}$. Fischer's CPS transformation of this is
+\begin{align*}
+            &\mathcal{F}[\lambda x.x\,\lambda y.y]\\
+= &\lambda k.(\mathcal{F}[\lambda x.x]\,(\lambda e.\mathcal{F}[\lambda y.y]\,(\lambda f.((e\,f)\,k))))\\
+= &\lambda k.(\lambda k.(k\,\lambda x.\mathcal{F}[x])\,(\lambda e.\mathcal{F}[\lambda y.y]\,(\lambda f.((e\,f)\,k))))\\
+= &\lambda k.(\lambda k.(k\,\lambda x.\lambda k.(k\,x))\,(\lambda e.\mathcal{F}[\lambda y.y]\,(\lambda f.((e\,f)\,k))))\\
+= &\lambda k.(\lambda k.(k\,\lambda x.\lambda k.(k\,x))\,(\lambda e.\lambda k.(k\,\lambda y.\mathcal{F}[y])\,(\lambda f.((e\,f)\,k))))\\
+= &\lambda k.(\lambda k.(k\,\lambda x.\lambda k.(k\,x))\,(\lambda e.\lambda k.(k\,\lambda y.\lambda k.(k\,y))\,(\lambda f.((e\,f)\,k))))
+\end{align*}
+which, strictly speaking, produces a value. What we're really interested in is the form of 
+the result of the computation and, despite the radical change that has taken place, no 
+computation has been performed. Instead, the transformation produces a term that awaits 
+a continuation--any continuation--to instigate evaluation. At the top level, we are simply 
+interested in seeing the result so we apply this term to simply the identity function 
+$\lambda z.z$. Reduction proceeds as
+\begin{align*}
+            &\lambda k.(\lambda k.(k\,\lambda x.\lambda k.(k\,x))\,(\lambda e.\lambda k.(k\,\lambda y.\lambda k.(k\,y))\,(\lambda f.((e\,f)\,k))))\,\lambda z.z\\
+\rightarrow_{\lambda_{v}} &\lambda k.(k\,\lambda x.\lambda k.(k\,x))\,(\lambda e.\lambda k.(k\,\lambda y.\lambda k.(k\,y))\,(\lambda f.((e\,f)\,\lambda z.z)))\\
+\rightarrow_{\lambda_{v}} &\lambda e.\lambda k.(k\,\lambda y.\lambda k.(k\,y))\,(\lambda f.((e\,f)\,\lambda z.z))\,\lambda x.\lambda k.(k\,x)\\
+\rightarrow_{\lambda_{v}} &\lambda k.(k\,\lambda y.\lambda k.(k\,y))\,(\lambda f.((\lambda x.\lambda k.(k\,x)\,f)\,\lambda z.z))\\
+\rightarrow_{\lambda_{v}} &\lambda f.((\lambda x.\lambda k.(k\,x)\,f)\,\lambda z.z)\,\lambda y.\lambda k.(k\,y)\\
+\rightarrow_{\lambda_{v}} &(\lambda x.\lambda k.(k\,x)\,\lambda y.\lambda k.(k\,y))\,\lambda z.z\\
+\rightarrow_{\lambda_{v}} &\lambda k.(k\,\lambda y.\lambda k.(k\,y))\,\lambda z.z\\
+\rightarrow_{\lambda_{v}} &\lambda z.z\,\lambda y.\lambda k.(k\,y)\\
+\rightarrow_{\lambda_{v}} &\lambda y.\lambda k.(k\,y)
+\end{align*}
+. We contrast this with the result of the direct-style evaluation, $\lambda y.y$, and notice 
+that the CPS transformation, both global and thorough, has contaminated even the value our 
+program produces. This observation will influence both the exact properties we should 
+expect a correct transform should have and our construction of it.
+
+
+The transformation $\mathcal{C}_{1}$ is fundamentally similar to a CPS transformation and 
+so shares the attribute that transformed terms must be ``primed'' with a continuation in 
+order for evaluation to proceed. In fact, terms produced by $\mathcal{C}_{1}$ are doubly 
+abstracted, requiring an argument encoding the current continuation marks. We will not 
+visit the other approaches and will instead assume that our current approach is a fine way 
+to go in this regard.
+
+[say something here]
+
+It is at this point that we notice that, however we choose to encode it, the empty list 
+should initiate the program. Having established this, we can state some general facts about 
+$\mathcal{C}$:
+
+\begin{enumerate}
+\item Like other CPS transformations, it contaminates values.
+\item dasf
+\end{enumerate}
+
+Consider the program \emph{ccm}. In $\lambda_{cm}$, it evaluates to the empty list under 
+some encoding; that is,
+\[
+\mathrm{ccm}\rightarrow_{\lambda_{cm}}empty
+\]
+. We also have
+\[
+\mathcal{C}_{1}[\mathrm{ccm}]=\lambda k.\lambda m.(k\,m)
+\]
+and assuming for now that the identity function is a satisfactory continuation to provide 
+and letting $[]$ represent our encoding of the empty list, we have
+\begin{align*}
+            &(\lambda k.\lambda m.(k\,m)\,\lambda z.z)\,[]\\
+\rightarrow_{\lambda_{v}} &\lambda m.(\lambda z.z\,m)\,[]\\
+\rightarrow_{\lambda_{v}} &\lambda z.z\,[]\\
+\rightarrow_{\lambda_{v}} &[]
+\end{align*}
+. Here we immediately observe that \emph{empty} and $[]$ should be equivalent in some
+sense, and can concretely provide that sense:
 
 -introduce lambdacm once again with its syntactic forms and evaluation rules (semantics)
 -introduce redex implementation of lambdacm
