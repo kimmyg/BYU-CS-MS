@@ -8,10 +8,10 @@
 
 (define (transform-test program)
   (let* ((value (first (apply-reduction-relation* λcm-rr program)))
-         (value1 (transform value))
+         (value1 (first (apply-reduction-relation* λv-rr (init (transform value)))))
          (value2 (first (apply-reduction-relation* λv-rr (init (transform program))))))
-    (if (alpha-eq? value1 value2)
-        #t
+    ;(if (alpha-eq? value1 value2)
+        ;#t
         (begin
           (display value)
           (newline)
@@ -19,13 +19,17 @@
           (newline)
           (display (term->first-alpha value2))
           (newline)
-          #f))))
+          (alpha-eq? value1 value2))))
+          ;#f))))
 
 (define (trace program)
   (traces λv-rr (init (transform program))))
 
+;(transform-test '(λ (x) x))
 ;(transform-test '(ccm))
-;(transform-test '(wcm 1 (ccm)))
+(transform-test '(wcm (ccm) (ccm)))
+;(transform-test '(wcm (λ (x) (λ (y) y)) (ccm)))
+;(transform-test '(wcm (λ (x) x) (ccm)))
 ;(transform-test '(wcm (λ (x) (λ (y) x)) (ccm)))
 ;(transform-test '(wcm 0 (wcm 1 (ccm))))
 
@@ -43,7 +47,7 @@
                 (ccm))))
         (λ (x) x))))
 
-(transform-test '(wcm (ccm) (ccm)))
+;
 ;(transform-test '(λ (u) u))
 ;(trace '(λ (u) u))
 

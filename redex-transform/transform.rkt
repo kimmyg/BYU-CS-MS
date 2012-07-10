@@ -16,10 +16,15 @@
 (define (substitute-app rator rand)
   (let ((k (gensym 'k))
         (m (gensym 'm))
+        (n (gensym 'n))
         (e (gensym 'e))
         (f (gensym 'f))
         (snd_m (gensym 'snd_m)))
-    `(abs ,k (abs ,m (app (abs ,k (app (var ,k) (app (var ,m) (abs x (abs y (var y)))))) (abs ,snd_m (app (app ,rator (abs ,e (app (app ,rand (abs ,f (app (app (app (var ,e) (var ,f)) (var ,k)) (var ,m)))) (abs p (app (app (var p) (abs x (abs y (var y)))) (var ,snd_m)))))) (abs p (app (app (var p) (abs x (abs y (var y)))) (var ,snd_m))))))))))
+    `(abs ,k (abs ,m (app
+                      (abs ,k (app (var ,k) (app (var ,m) (abs x (abs y (var y))))))
+                      (abs ,snd_m (app
+                                   (abs ,k (app (var ,k) (abs p (app (app (var p) (abs x (abs y (var y)))) (var ,snd_m)))))
+                                   (abs ,n (app (app ,rator (abs ,e (app (app ,rand (abs ,f (app (app (app (var ,e) (var ,f)) (var ,k)) (var ,m)))) (var ,n)))) (var ,n))))))))))
 
 
 (define (transform-app app)
@@ -74,7 +79,7 @@
   (emit (transform-inner (parse e))))
 
 (define (init e)
-  `((,e (λ (x) x)) (λ (p) ((p (λ (x) (λ (y) y))) ,(transform '(λ (x) (λ (y) y)))))))
+  `((,e (λ (x) x)) (λ (p) ((p (λ (x) (λ (y) y))) (λ (x) (λ (k) (λ (m) (k (λ (y) (λ (k) (λ (m) (k y))))))))))))
 
 (provide transform
          init)
