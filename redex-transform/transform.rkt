@@ -16,7 +16,6 @@
 (define (substitute-app rator rand)
   (let ((k (gensym 'k))
         (m (gensym 'm))
-        (n (gensym 'n))
         (e (gensym 'e))
         (f (gensym 'f))
         (snd_m (gensym 'snd_m)))
@@ -24,7 +23,7 @@
                       (abs ,k (app (var ,k) (app (var ,m) (abs x (abs y (var y))))))
                       (abs ,snd_m (app
                                    (abs ,k (app (var ,k) (abs p (app (app (var p) (abs x (abs y (var y)))) (var ,snd_m)))))
-                                   (abs ,n (app (app ,rator (abs ,e (app (app ,rand (abs ,f (app (app (app (var ,e) (var ,f)) (var ,k)) (var ,m)))) (var ,n)))) (var ,n))))))))))
+                                   (abs ,m (app (app ,rator (abs ,e (app (app ,rand (abs ,f (app (app (app (var ,e) (var ,f)) (var ,k)) (var ,m)))) (var ,m)))) (var ,m))))))))))
 
 
 (define (transform-app app)
@@ -50,14 +49,14 @@
                                                                           (abs ,flag (app
                                                                                        (abs ,k (app (var ,k) (app (app (var ,flag) (var ,tail_marks)) (var ,marks))))
                                                                                        (abs ,rest_marks (app
-                                                                                                         (abs ,k (app (var ,k) (abs p (app (app (var p) (abs x (abs y (var x)))) (abs ,k (abs ,m (app (var ,k) (abs p ,(substitute-app (substitute-app `(abs ,k (abs ,m (app (var ,k) (var p)))) `(var ,mark)) `(var ,rest_marks))))))))))
+                                                                                                         (abs ,k (app (var ,k) (abs p (app (app (var p) (abs x (abs y (var x)))) (abs ,k (abs ,m (app (var ,k) (abs p ,(substitute-app (substitute-app `(abs ,k (abs ,m (app (var ,k) (var p)))) `(abs ,k (abs ,m (app (var ,k) (var ,mark))))) `(var ,rest_marks))))))))))
                                                                                                          (abs ,n (app (app ,(transform-inner (third wcm)) (var ,k)) (var ,n)))))))))) (abs p (app (app (var p) (abs x (abs y (var y)))) (var ,marks))))))))))))
 
   
 (define (transform-ccm ccm)
   (let ((k (gensym 'k))
         (m (gensym 'm)))
-    `(abs ,k (abs ,m (app (var ,k) (app (var ,m) (abs x (abs y (var y)))))))))
+    `(abs ,k (abs ,m (app (app (app (var ,m) (abs x (abs y (var y)))) (var ,k)) (var dummy))))))
 
 (define (transform-num num)
   (let ((k (gensym 'k))
@@ -79,7 +78,7 @@
   (emit (transform-inner (parse e))))
 
 (define (init e)
-  `((,e (λ (x) x)) (λ (p) ((p (λ (x) (λ (y) y))) (λ (x) (λ (k) (λ (m) (k (λ (y) (λ (k) (λ (m) (k y))))))))))))
+  `((,e (λ (x) x)) (λ (p) ((p (λ (x) (λ (y) y))) ,(transform '(λ (x) (λ (y) y)))))))
 
 (provide transform
          init)
