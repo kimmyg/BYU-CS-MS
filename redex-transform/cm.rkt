@@ -2,23 +2,22 @@
 (require redex)
 
 (define-language λcm
-  (e (e e) (wcm e e) (ccm) x v)
+  (e (e f) (wcm e f) (ccm) v)
+  (f e x number)
   (x variable-not-otherwise-mentioned)
-  (v number (λ (x) e))
+  (u v x number)
+  (v (λ (x) f))
   (E (wcm v F) F)
-  (F (E e) (v E) (wcm E e) hole))
+  (F (E f) (v E) (wcm E f) hole))
 
 (define λcm-rr
   (reduction-relation
    λcm
-   (--> (in-hole E ((λ (x) e) v))
-        (in-hole E (subst-n (x v) e))
-        "βv")
-   (--> (in-hole E ((λ (x_1) e) x_2))
-        (in-hole E (subst-n (x_1 x_2) e))
-        "βv-x")
-   (--> (in-hole E (wcm v_1 v_2))
-        (in-hole E v_2)
+   (--> (in-hole E ((λ (x) f) u))
+        (in-hole E (subst-n (x u) f))
+        "βu")
+   (--> (in-hole E (wcm v u))
+        (in-hole E u)
         "wcm")
    (--> (in-hole E (wcm v_1 (wcm v_2 e)))
         (in-hole E (wcm v_2 e))
@@ -30,9 +29,9 @@
 (define-metafunction λcm
   chi : E v -> v
   [(chi hole v_ms)      v_ms]
-  [(chi (E e) v_ms)     (chi E v_ms)]
+  [(chi (E f) v_ms)     (chi E v_ms)]
   [(chi (v E) v_ms)     (chi E v_ms)]
-  [(chi (wcm E e) v_ms) (chi E v_ms)]
+  [(chi (wcm E f) v_ms) (chi E v_ms)]
   [(chi (wcm v E) v_ms) (chi E (λ (p) ((p v) v_ms)))])
 
 (define-metafunction λcm
