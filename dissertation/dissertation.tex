@@ -938,6 +938,8 @@ correct transform, namely, the explicit ordering of evaluation in the \emph{wcm}
 the conceptual simplicity of the \emph{ccm} form by virtue of our continuation
 mark-passing approach.
 
+say something about the order reversal of the marks
+
 \subsection{What do you mean ``equivalent''?}
 
 At this point, it may be profitable to discuss the properties of a correct transform from
@@ -989,9 +991,8 @@ expect a correct transform should have and our construction of it.
 The transformation $\mathcal{C}_{1}$ is fundamentally similar to a CPS transformation and 
 so shares the attribute that transformed terms must be ``primed'' with a continuation in 
 order for evaluation to proceed. In fact, terms produced by $\mathcal{C}_{1}$ are doubly 
-abstracted, requiring an argument encoding the current continuation marks. We will not 
-visit the other approaches and will instead assume that our current approach is a fine way 
-to go in this regard.
+abstracted, requiring an argument encoding the current continuation marks. For now, we
+will assume that this approach is a fine way to go.
 
 [say something here]
 
@@ -1023,7 +1024,19 @@ and letting $[]$ represent our encoding of the empty list, we have
 \end{align*}
 . Here we immediately observe that \emph{empty} and $[]$ should be equivalent in some
 sense, and can concretely provide that sense:
+\[
+E\rightarrow_{\lambda_{cm}}v'\Rightarrow(\mathcal{C}[E]\,\lambda x.x)\,\mathcal{C}_{v}[\mathrm{empty}]\rightarrow_{\lambda_{v}}\mathcal{C}_{v}[v']
+\]
+That is, we expect that a transformed program should yield a value transformed by a
+similar but not necessarily identical $\mathcal{C}$ which we call $\mathcal{C}_{v}$.
 
+
+We now turn our attention to the tail-call behavior of $\mathcal{C}_{1}$. According to the 
+semantics of $\lambda_{cm}$, the program 
+$(\mathrm{wcm}\,a\,(\mathrm{wcm}\,b\,(\mathrm{ccm})))$ evaluates to b:
+$(\mathrm{wcm} a (\lambda x.x (\mathrm{wcm}\,b\,(\mathrm{ccm}))))$. 
+
+ 
 -introduce lambdacm once again with its syntactic forms and evaluation rules (semantics)
 -introduce redex implementation of lambdacm
  -discuss reduction contexts and values
