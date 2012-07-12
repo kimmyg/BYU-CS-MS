@@ -38,7 +38,7 @@
 ;(transform-test 'm)
 ;(transform-test '(wcm (ccm) 3))
 ;(transform-test '((ccm) 2))
-(transform-test '(wcm ((ccm) 1) (ccm)))
+;(transform-test '(wcm ((ccm) 1) (ccm)))
 
 #;(transform-test '(wcm 0
        ((λ (ignored)
@@ -69,4 +69,4 @@
 
 
 
-;(redex-check λcm e (the-important-property-holds (term e)) #:attempts 1000)
+(redex-check λcm e (the-important-property-holds (term e)) #:attempts 1000)
