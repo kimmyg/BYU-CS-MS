@@ -39,6 +39,8 @@
 ;(transform-test '(wcm (ccm) 3))
 ;(transform-test '((ccm) 2))
 ;(transform-test '(wcm ((ccm) 1) (ccm)))
+;(transform-test '(wcm 0 ((ccm) (ccm))))
+(transform-test '(wcm 1 ((ccm) (λ (x) (λ (y) x)))))
 
 #;(transform-test '(wcm 0
        ((λ (ignored)
@@ -60,13 +62,11 @@
 ;(trace '((ccm) 2))
 
 (define (the-important-property-holds program)
-  (begin
-    (display program)
-    (newline)
-    (let* ((value1 (transform (first (apply-reduction-relation* λcm-rr program))))
+  (let* ((value1 (transform (first (apply-reduction-relation* λcm-rr program))))
            (value2 `(λ (k1234) (λ (m1234) (k1234 ,(first (apply-reduction-relation* λv-rr (init (transform program)))))))))
-      (alpha-eq? value1 value2))))
+      (alpha-eq? value1 value2)))
 
+(define (prepare-cm-term term)
+  term)
 
-
-(redex-check λcm e (the-important-property-holds (term e)) #:attempts 1000)
+;(redex-check λcm e (the-important-property-holds (term e)) #:attempts 1000 #:prepare prepare-cm-term)
