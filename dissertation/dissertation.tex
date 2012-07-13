@@ -807,7 +807,7 @@ helper function \emph{value?}).
 \end{verbatim}
 The \emph{*} at the end of the function name \emph{apply-reduction-relation*} signifies
 that all possible reduction rules will be applied as many times as possible. If some of
-the reduction rules don't actually reduce, the relation may produce a reducible term
+the reduction rules don't actually reduce terms, the relation may produce a reducible term
 indefinitely. The function \emph{apply-reduction-relation*} is in a sense strict in the
 reduction relation and will likewise run indefinitely if this is the case.
 
