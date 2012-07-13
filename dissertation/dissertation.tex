@@ -647,7 +647,7 @@ manipulate continuation marks, introduced by Pettyjohn et al.
 \section{Definition of $\lambda_{cm}$}
 
 Figure \ref{language-syntax} presents the syntactic definition of $\lambda_{cm}$.
-Definitions of $E$ and $F$ signify computation contexts.The non-terminal $E$ is simply any
+Definitions of $E$ and $F$ signify evaluation contexts. The non-terminal $E$ is simply any
 term in the language but for the constraint that evaluation contexts interleave \emph{wcm}
 directives. The definition of $e$ establishes the forms of valid expressions in the
 language: applications, variables, values, \emph{wcm} forms, and \emph{ccm} forms. The
@@ -726,10 +726,14 @@ defined to contain any token not otherwise mentioned in the definition. The cate
 is defined to contain numbers and the token \emph{undefined}. The category $e$ is defined
 to contain the expression forms of the language, of which there are four: addition
 expressions, \emph{with} expressions, lone variables, and lone values. The last category,
-$E$, does not define abstract syntax but instead reduction contexts. A reduction context,
-according to this definition, is either a hole (a special token in Redex) which is the
-destination of a result [say that better] or ... various forms which dictate evaluation
-order.
+$E$, does not define abstract syntax but instead reduction contexts. The first reduction
+context is a \emph{hole} (a special token in Redex) which will be filled in with the
+result of the expression that previously resided in its place. The next two are addition
+contexts, the first representing the evaluation of the first argument and the second
+representing the evaluation of the second; the composition of these contexts imposes an
+order on the evaluation of the arguments. The final context, a \emph{with} context,
+specifies a variable, a value, and an expression within which that variable is bound to
+that value.
 
 \begin{verbatim}
 (define toy-rr
@@ -752,7 +756,7 @@ order.
         "undefined in second position")))
 \end{verbatim}
 
-This term defines the reduction relation of the \emph{toy} language. The five defined
+This term defines a reduction relation on the \emph{toy} language. The five defined
 reductions, signalled by \texttt{-->}, match specified patterns and manipulate them
 according to the defined rules. These define: the addition of two numbers; the
 substitution of a \emph{with} expression; a lone variable; the addition of an undefined
@@ -773,29 +777,52 @@ value on the left; and the addition of an undefined value on the right.
    x_2]
   [(substitute x_1 v_1 v_2)
    v_2])
+\end{verbatim}
 
+The definition of the \emph{with} reduction rule relies on the \emph{substitute}
+metafunction. (Metafunctions assist in defining the language, and therefore exist outside
+of that language; hence, they are not functions of the language but metafunctions.) The
+\emph{substitute} metafunction recursively substitutes a variable in an expression with a 
+value. The substitution is only propagated as long as a binding with the same name is not 
+encountered. At that point, the substitution is performed in the value expression of the 
+binding, but not the body. This allows for expressions like
+\begin{verbatim}
+(with (x 5)
+  (with (x x)
+    x))
+\end{verbatim}
+to be used.
+
+Now that the syntactic forms and reduction rules of the language are defined, we can use 
+the randomized testing built into Redex to investigate properties of the language. We 
+start by defining the helper function \emph{reduces-to-one-value?} (which has its own 
+helper function \emph{value?}).
+\begin{verbatim}
 (define value? (redex-match toy v))
-(define variable? (redex-match toy x))
-
-(define (reduces-to-one-value-or-variable? e)
-  (let ((results (apply-reduction-relation* toy-rr e)))
-    (and (= (length results) 1)
-         (or (value? (first results))
-             (variable? (first results))))))
 
 (define (reduces-to-one-value? e)
-  (begin
-    (display e)
-    (newline)
-    (let ((results (apply-reduction-relation* toy-rr e)))
-      (and (= (length results) 1)
-           (value? (first results))))))
+  (let ((results (apply-reduction-relation* toy-rr e)))
+    (and (= (length results) 1)
+         (value? (first results)))))
+\end{verbatim}
+The \emph{*} at the end of the function name \emph{apply-reduction-relation*} signifies
+that all possible reduction rules will be applied as many times as possible. If some of
+the reduction rules don't actually reduce, the relation may produce a reducible term
+indefinitely. The function \emph{apply-reduction-relation*} is in a sense strict in the
+reduction relation and will likewise run indefinitely if this is the case.
 
+After the language and some properties have been established, the randomized testing, 
+initiated by
+\begin{verbatim}
 (redex-check toy
              e
              (reduces-to-one-value? (term e)))
 \end{verbatim}
-
+is simple. We merely provide the name of the language we wish to work with, the
+nonterminal in the grammar we wish to use to generate language terms, and a predicate that
+checks terms for properties. This function generates terms gradually increasing in size,
+applying the predicate to each in turn, and terminates with a counterexample or after a
+set number of terms have been checked (1000 by default).
 
 
 
