@@ -5,12 +5,10 @@ continuation marks to the plain $\lambda$-calculus in a semantics-preserving way
 Introduce continuation marks
 
 The continuation is commonly described as the "rest of the computation".
-This is misleading since computation can occur "outside" the continuation.
+This is computation that occurs both "inside" and "outside" the continuation. (static vs. dynamic continuation?)
 (Note tail recursive factorial.)
-So it can't refer to the rest of the computation to evaluate a program.
-I like the term "pending computation" though it still may evoke the "rest" for some.
 Consider the expression (+ 3 (+ 1 1)) (in an strict regime?).
-If we directly interpret this, we can separate [wc] the term with a hole (+ 3 <>) from the redex (+ 1 1).
+If we directly interpret this, we can decompose the term with a hole (+ 3 <>) from the redex (+ 1 1).
 The computation (+ 3 <>) is pending after the computation (+ 1 1). It is part of the continuation.
 (In this case, the whole thing.)
 
@@ -84,7 +82,7 @@ with obvious behavior.
 
 (launch-the-missile)
 (clearance <>) "do whatever you like"
-(no-clearance <>) "you can do nothing" (include grant clearance)
+(no-clearance <>) "you can do nothing" (including grant clearance)
 
 A correct clearance implementation would check to see if it could grant clearance.
 
