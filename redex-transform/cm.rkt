@@ -4,7 +4,7 @@
 (define-language λcm
   (e (e e) (wcm e e) (ccm) x v)
   (x variable-not-otherwise-mentioned)
-  (v number (λ (x) e))
+  (v number x (λ (x) e))
   (E (wcm v F) F)
   (F (E e) (v E) (wcm E e) hole))
 

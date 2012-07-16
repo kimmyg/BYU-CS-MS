@@ -9,9 +9,9 @@
 (define (transform-test program)
   (let* ((value (first (apply-reduction-relation* λcm-rr program)))
          (value1 (transform value))
-         (value2 `(λ (k9944) (λ (m1234949) (k9944 ,(first (apply-reduction-relation* λv-rr (init (transform program)))))))))
-    ;(if (alpha-eq? value1 value2)
-        ;#t
+         (value2 (first (apply-reduction-relation* λv-rr (init (transform program))))))
+    (if (alpha-eq? value1 value2)
+        #t
         (begin
           (display value)
           (newline)
@@ -19,7 +19,7 @@
           (newline)
           (display (term->first-alpha value2))
           (newline)
-          (alpha-eq? value1 value2))))
+          #f))))
 
 (define (trace program)
   (traces λv-rr (init (transform program))))
@@ -39,8 +39,8 @@
 ;(transform-test '(wcm (ccm) 3))
 ;(transform-test '((ccm) 2))
 ;(transform-test '(wcm ((ccm) 1) (ccm)))
-;(transform-test '(wcm 0 ((ccm) (ccm))))
-(transform-test '(wcm 1 ((ccm) (λ (x) (λ (y) x)))))
+(transform-test '(wcm 0 ((ccm) (ccm))))
+;(transform-test '(wcm 1 ((ccm) (λ (x) (λ (y) x)))))
 
 #;(transform-test '(wcm 0
        ((λ (ignored)
@@ -63,7 +63,7 @@
 
 (define (the-important-property-holds program)
   (let* ((value1 (transform (first (apply-reduction-relation* λcm-rr program))))
-           (value2 `(λ (k1234) (λ (m1234) (k1234 ,(first (apply-reduction-relation* λv-rr (init (transform program)))))))))
+           (value2 (first (apply-reduction-relation* λv-rr (init (transform program))))))
       (alpha-eq? value1 value2)))
 
 (define (prepare-cm-term term)

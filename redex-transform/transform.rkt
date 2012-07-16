@@ -78,7 +78,7 @@
   (emit (transform-inner (parse e))))
 
 (define (init e)
-  `((,e (λ (x) x)) (λ (p) ((p (λ (x) (λ (y) y))) ,(transform '(λ (x) (λ (y) y)))))))
+  `((λ (k) (k ((,e (λ (x) x)) (λ (p) ((p (λ (x) (λ (y) y))) ,(transform '(λ (x) (λ (y) y)))))))) (λ (v) (λ (k) (λ (m) (k v))))))
 
 (provide transform
          init)
