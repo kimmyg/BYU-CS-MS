@@ -1,7 +1,11 @@
-Thesis: A CPS-like global transformation can compile the $\lambda$-calculus with 
-continuation marks to the plain $\lambda$-calculus in a semantics-preserving way.
+#lang slideshow
 
+(slide
+  #:title "Thesis"
+  (para "A CPS-like global transformation can compile the λ-calculus with"
+        "continuation marks to the plain λ-calculus in a semantics-preserving way."))
 
+#|
 Introduce continuation marks
 
 The continuation is commonly described as the "rest of the computation".
@@ -103,5 +107,4 @@ Example
 Useful for fluid let values, debuggers, profilers, steppers.
 
 Explain use in fluid lets and steppers.
-
-
+|#
