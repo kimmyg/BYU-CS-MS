@@ -572,7 +572,7 @@ the transformation of $\lambda x.x$
 \[
 T[\lambda x.x]=\lambda k.(k \lambda x.\lambda k.(k\,x))
 \]
-. If we apply this term to the identity function, it reduces as
+If we apply this term to the identity function, it reduces as
 \begin{align*}
             &\lambda k.(k \lambda x.\lambda k.(k\,x))\,\lambda y.y\\
 \rightarrow &\lambda y.y\,\lambda x.\lambda k.(k\,x)\\
@@ -1017,7 +1017,7 @@ $\lambda z.z$. Reduction proceeds as
 \rightarrow_{\lambda_{v}} &\lambda z.z\,\lambda y.\lambda k.(k\,y)\\
 \rightarrow_{\lambda_{v}} &\lambda y.\lambda k.(k\,y)
 \end{align*}
-. We contrast this with the result of the direct-style evaluation, $\lambda y.y$, and notice 
+We contrast this with the result of the direct-style evaluation, $\lambda y.y$, and notice 
 that the CPS transformation, both global and thorough, has contaminated even the value our 
 program produces. This observation will influence both the exact properties we should 
 expect a correct transform should have and our construction of it.
@@ -1045,7 +1045,7 @@ some encoding; that is,
 \[
 \mathrm{ccm}\rightarrow_{\lambda_{cm}}empty
 \]
-. We also have
+We also have
 \[
 \mathcal{C}_{1}[\mathrm{ccm}]=\lambda k.\lambda m.(k\,m)
 \]
@@ -1057,7 +1057,7 @@ and letting $[]$ represent our encoding of the empty list, we have
 \rightarrow_{\lambda_{v}} &\lambda z.z\,[]\\
 \rightarrow_{\lambda_{v}} &[]
 \end{align*}
-. Here we immediately observe that \emph{empty} and $[]$ should be equivalent in some
+Here we immediately observe that \emph{empty} and $[]$ should be equivalent in some
 sense, and can concretely provide that sense:
 \[
 E\rightarrow_{\lambda_{cm}}v'\Rightarrow(\mathcal{C}[E]\,\lambda x.x)\,\mathcal{C}_{v}[\mathrm{empty}]\rightarrow_{\lambda_{v}}\mathcal{C}_{v}[v']
