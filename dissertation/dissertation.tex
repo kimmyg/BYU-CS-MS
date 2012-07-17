@@ -476,14 +476,14 @@ invoked, and, amazingly, reinvoked at leisure. It is this reinvokeability that m
 \emph{call/cc} the fundamental unit of control from which all other control structures can
 be built, including generators, coroutines, and threads.
 
-%\emph{call/cc} is erroneously seen as incredibly heavyweight and overkill for %control
-(cite something). This conception probably comes from the conceptualization %of the
-continuation as the call stack and continuation capture as stack copy while %continuation
-call is stack installation. It is also seen as a form of \emph{goto} %which is known to
-obfuscate control flow and impede analysis (cite something). %[Can't and shouldn't talk
-much about the second. Probably take it out.] Bearing in %mind that the CPS transformation
-aids compilers, it is useful to investigate the %characterization of \emph{call/cc} within
-the standard CPS transformation.
+%\emph{call/cc} is erroneously seen as incredibly heavyweight and overkill for control
+%(cite something). This conception probably comes from the conceptualization of the
+%continuation as the call stack and continuation capture as stack copy while continuation
+%call is stack installation. It is also seen as a form of \emph{goto} which is known to
+%obfuscate control flow and impede analysis (cite something). [Can't and shouldn't talk
+%much about the second. Probably take it out.] Bearing in mind that the CPS transformation
+%aids compilers, it is useful to investigate the characterization of \emph{call/cc} within
+%the standard CPS transformation.
 
 In direct style, the definition of \emph{call/cc} is conceptually 
 \begin{verbatim}
@@ -516,10 +516,90 @@ places it in a category of tools to describe and analyze programming language fe
 (This category is also occupied by Moggi's computational lambda calculus--monads
 \cite{moggi1989computational}.)
 
-One of the reasons CPS is useful is that is allows evaluation order to be controlled. This
-is done by a definitional invariant: every term applied to a continuation returns a value.
-We will visit each case of the definition and verify this property. Before doing so, we
-emphasize that no reduction is performed by effect of the transformation.
+\subsection{Example CPS transform}
+
+We will now focus our attention on a CPS transform defined over the $\lambda$-calculus, 
+due to Fischer \cite{fischer1972lambda}. Before doing so, we offer a brief primer on the 
+relevant parts of the $\lambda$-calculus.
+
+\subsubsection{$\lambda$-calculus}
+
+The $\lambda$-calculus is a Turing-complete system of logic extensively used as a formal system for expressing computation. Terms in the $\lambda$-calculus are defined inductively. Terms take the form of variables $x$ drawn from an infinite set, abstractions $\lambda x.M$ where $M$ is itself a $\lambda$-calculus term, and applications $M\,N$ where $M$ and $N$ are $\lambda$-calculus terms.
+
+Variables in the $\lambda$-calculus are either free or bound. In the term consisting of the lone variable $x$, $x$ is free, meaning that its value is determined solely by its environment. If we abstract $x$ to create $\lambda x.x$, $x$ is no longer free but bound. Bound variables play a special part in the role of the $\lambda$-calculus as a computation substrate.
+
+To a first approximation, abstractions are functions. For instance, the identity function can be expressed as $\lambda x.x$ where $x$ is \emph{any} variable. Thus, there are an infinite number of ways to express the identity function: $\lambda x.x$, $\lambda y.y$, $\lambda z.z$, etc. These terms are not syntactically equivalent, but they are the same function. This fact gives rise to the notion of $\alpha$-equivalence which captures the idea that arbitrary, consistent renaming does not change the essence of a term. One subtlety here (which we will also encounter later) is \emph{variable capture} which can occur when the new name of a variable is already present in the term. For instance, in the term $\lambda x.\lambda y.x$, if each $x$ is renamed to $y$, we obtain the term $\lambda y.\lambda y.y$, a different term. For this reason, we need to take special care when we rename variables (which we will need to do regularly).
+
+One of the ways abstractions approximate functions is that we can apply them to arguments. This is signified simply by juxtaposition of function (or operator) and argument (or operand). In the correct context, an application of the form $M\,N$ can be \emph{reduced} in which the operator $M$ is applied to the operand $N$. For instace, the term $\lambda x.x\,y$ reduces to $y$. We must take care when reducing a term such as $\lambda x.\lambda y.x\,y$. If we reduce naively, we obtain $\lambda y.y$ which does not reflect the intended meaning of the reduction--the argument $y$ has been captured by the abstraction and is no longer independent of that abstraction. In order to avoid this, we can rename capturing abstractions in $M$ to be outside the set of free variables of $N$. In $\lambda x.\lambda y.x\,y$, we rename $y$ to $z$ in $\lambda x.\lambda y.x$ and obtain $\lambda x.\lambda z.x$. The subsequent reduction of $\lambda x.\lambda z.x\,y$ to $\lambda z.y$ correctly reflects the intending meaning of the original term.
+
+In the $\lambda$-calculus, evaluation occurs during reduction, and reduction is merely
+application. There is, however, yet more subtlety of which we must be aware, namely, in which contexts we allow applications to be reduced. For example, in the call-by-value $\lambda$-calculus (so named because arguments are reduced to values before application), $\lambda y.y\,x$ is reducible; by contrast, $\lambda x.(\lambda y.y\,x)$ is not. There are regimes--call-by-name, for example--in which reduction beneath abstractions is legal. In a call-by-name reduction regime, the latter term, when applied to $z$, would reduce as
+\begin{align*}
+            &\lambda x.(\lambda y.y\, x)\,z\\
+\rightarrow &\lambda x.x\,z\\
+\rightarrow &z
+\end{align*}
+
+whereas a call-by-value reduction would reduce as
+
+\begin{align*}
+            &\lambda x.(\lambda y.y\, x)\,z\\
+\rightarrow &\lambda y.y\,z\\
+\rightarrow &z
+\end{align*}
+Notice that in the call-by-value reduction, the argument is fully reduced before the abstraction is applied. In the call-by-name reduction, application occurs before the arguments are reduced. Although both terms reduce to the same term in this example, this distinction is not merely pedantic: terms may reduce definitively in some reduction regimes and fail to reduce completely in others! Historically at least, the call-by-value and call-by-name reduction regimes underlie the distinction between so-called eager and lazy languages.
+
+We assume a call-by-value reduction convention in $\lambda_{cm}$ and similarly in our 
+target language, the $\lambda$-calculus, which we will denote $\lambda_{v}$.
+
+Recall that terms in the $\lambda$-calculus take the form of lone variables $x$, $\lambda$-abstractions $\lambda x.M$, and applications $M\,N$ where $M$ and $N$ are themselves $\lambda$-calculus terms. A comprehensive definition need only specify transformations for these three categories.
+
+\begin{align*}
+\mathcal{F}[x]           &= \lambda k.k\,x\\
+\mathcal{F}[\lambda x.M] &= \lambda k.k(\lambda x.\mathcal{F}[M])\\
+\mathcal{F}[M\,N]        &= \lambda k.\mathcal{F}[M](\lambda m.\mathcal{F}[N](\lambda n.(m\,n)\,k))
+\end{align*}
+
+Fischer's CPS transformation abstracts each term in the $\lambda$-calculus: lone variables
+wait on a continuation, abstractions receive a degree of indirection, and even
+applications, the sole reduction facility of the $\lambda$-calculus, become abstractions.
+In essence, terms become suspended in wait of a continuation argument. By priming a term
+so-transformed with a continuation function, even as simple as the identity, we instigate
+a cascade of computation. In the case of lone variables and applications, we see that this
+transformation has no effect on the result. However, the values of the
+$\lambda$-calculus--abstractions--are contaminated by the transform. For example, consider 
+the transformation of $\lambda x.x$
+\[
+T[\lambda x.x]=\lambda k.(k \lambda x.\lambda k.(k\,x))
+\]
+. If we apply this term to the identity function, it reduces as
+\begin{align*}
+            &\lambda k.(k \lambda x.\lambda k.(k\,x))\,\lambda y.y\\
+\rightarrow &\lambda y.y\,\lambda x.\lambda k.(k\,x)\\
+\rightarrow &\lambda x.\lambda k.(k\,x)
+\end{align*}
+
+It is for this reason that we must take special care with our transform which is based on Plotkin's.
+
+Our use of call-by-value $\lambda$-calculus has assumed a distinction between terms which
+represent values and terms which do not. A term is a \emph{value} if it cannot be reduced
+further. This alone is not a satisfactory definition because it depends on when reduction
+can occur. In our definition, we consider both $\lambda x.x$ and $\lambda
+x.(\lambda y.y\,x)$ to be fully reduced (we consider them to be values, we cannot reduce
+either of these terms). [something about weak head normal form here] The Fischer-Plotkin 
+CPS transform allows us to transform the latter term into a term which can be evaluated as 
+fully as we would expect while still respecting our notion of reduction contexts. It may 
+be beneficial to show this:
+
+\begin{align*}
+\mathcal{F}[\lambda x.(\lambda y.y\,x)] &= \lambda k.(k\,\lambda x.\mathcal{F}[\lambda y.y\, x])\\
+&= \lambda k.(k\, \lambda x.(()))
+\end{align*}
+
+One of the many reasons CPS is useful is that is allows evaluation order to be controlled. 
+This is done by a definitional invariant: every term applied to a continuation returns a 
+value. We will visit each case of the definition and verify this property. Before doing 
+so, we emphasize that no reduction is performed by effect of the transformation.
 
 \[
 T[x]=\lambda k.(k x)
@@ -838,50 +918,7 @@ We will present a transformation in the spirit of CPS from $\lambda_{cm}$ to
 the plain call-by-value $\lambda$-calculus. Furthermore, we will provide and 
 prove a meaning-preservation theorem.
 
-\subsection{Example CPS transform}
 
-As an example of a CPS transform definition, we supply Fischer's transform (which we call
-$\mathcal{F}$) of the $\lambda$-calculus \cite{fischer1972lambda} below. Recall that terms
-in the $\lambda$-calculus take the form of lone variables $x$, $\lambda$-abstractions
-$\lambda x.M$, and applications $M\,N$ where $M$ and $N$ are themselves $\lambda$-calculus
-terms.
-
-\begin{align*}
-\mathcal{F}[x]           &= \lambda k.k\,x\\
-\mathcal{F}[\lambda x.M] &= \lambda k.k(\lambda x.\mathcal{F}[M])\\
-\mathcal{F}[M\,N]       &= \lambda k.\mathcal{F}[M](\lambda m.\mathcal{F}[N](\lambda n.(m\,n)\,k))
-\end{align*}
-
-
-Fischer's CPS transformation abstracts each term in the $\lambda$-calculus: lone variables
-wait on a continuation, abstractions receive a degree of indirection, and even
-applications, the sole reduction facility of the $\lambda$-calculus, become abstractions.
-In essence, terms become suspended in wait of a continuation argument. By priming a term
-so-transformed with a continuation function, even as simple as the identity, we instigate
-a cascade of computation. In the case of lone variables and applications, we see that this
-transformation has no effect on the result. However, the values of the
-$\lambda$-calculus--abstractions--are contaminated by the transform. For example
-
-\[
-T[\lambda x.x]=\lambda k.(k \lambda x.\lambda k.(k x))
-\].
-
-It is for this reason that we must take special care with our transform which is based on Plotkin's.
-
-Our use of call-by-value $\lambda$-calculus has assumed a distinction between terms which
-represent values and terms which do not. A term is a \emph{value} if it cannot be reduced
-further. This alone is not a satisfactory definition because it depends on when reduction
-can occur. In our definition, we consider both $\lambda x.x$ and $\lambda
-x.(\lambda y.y\,x)$ to be fully reduced (we consider them to be values, we cannot reduce
-either of these terms). [something about weak head normal form here] The Fischer-Plotkin 
-CPS transform allows us to transform the latter term into a term which can be evaluated as 
-fully as we would expect while still respecting our notion of reduction contexts. It may 
-be beneficial to show this:
-
-\begin{align*}
-\mathcal{F}[\lambda x.(\lambda y.y\,x)] &= \lambda k.(k\,\lambda x.\mathcal{F}[\lambda y.y\, x])\\
-&= \lambda k.(k\, \lambda x.(()))
-\end{align*}
 
 The evaluation rules for $\lambda_{cm}$ require us to distinguish between expressions and values
 
@@ -892,36 +929,7 @@ C[x]    &= \lambda k.\lambda m.(k\,x)\\
 C[\lambda x.M] &= \lambda k.\lambda m.(k\,\lambda x.C[M])
 \end{align*}
 
-In the $\lambda$-calculus, evaluation occurs during reduction, and reduction is merely
-application. There is, however, some subtlety in which contexts we allow applications to 
-be reduced. For example, in the call-by-value $\lambda$-calculus, $\lambda y.y\,x$ is 
-reducible; by contrast, $\lambda x.(\lambda y.y\,x)$ is not. We might imagine a system in 
-which we, by convention, reduce beneath abstractions. In such a system, the latter term, 
-when applied to $z$, would reduce as
 
-\begin{align*}
-            &\lambda x.(\lambda y.y\, x)\,z\\
-\rightarrow &\lambda x.x\,z\\
-\rightarrow &z
-\end{align*}
-
-whereas a call-by-value reduction would reduce as
-
-\begin{align*}
-            &\lambda x.(\lambda y.y\, x)\,z\\
-\rightarrow &\lambda y.y\,z\\
-\rightarrow &z
-\end{align*}
-
-Although both terms reduce to the same term in this example, this distinction is not 
-merely pedantic: terms may reduce definitively in some reduction regimes and fail to 
-reduce completely in others! [talk about reduction orders giving rise to call-by-value 
-and call-by-name] [talk about CPS allowing us to simulate on in the other The term binding induced by this transform allowed Plotkin to simulate the call-by-value
-dialect of the $\lambda$-calculus by the call-by-name and vice versa
-\cite{plotkin1975call}.]
-
-We assume a call-by-value reduction convention in $\lambda_{cm}$ and similarly in our 
-target language, the $\lambda$-calculus, which we will denote $\lambda_{v}$.
 
 
 \section{Language translation}
