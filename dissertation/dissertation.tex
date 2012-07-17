@@ -518,9 +518,7 @@ places it in a category of tools to describe and analyze programming language fe
 
 \subsection{Example CPS transform}
 
-We will now focus our attention on a CPS transform defined over the $\lambda$-calculus, 
-due to Fischer \cite{fischer1972lambda}. Before doing so, we offer a brief primer on the 
-relevant parts of the $\lambda$-calculus.
+We will now focus our attention on a CPS transform defined over the $\lambda$-calculus. Before doing so, we offer a brief primer on the relevant parts of the $\lambda$-calculus.
 
 \subsubsection{$\lambda$-calculus}
 
@@ -533,15 +531,13 @@ To a first approximation, abstractions are functions. For instance, the identity
 One of the ways abstractions approximate functions is that we can apply them to arguments. This is signified simply by juxtaposition of function (or operator) and argument (or operand). In the correct context, an application of the form $M\,N$ can be \emph{reduced} in which the operator $M$ is applied to the operand $N$. For instace, the term $\lambda x.x\,y$ reduces to $y$. We must take care when reducing a term such as $\lambda x.\lambda y.x\,y$. If we reduce naively, we obtain $\lambda y.y$ which does not reflect the intended meaning of the reduction--the argument $y$ has been captured by the abstraction and is no longer independent of that abstraction. In order to avoid this, we can rename capturing abstractions in $M$ to be outside the set of free variables of $N$. In $\lambda x.\lambda y.x\,y$, we rename $y$ to $z$ in $\lambda x.\lambda y.x$ and obtain $\lambda x.\lambda z.x$. The subsequent reduction of $\lambda x.\lambda z.x\,y$ to $\lambda z.y$ correctly reflects the intending meaning of the original term.
 
 In the $\lambda$-calculus, evaluation occurs during reduction, and reduction is merely
-application. There is, however, yet more subtlety of which we must be aware, namely, in which contexts we allow applications to be reduced. For example, in the call-by-value $\lambda$-calculus (so named because arguments are reduced to values before application), $\lambda y.y\,x$ is reducible; by contrast, $\lambda x.(\lambda y.y\,x)$ is not. There are regimes--call-by-name, for example--in which reduction beneath abstractions is legal. In a call-by-name reduction regime, the latter term, when applied to $z$, would reduce as
+application. There is, however, yet more subtlety of which we must be aware, namely, in which contexts we allow applications to be reduced. In the call-by-value $\lambda$-calculus, reduction beneath abstraction is illegal. Under this regime, $\lambda y.y\,x$ is reducible; by contrast, $\lambda x.(\lambda y.y\,x)$ is not. In the call-by-name $\lambda$-calculus, however, reduction beneath abstraction is legal. The latter term, when applied to $z$ in a call-by-name regime, would reduce as
 \begin{align*}
             &\lambda x.(\lambda y.y\, x)\,z\\
 \rightarrow &\lambda x.x\,z\\
 \rightarrow &z
 \end{align*}
-
-whereas a call-by-value reduction would reduce as
-
+whereas that same application in a call-by-value regime would reduce as
 \begin{align*}
             &\lambda x.(\lambda y.y\, x)\,z\\
 \rightarrow &\lambda y.y\,z\\
@@ -549,29 +545,28 @@ whereas a call-by-value reduction would reduce as
 \end{align*}
 Notice that in the call-by-value reduction, the argument is fully reduced before the abstraction is applied. In the call-by-name reduction, application occurs before the arguments are reduced. Although both terms reduce to the same term in this example, this distinction is not merely pedantic: terms may reduce definitively in some reduction regimes and fail to reduce completely in others! Historically at least, the call-by-value and call-by-name reduction regimes underlie the distinction between so-called eager and lazy languages.
 
-We assume a call-by-value reduction convention in $\lambda_{cm}$ and similarly in our 
-target language, the $\lambda$-calculus, which we will denote $\lambda_{v}$.
+One final observation we should make about the $\lambda$-calculus is which terms denote values. A value should be, in a sense, irreducible and that criterion disqualifies applications from being considered as values. A value should remain indepedent of environment, i.e., it should not merely be a placeholder for arbitrary values, and that criterion disqualifies lone variables from being considered as values.\footnote{In actual fact, a value is an irreducible $\lambda$-calculus term paired with an environment which provides values for constituent free variables.} Thus, we shall consider abstractions to be the sole form values can take in the $\lambda$-calculus, habituating ourselves to the idea that functions are data.
 
-Recall that terms in the $\lambda$-calculus take the form of lone variables $x$, $\lambda$-abstractions $\lambda x.M$, and applications $M\,N$ where $M$ and $N$ are themselves $\lambda$-calculus terms. A comprehensive definition need only specify transformations for these three categories.
+\subsubsection{CPS transform}
 
+A CPS transformation is a global syntactic transformation of language terms. Recall that terms in the $\lambda$-calculus take the form of lone variables $x$, $\lambda$-abstractions $\lambda x.M$, and applications $M\,N$ where $M$ and $N$ are themselves $\lambda$-calculus terms. A comprehensive CPS transform definition need only specify transformations for these three categories. As an example, consider Fischer's CPS transform \cite{fischer1972lambda}:
 \begin{align*}
 \mathcal{F}[x]           &= \lambda k.k\,x\\
-\mathcal{F}[\lambda x.M] &= \lambda k.k(\lambda x.\mathcal{F}[M])\\
-\mathcal{F}[M\,N]        &= \lambda k.\mathcal{F}[M](\lambda m.\mathcal{F}[N](\lambda n.(m\,n)\,k))
+\mathcal{F}[\lambda x.M] &= \lambda k.k\,(\lambda x.\mathcal{F}[M])\\
+\mathcal{F}[M\,N]        &= \lambda k.\mathcal{F}[M](\lambda m.\mathcal{F}[N]\,(\lambda n.(m\,n)\,k))
 \end{align*}
-
-Fischer's CPS transformation abstracts each term in the $\lambda$-calculus: lone variables
+Fischer's CPS transform abstracts each term in the $\lambda$-calculus: lone variables
 wait on a continuation, abstractions receive a degree of indirection, and even
 applications, the sole reduction facility of the $\lambda$-calculus, become abstractions.
 In essence, terms become suspended in wait of a continuation argument. By priming a term
 so-transformed with a continuation function, even as simple as the identity, we instigate
-a cascade of computation. In the case of lone variables and applications, we see that this
-transformation has no effect on the result. However, the values of the
-$\lambda$-calculus--abstractions--are contaminated by the transform. For example, consider 
-the transformation of $\lambda x.x$
-\[
-T[\lambda x.x]=\lambda k.(k \lambda x.\lambda k.(k\,x))
-\]
+a cascade of computation.
+
+In the case of lone variables and applications, this transformation ultimately has no effect on the result of the computation. However, the values of the $\lambda$-calculus--abstractions--are contaminated by the transform. For example, consider the transformation of $\lambda x.x$
+\begin{align*}
+\mathcal{F}[\lambda x.x] &= \lambda k.k\,(\lambda x.\mathcal{F}[x])\\
+                         &= \lambda k.(k\,\lambda x.\lambda k.(k\,x))
+\end{align*}
 If we apply this term to the identity function, it reduces as
 \begin{align*}
             &\lambda k.(k \lambda x.\lambda k.(k\,x))\,\lambda y.y\\
@@ -622,21 +617,16 @@ that the property holds for the application, we must establish that the applicat
 value. The key lies in a case analysis of the operator. It must be either a variable or an abstraction.
 
 First, consider the application of a variable to a variable.
-
 \[
 x y
 \]
-
 This is fully reduced according to direct application.
-
 \begin{align*}
-T[x y] &= \lambda k.(T[x] (\lambda e.T[y] (\lambda f.((e f) k))))\\
+T[x\,y] &= \lambda k.(T[x] (\lambda e.T[y] (\lambda f.((e f) k))))\\
        &= \lambda k.(\lambda k.(k x) (\lambda e.T[y] (\lambda f.((e f) k))))\\
        &= \lambda k.(\lambda k.(k x) (\lambda e.\lambda k.(k y) (\lambda f.((e f) k))))\\
 \end{align*}
-
 We can evaluate this expression by applying it to the identity function $\lambda z.z$.
-
 \begin{align*}
 &\rightarrow \lambda k.(\lambda k.(k x) (\lambda e.\lambda k.(k y) (\lambda f.((e f) k)))) \lambda z.z\\
 &\rightarrow \lambda k.(k x) (\lambda e.\lambda k.(k y) (\lambda f.((e f) \lambda z.z)))\\
@@ -645,36 +635,30 @@ We can evaluate this expression by applying it to the identity function $\lambda
 &\rightarrow \lambda f.((x f) \lambda z.z) y\\
 &\rightarrow (x y) \lambda z.z\\
 \end{align*}
-
 Similar to a direct-style application, we remain stuck.
 
 Now, consider the application of an abstraction to a variable.
-
 \[
-\lambda x.x y
+\lambda x.x\,y
 \]
-
 This reduces to y, of course, when directly applied.
-
 \begin{align*}
-T[\lambda x.x y] &= \lambda k.(T[\lambda x.x] (\lambda e.(T[y] (\lambda f.((e f) k))))\\
-                 &= \lambda k.(\lambda k.(k \lambda x.T[x]) (\lambda e.(T[y] (\lambda f.((e f) k))))\\
-                 &= \lambda k.(\lambda k.(k \lambda x.\lambda k.(k x)) (\lambda e.(T[y] (\lambda f.((e f) k))))\\
-                 &= \lambda k.(\lambda k.(k \lambda x.\lambda k.(k x)) (\lambda e.\lambda k.(k y) (\lambda f.((e f) k))))\\
+T[\lambda x.x\,y] &= \lambda k.(T[\lambda x.x]\,(\lambda e.(T[y] (\lambda f.((e\,f)\,k)))))\\
+                  &= \lambda k.(\lambda k.(k\,\lambda x.T[x])\,(\lambda e.(T[y]\,(\lambda f.((e\,f)\,k)))))\\
+                  &= \lambda k.(\lambda k.(k\,\lambda x.\lambda k.(k\,x))\,(\lambda e.(T[y]\,(\lambda f.((e\,f)\,k)))))\\
+                  &= \lambda k.(\lambda k.(k\,\lambda x.\lambda k.(k\,x))\,(\lambda e.(\lambda k.(k\,y)\,(\lambda f.((e\,f)\,k)))))
 \end{align*}
-
 Apply the identity function $\lambda z.z$ to this term.
-
 \begin{align*}
-&\rightarrow \lambda k.(\lambda k.(k \lambda x.\lambda k.(k x)) (\lambda e.\lambda k.(k y) (\lambda f.((e f) k)))) \lambda z.z\\
-&\rightarrow \lambda k.(k \lambda x.\lambda k.(k x)) (\lambda e.\lambda k.(k y) (\lambda f.((e f) \lambda z.z)))\\
-&\rightarrow (\lambda e.\lambda k.(k y) (\lambda f.((e f) \lambda z.z))) \lambda x.\lambda k.(k x)\\
-&\rightarrow \lambda k.(k y) (\lambda f.((\lambda x.\lambda k.(k x) f) \lambda z.z))\\
-&\rightarrow \lambda f.((\lambda x.\lambda k.(k x) f) \lambda z.z) y\\
-&\rightarrow (\lambda x.\lambda k.(k x) y) \lambda z.z\\
-&\rightarrow \lambda k.(k y) \lambda z.z\\
-&\rightarrow \lambda z.z y\\
-&\rightarrow y\\
+&\rightarrow \lambda k.(\lambda k.(k\,\lambda x.\lambda k.(k\,x))\,(\lambda e.\lambda k.(k\,y) (\lambda f.((e\,f)\,k))))\,\lambda z.z\\
+&\rightarrow \lambda k.(k\,\lambda x.\lambda k.(k\,x))\,(\lambda e.\lambda k.(k\,y)\,(\lambda f.((e\,f)\,\lambda z.z)))\\
+&\rightarrow (\lambda e.\lambda k.(k\,y)\,(\lambda f.((e\,f)\,\lambda z.z)))\,\lambda x.\lambda k.(k\,x)\\
+&\rightarrow \lambda k.(k\,y)\,(\lambda f.((\lambda x.\lambda k.(k\,x)\,f)\,\lambda z.z))\\
+&\rightarrow \lambda f.((\lambda x.\lambda k.(k\,x)\,f)\,\lambda z.z)\,y\\
+&\rightarrow (\lambda x.\lambda k.(k\,x)\,y)\,\lambda z.z\\
+&\rightarrow \lambda k.(k\,y)\,\lambda z.z\\
+&\rightarrow \lambda z.z\,y\\
+&\rightarrow y
 \end{align*}
 
 We observe that, at the time of application, the remnant of the transformation of $\lambda x.x$ took the form 
@@ -723,6 +707,9 @@ in the transformation definition and are invisible to the program.
 We consider an extension of the call-by-value $\lambda$-calculus with facilities to
 manipulate continuation marks, introduced by Pettyjohn et al.
 \cite{pettyjohn2005continuations}, which we term $\lambda_{cm}$.
+
+We assume a call-by-value reduction convention in $\lambda_{cm}$ and similarly in our 
+target language, the $\lambda$-calculus, which we will denote $\lambda_{v}$.
 
 \section{Definition of $\lambda_{cm}$}
 
