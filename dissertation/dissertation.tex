@@ -379,7 +379,7 @@ whereas the result of \texttt{(fact-tr 3 1)} would be
 \begin{verbatim}
 (((fact 1)))
 6
-\end{verbatim}.
+\end{verbatim}
 
 \begin{figure}
 \begin{verbatim}
@@ -439,7 +439,7 @@ and the tail-recursive variant as
   (if (= n 0)
       (k acc)
       (fact-tr (- n 1) (* n acc) k)))
-\end{verbatim}. 
+\end{verbatim}
 (For clarity, we have treated ``primitive'' functions--equality comparison, subtraction,
 and multiplication--in a direct manner. In contrast, a full CPS transformation would
 affect \emph{every} function.)
