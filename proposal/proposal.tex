@@ -71,9 +71,9 @@
 % Committee members 
 \committeechair{Jay McCarthy} 
 \committeemembera{Sean Warnick} 
-\committeememberb{}
-\committeememberc{} 
-\committeememberd{}
+\committeememberb{Dennis Ng}
+%\committeememberc{} 
+%\committeememberd{}
 
 % Department graduate coordinator 
 \graduatecoordinator{Dan Ventura}
@@ -125,7 +125,21 @@
 %Compiling with continuations, continued, Kennedy
 %PLAI
 
-%\abstract{}
+%I assume a thesis proposal should be written so that a reader who is not familiar with 
+%your area of study is given a good chance to understand the (i) problem that you propose 
+%to solve, (ii) significance of the problem, (iii) proposed solution of the problem, and 
+%(iv) arguments that the solution should solve the problem. Of course the proposal 
+%should also justify the merit and uniqueness of your proposed solution. 
+%If any of these discussions is missing, then the proposal is incomplete and should be 
+%further revised accordingly.
+
+\abstract{Continuation marks are a programming language feature which generalize stack
+inspection. Continuation marks currently lack a meaning-preserving transformation to the
+$\lambda$-calculus, a useful and widely-used computation model. Such a transformation
+would simplify the construction of compilers which treat continuation marks correctly. We
+will present a CPS-like transformation from the call-by-value $\lambda$-calculus augmented
+with continuation marks to the pure call-by-value $\lambda$-calculus and verify that the
+transformation indeed preserves meaning.}
 
 \section{Introduction}
 
