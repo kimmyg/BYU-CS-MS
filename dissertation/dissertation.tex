@@ -189,9 +189,13 @@
 \yearcopyrighted{\GraduationYear}
 
 \documentabstract{%
-This document is an example of how to use the byumsphd {\LaTeX} class file.  The class creates Ph.D. and Master's documents equally well, producing all appropriate preamble content and adhering precisely to the minimum formatting requirements.  It is meant to replace the old ECEn style file that has been circulating for many years.
-
-Note that there is a blank line between paragraphs, here.
+Continuation marks are a programming language feature which generalize stack inspection.
+Continuation marks currently lack a meaning-preserving transformation to the
+$\lambda$-calculus, a useful and widely-used computation model. Such a transformation
+would simplify the construction of compilers which treat continuation marks correctly. We
+present a CPS-like transformation from the call-by-value $\lambda$-calculus augmented with
+continuation marks to the pure call-by-value $\lambda$-calculus and verify that the
+transformation indeed preserves meaning.
 }
 
 \documentkeywords{%
@@ -199,7 +203,9 @@ Note that there is a blank line between paragraphs, here.
 }
 
 \acknowledgments{%
-    Thanks go to the ECEn style file authors for providing both a reasonable initial style and the motivation to abandon it.
+Thanks to R.L. Stine for showing me that a chapter doesn't have to be more than two pages.
+
+My wife is the hottest thing ever.
 }
 
 \department{Computer~Science}
@@ -237,7 +243,7 @@ Note that there is a blank line between paragraphs, here.
 \maketitle
 \microtypesetup{protrusion=true}
 
-\section{Introduction}
+\chapter{Introduction}
 
 Thesis: A CPS-like global transformation can compile the $\lambda$-calculus with
 continuation marks into the plain $\lambda$-calculus in a semantics-preserving way.
@@ -268,7 +274,7 @@ continuation marks in a pure computational language. We arrive at this expressio
 performing a transformation in the spirit of CPS from $\lambda_{cm}$ to the $\lambda$-calculus 
 verified to preserve the meaning of the source language.
 
-\section{Continuation marks}
+\chapter{Continuation marks}
 
 There are certain tools that are indispensable to some programmers that concern the
 behavior of their programs: debuggers, profilers, steppers, etc. Without these tools,
@@ -416,7 +422,7 @@ annotation is applied to a new, ``blank'' context, so all the annotations are pr
 In the tail-recursive variant, there is no pending computation and therefore no additional
 evaluation context. In this instance, the previous mark is overwritten with the new.
 
-\section{CPS transformations}
+\chapter{CPS transformations}
 
 The CPS transformation is a family of language transformations derived from Plotkin
 \cite{plotkin1975call} and designed to simplify  programs by representing all data and
@@ -534,7 +540,7 @@ Variables in the $\lambda$-calculus are either free or bound. In the term consis
 the lone variable $x$, $x$ is free, meaning that its value is determined solely by its
 environment. If we abstract $x$ to create $\lambda x.x$, $x$ is no longer free but bound.
 Bound variables play a special part in the role of the $\lambda$-calculus as a computation
-substrate.
+substrate. Terms with no free variables can be called closed, combinators, or programs.
 
 To a first approximation, abstractions are functions. For instance, the identity function
 can be expressed as $\lambda x.x$ where $x$ is \emph{any} variable. Thus, there are an
@@ -655,97 +661,48 @@ irreducible in a call-by-value regime, so the property holds in this case also.
 \[
 T[E\,F]=\lambda k.(T[E]\,(\lambda e.(T[F]\,(\lambda f.((e\,f)\,k))))
 \]
-Once again, we assume that the property holds for $E$ and $F$. Then $e$ and $f$ are
-irreducible. In order to conclude that the property holds for the application, we must
-establish that the application an abstraction to an irreducible term ultimately yields an 
-irreducible term. The key lies in a case analysis of the operator. It must be either a 
-variable or an abstraction.
+In this case, we observe that the continuation $k$ provided is not directly applied.
+Instead, the operator is evaluated and a continuation is constructed into which its value
+may be passed. The operand is treated similarly. Finally, the operator is applied to the
+operand and $k$ is not invoked but passed to the result.
 
-First, consider the application of a variable to a variable.
-\[
-x y
-\]
-This cannot be reduced directly; hence, it is irreducible.
-\begin{align*}
-T[x\,y] &= \lambda k.(T[x] (\lambda e.T[y] (\lambda f.((e f) k))))\\
-       &= \lambda k.(\lambda k.(k x) (\lambda e.T[y] (\lambda f.((e f) k))))\\
-       &= \lambda k.(\lambda k.(k x) (\lambda e.\lambda k.(k y) (\lambda f.((e f) k))))\\
-\end{align*}
-We can evaluate this expression by applying it to the identity function $\lambda z.z$.
-\begin{align*}
-&\rightarrow \lambda k.(\lambda k.(k x) (\lambda e.\lambda k.(k y) (\lambda f.((e f) k)))) \lambda z.z\\
-&\rightarrow \lambda k.(k x) (\lambda e.\lambda k.(k y) (\lambda f.((e f) \lambda z.z)))\\
-&\rightarrow \lambda e.\lambda k.(k y) (\lambda f.((e f) \lambda z.z)) x\\
-&\rightarrow \lambda k.(k y) (\lambda f.((x f) \lambda z.z))\\
-&\rightarrow \lambda f.((x f) \lambda z.z) y\\
-&\rightarrow (x y) \lambda z.z\\
-\end{align*}
-Similar to a direct-style application, we remain stuck.
+Notice that $k$, which represents the rest of the continuation, is passed unmodified.
+Specifically, a new continuation which employs $k$ as a subcontinuation has not been
+constructed. This quality is characteristic of a tail call in which the evaluation context
+for the arguments, no longer necessary, is subsumed by the evaluation context of the newly
+formed application.
 
-Now, consider the application of an abstraction to a variable.
-\[
-\lambda x.x\,y
-\]
-This reduces to y, of course, when directly applied.
-\begin{align*}
-T[\lambda x.x\,y] &= \lambda k.(T[\lambda x.x]\,(\lambda e.(T[y] (\lambda f.((e\,f)\,k)))))\\
-                  &= \lambda k.(\lambda k.(k\,\lambda x.T[x])\,(\lambda e.(T[y]\,(\lambda f.((e\,f)\,k)))))\\
-                  &= \lambda k.(\lambda k.(k\,\lambda x.\lambda k.(k\,x))\,(\lambda e.(T[y]\,(\lambda f.((e\,f)\,k)))))\\
-                  &= \lambda k.(\lambda k.(k\,\lambda x.\lambda k.(k\,x))\,(\lambda e.(\lambda k.(k\,y)\,(\lambda f.((e\,f)\,k)))))
-\end{align*}
-Apply the identity function $\lambda z.z$ to this term.
-\begin{align*}
-&\rightarrow \lambda k.(\lambda k.(k\,\lambda x.\lambda k.(k\,x))\,(\lambda e.\lambda k.(k\,y) (\lambda f.((e\,f)\,k))))\,\lambda z.z\\
-&\rightarrow \lambda k.(k\,\lambda x.\lambda k.(k\,x))\,(\lambda e.\lambda k.(k\,y)\,(\lambda f.((e\,f)\,\lambda z.z)))\\
-&\rightarrow (\lambda e.\lambda k.(k\,y)\,(\lambda f.((e\,f)\,\lambda z.z)))\,\lambda x.\lambda k.(k\,x)\\
-&\rightarrow \lambda k.(k\,y)\,(\lambda f.((\lambda x.\lambda k.(k\,x)\,f)\,\lambda z.z))\\
-&\rightarrow \lambda f.((\lambda x.\lambda k.(k\,x)\,f)\,\lambda z.z)\,y\\
-&\rightarrow (\lambda x.\lambda k.(k\,x)\,y)\,\lambda z.z\\
-&\rightarrow \lambda k.(k\,y)\,\lambda z.z\\
-&\rightarrow \lambda z.z\,y\\
-&\rightarrow y
-\end{align*}
+Finally, we observe that every transformed application passes--rather than invokes--the
+provided continuation and that only after reduction occurs. Then continuations can be
+invoked only as in the previous two cases and we can see that they are only applied to
+fully reduced terms.
 
-We observe that, at the time of application, the remnant of the transformation of $\lambda x.x$ took the form 
-$\lambda x.\lambda k.(k x)$. This is a term which, when applied, will yield a value. We can generalize our reasoning 
-to establish this property for all applications by considering
+%Suppose we want to embed direct-style terms in CPS terms. We are interested in what cases we can induce reduction.
 
-$T[\lambda x.E F]$
+%As an example which will become useful later, suppose we want to deal with a Church encoding of lists directly.
 
-and noting that E also satisfies this property.
+%Recall that we can represent \emph{nil} as [the Church encoding of] \emph{false} and \emph{cons a b} as $\lambda p.((p a) b)$.
 
-[could perhaps do something more detailed and formal here]
+%Like [the transformation] T, C has a similar property which we quickly verify:
 
-Suppose we want to embed direct-style terms in CPS terms. We are interested in what cases we can induce 
-reduction.
+%\begin{align*}
+%C[x]           &= \lambda k.\lambda m.(k x)\\
+%C[\lambda x.E] &= \lambda k.\lambda m.(k \lambda x.C[E])\\
+%C[E F]         &= \lambda k.\lambda m.((C[E] (\lambda e.((C[F] (\lambda f.(((e f) k) m))) g[m]))) g[m])\\
+%C[wcm E F]     &= \lambda k.\lambda m.((C[E] (\lambda e.((C[F] k) h[e,m]))) g[m])\\
+%C[ccm]         &= \lambda k.\lambda m.(k i[m])\\
+%\end{align*}
 
-As an example which will become useful later, suppose we want to deal with a Church encoding of lists 
-directly.
+%where g[m]=cons false (snd m)
+%and h[e,m]=cons true (if fst m then rest (snd m) else snd m)
+%and i[m]=snd m
 
-Recall that we can represent \emph{nil} as [the Church encoding of] \emph{false} and \emph{cons a b} as 
-$\lambda p.((p a) b)$.
+%We use the definitions $g$, $h$, and $i$ to emphasize that these facilities enjoy privileged status in the transformation definition and are invisible to the program.
 
-Like [the transformation] T, C has a similar property which we quickly verify:
-
-\begin{align*}
-C[x]           &= \lambda k.\lambda m.(k x)\\
-C[\lambda x.E] &= \lambda k.\lambda m.(k \lambda x.C[E])\\
-C[E F]         &= \lambda k.\lambda m.((C[E] (\lambda e.((C[F] (\lambda f.(((e f) k) m))) g[m]))) g[m])\\
-C[wcm E F]     &= \lambda k.\lambda m.((C[E] (\lambda e.((C[F] k) h[e,m]))) g[m])\\
-C[ccm]         &= \lambda k.\lambda m.(k i[m])\\
-\end{align*}
-
-where g[m]=cons false (snd m)
-and h[e,m]=cons true (if fst m then rest (snd m) else snd m)
-and i[m]=snd m
-
-We use the definitions $g$, $h$, and $i$ to emphasize that these facilities enjoy privileged status 
-in the transformation definition and are invisible to the program.
-
--uses
--lambda calculus
--reference CPS due to Fischer/Plotkin
--properties
+%-uses
+%-lambda calculus
+%-reference CPS due to Fischer/Plotkin
+%-properties
 
 \chapter{$\lambda_{cm}$}
 
@@ -933,26 +890,54 @@ checks terms for properties. This function generates terms gradually increasing 
 applying the predicate to each in turn, and terminates with a counterexample or after a
 set number of terms have been checked (1000 by default).
 
-Randomized testing can increase our confidence in various assertions but are no substitute 
-for proof.
+Randomized testing can increase our confidence in various assertions but is no substitute 
+for proof. We express the property of reducing to one value with the following theorem:
 
+%(e (+ e e) (with (x e) e) x v)
+\newtheorem*{toythm}{Toy Language One-Value Theorem}
+\begin{toythm}
+For all terms $e$ of the toy language, $e$ reduces to exactly one value.\footnote{We do 
+not use the term ``value'' loosely here; the toy language definition specifies what 
+constitutes values, and we appeal to this.}
+\end{toythm}
+We proceed by induction on the structure of terms $e$ of the toy language. First, we 
+consider the base cases.
+\begin{proof}[Case $v$]
+A term $e$ of the form $v$ is exactly one value and cannot be reduced, so the statement 
+holds.
+\end{proof}
+\begin{proof}[Case $x$]
+A term $e$ of the form $x$, a variable, reduces to \emph{undefined}, a value term, so the 
+statement holds.
+\end{proof}
+\begin{proof}[Case $(with\,(x\,e_{1})\,e_{2})$]
+By induction, we assume that $e_{1}$ reduces to exactly one value. Then the ``with''-rule
+can only be applied once, resulting in a single term $e_{2}$ in $e$ which, by our
+inductive hypothesis, reduces to only one value.
+\end{proof}
+\begin{proof}[Case $(+\,e_{1}\,e_{2})$]
+By induction, we assume both $e_{1}$ and $e_{2}$ reduce to a single value. We consider two
+subcases: If $e_{1}$ reduces to \emph{undefined}, the ``undefined in first position''-rule
+is applied, and the whole term reduces to \emph{undefined}. If $e_{1}$ reduces to a
+number, we consider two further subcases: If $e_{2}$ reduces to a number, the ``+''-rule
+is applied, and the entire expression reduces to the sum of the two numbers obtained. If
+$e_{2}$ reduces to \emph{undefined}, the ``undefined in second position''-rule is applied,
+and the entire term reduces to \emph{undefined}. Thus, in all subcases, the whole term 
+reduces to exactly one value.
+\end{proof}
 
-While we will not provide it, the proof of this theorem would proceed inductively on the 
-structure of terms in the language.
-
-
-
-
+This property is fairly trivial and its proof is similarly trivial, but it is a shadow of 
+the approach we will ultimately take to verify our transform preserves meaning.
 
 \section{Language translation}
 
-$\lambda_{cm}$ is a strict superset of $\lambda_{v}$; there are within $\lambda_{cm}$ 
-syntactic forms inscrutable to a $\lambda_{v}$ interpreter. Additionally, evaluation 
-order in $\lambda_{cm}$ is significant and differs from the call-by-value regime of the 
-target language somewhat (which is to say, we cannot simply inherit it). Recall that one 
-feature of the CPS transform, due to Plotkin \cite{plotkin1975call}, is to control 
-evaluation order. We will use this facility in our transformation to express terms in 
-$\lambda_{cm}$ in terms of $\lambda_{v}$. [Other analysis which the CPS transformation 
+$\lambda_{cm}$ is a strict superset of $\lambda_{v}$; there are within $\lambda_{cm}$
+syntactic forms inscrutable to a $\lambda_{v}$ interpreter. Additionally, evaluation order
+within these forms is significant and a naive treatment of these forms by $\lambda_{v}$
+will most likely be incorrect (which is to say, we cannot simply inherit its reduction
+order). Plotkin \cite{plotkin1975call} demonstrated that the CPS transform can be used to
+control evaluation order. We will use this facility in our transformation to express terms
+in $\lambda_{cm}$ in terms of $\lambda_{v}$. [Other analysis which the CPS transformation
 affords us \cite{appel2007compiling} is incidental.]
 
 The work of the transformation then is to express the five syntactic forms of
@@ -971,7 +956,6 @@ will pass not only a continuation but also a list of the current continuation ma
 
 Let us denote a first pass toward $\mathcal{C}$ as $\mathcal{C}_{1}$. We might define 
 $\mathcal{C}_{1}$ formally as 
-
 \begin{align*}
 \mathcal{C}_{1}[x]           &= \lambda k.\lambda m.(k\,x)\\
 \mathcal{C}_{1}[\lambda x.E] &= \lambda k.\lambda m.(k\,\lambda x.\mathcal{C}_{1}[E])\\
@@ -985,7 +969,15 @@ correct transform, namely, the explicit ordering of evaluation in the \emph{wcm}
 the conceptual simplicity of the \emph{ccm} form by virtue of our continuation
 mark-passing approach.
 
-say something about the order reversal of the marks
+We notice, however, that the list of marks retrieved by \emph{ccm} is ordered from the
+innermost context outward whereas the semantics of $\lambda_{cm}$ specify the reverse
+ordering. Typically, our approach would be to correct our transform to follow the semantic
+definition. We would probably do this by reversing the order of the marks within
+\emph{ccm}. However, the mark order is an inconsequential part of the definition. Rather
+than needlessly clutter our definition with manipulation, we will opt instead to modify
+our target semantics by modifying the $\chi$-metafunction, as we did in our Redex
+interpreter. We realize this is a slippery slope and promise this is the only time we'll
+do it.
 
 \subsection{What do you mean ``equivalent''?}
 
@@ -1085,83 +1077,83 @@ $(\mathrm{wcm} a (\lambda x.x (\mathrm{wcm}\,b\,(\mathrm{ccm}))))$.
 
  
  
-proof of equivalence
-we need to state it formally and meaningfully
+%proof of equivalence
+%we need to state it formally and meaningfully
 
-since cm is a superset of lcv, any purely lcv term should reduce in cm to the same value 
-as if it were reduced in lcv and transformed
+%since cm is a superset of lcv, any purely lcv term should reduce in cm to the same value 
+%as if it were reduced in lcv and transformed
 
-we init the transformed program to initiate reduction
+%we init the transformed program to initiate reduction
 
-given a program fragment and a continuation and marks state, produce the same as the 
-transformed program
+%given a program fragment and a continuation and marks state, produce the same as the 
+%transformed program
 
-C[x] \y.y (false,[]) ->cm \k.\m.(k x)
-C[->lcv x] = \k.\m.(k x)
+%C[x] \y.y (false,[]) ->cm \k.\m.(k x)
+%C[->lcv x] = \k.\m.(k x)
 
-->cm[C[x] \x.x (false,[])] = \k.\m.(k x)
-C[->lcv[x]] = \k.\m.(k x)
+%->cm[C[x] \x.x (false,[])] = \k.\m.(k x)
+%C[->lcv[x]] = \k.\m.(k x)
 
-Theorem is
+%Theorem is
 
-->cm[I[C[e]]] = C[->lcv[e]]
+%->cm[I[C[e]]] = C[->lcv[e]]
 
-where C is given as the transformation
+%where C is given as the transformation
 
-I[e] = \k.(k ((e \x.x) (false,C[empty]))) \x.\k.\m.(k x)
+%I[e] = \k.(k ((e \x.x) (false,C[empty]))) \x.\k.\m.(k x)
  
-How do we prove this? By induction on either the grammar or the reduction contexts?
+%How do we prove this? By induction on either the grammar or the reduction contexts?
 
-e=wcm e e
- ccm
- e e
- \x.e
- x
+%e=wcm e e
+% ccm
+% e e
+% \x.e
+% x
 
-E = wcm v F
-    F
+%E = wcm v F
+%    F
 
-F = hole
-    wcm E e
-    E e
-    v E
+%F = hole
+%    wcm E e
+%    E e
+%    v E
     
-E e and v E are handled by the transform for application.
+%E e and v E are handled by the transform for application.
 
 
-for all continuations k and all marks (flag,ms) and all contexts E
-the value of variable x is C[x] (abstraction stripped away, then added)
-the value of ccm is ms
-ccm returns ms (do case by case)
+%for all continuations k and all marks (flag,ms) and all contexts E
+%the value of variable x is C[x] (abstraction stripped away, then added)
+%the value of ccm is ms
+%ccm returns ms (do case by case)
 
-for wcm v (wcm e1 e2) -> (e1 -> v1 => wcm v (wcm e1 e2) -> wcm v1 e2
+%for wcm v (wcm e1 e2) -> (e1 -> v1 => wcm v (wcm e1 e2) -> wcm v1 e2
 
-\x.e v -> e[x<-v] (reason purely about CPSness)
-wcm v1 (wcm v2 e1) -> wcm v2 e1 (by reasoning about transform of wcm)
+%\x.e v -> e[x<-v] (reason purely about CPSness)
+%wcm v1 (wcm v2 e1) -> wcm v2 e1 (by reasoning about transform of wcm)
 
-transform of wcm:
-evaluate mark
-(true,cons mark if flag rest marks else marks)
+%transform of wcm:
+%evaluate mark
+%(true,cons mark if flag rest marks else marks)
 
-wcm v1 v2 -> v2 (by reasoning about transform of wcm, tail position guaranteed by passing continuation)
+%wcm v1 v2 -> v2 (by reasoning about transform of wcm, tail position guaranteed by passing continuation)
 
-E[ccm] = chi(E)
+%E[ccm] = chi(E)
 
--introduce lambdacm once again with its syntactic forms and evaluation rules (semantics)
--introduce redex implementation of lambdacm
- -discuss reduction contexts and values
- -discuss call-by-value lambda calculus
+%-introduce lambdacm once again with its syntactic forms and evaluation rules (semantics)
+%-introduce redex implementation of lambdacm
+% -discuss reduction contexts and values
+% -discuss call-by-value lambda calculus
 
--discuss transformation of lambdacm to lambdav at a high level
- -discuss choice of CPS (evaluation control)
--discuss properties the transformation should have
+%-discuss transformation of lambdacm to lambdav at a high level
+% -discuss choice of CPS (evaluation control)
+%-discuss properties the transformation should have
 
--discuss intuitive approach to transformation
--reason informally about special considerations
+%-discuss intuitive approach to transformation
+%-reason informally about special considerations
 
--present transformation
--formalize properties and state as theorems
--prove each theorem
+%-present transformation
+%-formalize properties and state as theorems
+%-prove each theorem
 
 \section{C}
 \subsection{properties of C}
@@ -1170,7 +1162,8 @@ E[ccm] = chi(E)
 -introduce ``direct-style'' transform (using static/dynamic continuation?)
 \section{Future work}
 -use this idea in compiler?
-\section{Conclusion}
+
+\chapter{Conclusion}
 \bibliographystyle{plainnat}
 \bibliography{dissertation}
 
