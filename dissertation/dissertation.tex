@@ -674,8 +674,8 @@ formed application.
 
 Finally, we observe that every transformed application passes--rather than invokes--the
 provided continuation and that only after reduction occurs. Then continuations can be
-invoked only as in the previous two cases and we can see that they are only applied to
-fully reduced terms.
+invoked only as in the cases of variables and abstractions and we can see that they are 
+only applied to fully-reduced terms.
 
 %Suppose we want to embed direct-style terms in CPS terms. We are interested in what cases we can induce reduction.
 
@@ -954,7 +954,7 @@ will pass not only a continuation but also a list of the current continuation ma
 
 \subsection{First pass toward $\mathcal{C}$}
 
-Let us denote a first pass toward $\mathcal{C}$ as $\mathcal{C}_{1}$. We might define 
+Let us denote a first pass toward $\mathcal{C}$ as $\mathcal{C}_{1}$. We define 
 $\mathcal{C}_{1}$ formally as 
 \begin{align*}
 \mathcal{C}_{1}[x]           &= \lambda k.\lambda m.(k\,x)\\
@@ -1030,8 +1030,8 @@ expect a correct transform should have and our construction of it.
 The transformation $\mathcal{C}_{1}$ is fundamentally similar to a CPS transformation and 
 so shares the attribute that transformed terms must be ``primed'' with a continuation in 
 order for evaluation to proceed. In fact, terms produced by $\mathcal{C}_{1}$ are doubly 
-abstracted, requiring an argument encoding the current continuation marks. For now, we
-will assume that this approach is a fine way to go.
+abstracted, also requiring an argument encoding the current continuation marks. For now, 
+we will assume that this approach is a fine way to go.
 
 [say something here]
 
@@ -1075,7 +1075,72 @@ semantics of $\lambda_{cm}$, the program
 $(\mathrm{wcm}\,a\,(\mathrm{wcm}\,b\,(\mathrm{ccm})))$ evaluates to b:
 $(\mathrm{wcm} a (\lambda x.x (\mathrm{wcm}\,b\,(\mathrm{ccm}))))$. 
 
- 
+---
+
+Before we prove the theorem generally, let's examine a few cases and investigate why it is 
+true.
+
+First, consider any program devoid of \emph{wcm} and \emph{ccm} forms. As $\lambda_{cm}$ is 
+a superset of the $\lambda$-calculus, such a program considered in $\lambda_{cm}$ should 
+reduce to an equivalent value as when considered in the $\lambda$-calculus. More precisely, 
+if $e$ is a program,
+\[
+e\rightarrow_{\lambda_{cm}}v
+\]
+and
+\[
+e\rightarrow_{\lambda_{v}}v'
+\]
+then $v=v'$. 
+
+This case is complicated by our transform, however, as terms in $\lambda_{cm}$ are not 
+directly interpreted as terms in the $\lambda$-calculus. The idea we are really after is, 
+if $e$ is a program,
+\[
+e\rightarrow_{\lambda_{cm}}v
+\]
+and
+\[
+\mathcal{C}[e]\rightarrow_{\lambda_{v}}v'
+\]
+then $v\equiv v'$. We make a weaker assertion here that the terms are equivalent and not 
+that the terms are equal. This is not to say that the terms should have syntactic 
+equivalence or even $\alpha$-equivalence, but only that we should be able to formally 
+relate them.
+
+Next, consider the program $ccm$, perhaps the simplest program strictly in $\lambda_{cm}$. 
+The entire evaluation of this program exhibits only a single redex, a hole, and a $ccm$ 
+term which fills it. According to the semantics of $\lambda_{cm}$ and further the definition of the 
+$\chi$-metafunction, the result of this program is the empty list.
+
+According to the definition of $\mathcal{C}$, the $ccm$ term is transformed to
+\[
+\lambda k.\lambda m.(\lambda k.(k\,(m\,\lambda x.\lambda y.y))\,\lambda m'.((m'\,k)\,z))
+\]
+and the outermost redex (in this case, the sole redex) is applied first to the continuation
+\[
+\lambda m'.\lambda k.\lambda m.(k\,m')
+\]
+and then to the marks argument
+\[
+\lambda p.((p\,\lambda x.\lambda y.y)\,\lambda k.\lambda m.(k\,\lambda x.\lambda k.\lambda m.(k\,\lambda y.\lambda k.\lambda m.(k\,y))))
+\]
+
+We certainly could reduce this by steps and see it work, but that would give us no intuition as to \emph{why} it works. Recall that our transform, in CPS spirit, augments each call site with two additional parameters, the second being an encoding of the tail position of the context and the continuation marks. The transform of $ccm$ discards the tail-position encoding and applies the supplied continuation to the encoding of the continuation marks. However, as each call site also requires an argument encoding the marks, a dummy variable is passed. This is sound as the marks parameter does not bind any variable in the body, so the dummy variable is promptly ignored. In this process, the double abstraction surrounding the list has been stripped away and should be restored. This is accomplished by the passed continuation which does exactly that. Since the result of the reduction is known to be irreducible--that is, either a variable or an abstraction--and since irreducible terms are wrapped in the same way, we can wrap the value manually, yielding a transformed value as if directly.
+
+---
+ok
+
+terms are nested in this language
+in other words, terms are built up from primitives or smaller terms
+then proof that the transform works amounts to:
+
+if the term is x and the marks argument (with flag) is y and the continuation k
+then the result is ...
+
+example:
+
+term is ccm, marks argument is (false,[]) and continuation is
  
 %proof of equivalence
 %we need to state it formally and meaningfully
