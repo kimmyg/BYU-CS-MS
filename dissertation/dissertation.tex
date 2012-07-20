@@ -189,9 +189,13 @@
 \yearcopyrighted{\GraduationYear}
 
 \documentabstract{%
-This document is an example of how to use the byumsphd {\LaTeX} class file.  The class creates Ph.D. and Master's documents equally well, producing all appropriate preamble content and adhering precisely to the minimum formatting requirements.  It is meant to replace the old ECEn style file that has been circulating for many years.
-
-Note that there is a blank line between paragraphs, here.
+Continuation marks are a programming language feature which generalize stack inspection.
+Continuation marks currently lack a meaning-preserving transformation to the
+$\lambda$-calculus, a useful and widely-used computation model. Such a transformation
+would simplify the construction of compilers which treat continuation marks correctly. We
+present a CPS-like transformation from the call-by-value $\lambda$-calculus augmented with
+continuation marks to the pure call-by-value $\lambda$-calculus and verify that the
+transformation indeed preserves meaning.
 }
 
 \documentkeywords{%
@@ -199,7 +203,9 @@ Note that there is a blank line between paragraphs, here.
 }
 
 \acknowledgments{%
-    Thanks go to the ECEn style file authors for providing both a reasonable initial style and the motivation to abandon it.
+Thanks to R.L. Stine for showing me that a chapter doesn't have to be more than two pages.
+
+My wife is the hottest thing ever.
 }
 
 \department{Computer~Science}
@@ -227,6 +233,7 @@ Note that there is a blank line between paragraphs, here.
 \usepackage{microtype}
 
 \usepackage{amsmath}
+\usepackage{amsthm}
 %\usepackage{slatex}
 
 \begin{document}
@@ -236,7 +243,7 @@ Note that there is a blank line between paragraphs, here.
 \maketitle
 \microtypesetup{protrusion=true}
 
-\section{Introduction}
+\chapter{Introduction}
 
 Thesis: A CPS-like global transformation can compile the $\lambda$-calculus with
 continuation marks into the plain $\lambda$-calculus in a semantics-preserving way.
@@ -267,7 +274,7 @@ continuation marks in a pure computational language. We arrive at this expressio
 performing a transformation in the spirit of CPS from $\lambda_{cm}$ to the $\lambda$-calculus 
 verified to preserve the meaning of the source language.
 
-\section{Continuation marks}
+\chapter{Continuation marks}
 
 There are certain tools that are indispensable to some programmers that concern the
 behavior of their programs: debuggers, profilers, steppers, etc. Without these tools,
@@ -415,7 +422,7 @@ annotation is applied to a new, ``blank'' context, so all the annotations are pr
 In the tail-recursive variant, there is no pending computation and therefore no additional
 evaluation context. In this instance, the previous mark is overwritten with the new.
 
-\section{CPS transformations}
+\chapter{CPS transformations}
 
 The CPS transformation is a family of language transformations derived from Plotkin
 \cite{plotkin1975call} and designed to simplify  programs by representing all data and
@@ -518,20 +525,56 @@ places it in a category of tools to describe and analyze programming language fe
 
 \subsection{Example CPS transform}
 
-We will now focus our attention on a CPS transform defined over the $\lambda$-calculus. Before doing so, we offer a brief primer on the relevant parts of the $\lambda$-calculus.
+We will now focus our attention on a CPS transform defined over the $\lambda$-calculus.
+Before doing so, we offer a brief primer on the relevant parts of the $\lambda$-calculus.
 
 \subsubsection{$\lambda$-calculus}
 
-The $\lambda$-calculus is a Turing-complete system of logic extensively used as a formal system for expressing computation. Terms in the $\lambda$-calculus are defined inductively. Terms take the form of variables $x$ drawn from an infinite set, abstractions $\lambda x.M$ where $M$ is itself a $\lambda$-calculus term, and applications $M\,N$ where $M$ and $N$ are $\lambda$-calculus terms.
+The $\lambda$-calculus is a Turing-complete system of logic extensively used as a formal
+system for expressing computation. Terms in the $\lambda$-calculus are defined
+inductively. Terms take the form of variables $x$ drawn from an infinite set, abstractions
+$\lambda x.M$ where $M$ is itself a $\lambda$-calculus term, and applications $M\,N$ where
+$M$ and $N$ are $\lambda$-calculus terms.
 
-Variables in the $\lambda$-calculus are either free or bound. In the term consisting of the lone variable $x$, $x$ is free, meaning that its value is determined solely by its environment. If we abstract $x$ to create $\lambda x.x$, $x$ is no longer free but bound. Bound variables play a special part in the role of the $\lambda$-calculus as a computation substrate.
+Variables in the $\lambda$-calculus are either free or bound. In the term consisting of
+the lone variable $x$, $x$ is free, meaning that its value is determined solely by its
+environment. If we abstract $x$ to create $\lambda x.x$, $x$ is no longer free but bound.
+Bound variables play a special part in the role of the $\lambda$-calculus as a computation
+substrate. Terms with no free variables can be called closed, combinators, or programs.
 
-To a first approximation, abstractions are functions. For instance, the identity function can be expressed as $\lambda x.x$ where $x$ is \emph{any} variable. Thus, there are an infinite number of ways to express the identity function: $\lambda x.x$, $\lambda y.y$, $\lambda z.z$, etc. These terms are not syntactically equivalent, but they are the same function. This fact gives rise to the notion of $\alpha$-equivalence which captures the idea that arbitrary, consistent renaming does not change the essence of a term. One subtlety here (which we will also encounter later) is \emph{variable capture} which can occur when the new name of a variable is already present in the term. For instance, in the term $\lambda x.\lambda y.x$, if each $x$ is renamed to $y$, we obtain the term $\lambda y.\lambda y.y$, a different term. For this reason, we need to take special care when we rename variables (which we will need to do regularly).
+To a first approximation, abstractions are functions. For instance, the identity function
+can be expressed as $\lambda x.x$ where $x$ is \emph{any} variable. Thus, there are an
+infinite number of ways to express the identity function: $\lambda x.x$, $\lambda y.y$,
+$\lambda z.z$, etc. These terms are not syntactically equivalent, but they are the same
+function. This fact gives rise to the notion of $\alpha$-equivalence which captures the
+idea that arbitrary, consistent renaming does not change the essence of a term. One
+subtlety here (which we will also encounter later) is \emph{variable capture} which can
+occur when the new name of a variable is already present in the term. For instance, in the
+term $\lambda x.\lambda y.x$, if each $x$ is renamed to $y$, we obtain the term $\lambda
+y.\lambda y.y$, a different term. For this reason, we need to take special care when we
+rename variables (which we will need to do regularly).
 
-One of the ways abstractions approximate functions is that we can apply them to arguments. This is signified simply by juxtaposition of function (or operator) and argument (or operand). In the correct context, an application of the form $M\,N$ can be \emph{reduced} in which the operator $M$ is applied to the operand $N$. For instace, the term $\lambda x.x\,y$ reduces to $y$. We must take care when reducing a term such as $\lambda x.\lambda y.x\,y$. If we reduce naively, we obtain $\lambda y.y$ which does not reflect the intended meaning of the reduction--the argument $y$ has been captured by the abstraction and is no longer independent of that abstraction. In order to avoid this, we can rename capturing abstractions in $M$ to be outside the set of free variables of $N$. In $\lambda x.\lambda y.x\,y$, we rename $y$ to $z$ in $\lambda x.\lambda y.x$ and obtain $\lambda x.\lambda z.x$. The subsequent reduction of $\lambda x.\lambda z.x\,y$ to $\lambda z.y$ correctly reflects the intending meaning of the original term.
+One of the ways abstractions approximate functions is that we can apply them to arguments.
+This is signified simply by juxtaposition of function (or operator) and argument (or
+operand). In the correct context, an application of the form $M\,N$ can be \emph{reduced}
+in which the operator $M$ is applied to the operand $N$. For instace, the term $\lambda
+x.x\,y$ reduces to $y$. We must take care when reducing a term such as $\lambda x.\lambda
+y.x\,y$. If we reduce naively, we obtain $\lambda y.y$ which does not reflect the intended
+meaning of the reduction--the argument $y$ has been captured by the abstraction and is no
+longer independent of that abstraction. In order to avoid this, we can rename capturing
+abstractions in $M$ to be outside the set of free variables of $N$. In $\lambda x.\lambda
+y.x\,y$, we rename $y$ to $z$ in $\lambda x.\lambda y.x$ and obtain $\lambda x.\lambda
+z.x$. The subsequent reduction of $\lambda x.\lambda z.x\,y$ to $\lambda z.y$ correctly
+reflects the intended meaning of the original term.
 
 In the $\lambda$-calculus, evaluation occurs during reduction, and reduction is merely
-application. There is, however, yet more subtlety of which we must be aware, namely, in which contexts we allow applications to be reduced. In the call-by-value $\lambda$-calculus, reduction beneath abstraction is illegal. Under this regime, $\lambda y.y\,x$ is reducible; by contrast, $\lambda x.(\lambda y.y\,x)$ is not. In the call-by-name $\lambda$-calculus, however, reduction beneath abstraction is legal. The latter term, when applied to $z$ in a call-by-name regime, would reduce as
+application. There is, however, yet more subtlety of which we must be aware, namely, in
+which contexts we allow applications to be reduced. In the call-by-name
+$\lambda$-calculus, reduction beneath abstraction is legal. Under this regime, both
+$\lambda y.y\,x$ and $\lambda x.(\lambda y.y\,x)$ are reducible. In the call-by-value
+$\lambda$-calculus, however, reduction beneath abstraction is illegal. Under this regime,
+$\lambda y.y\,x$ is reducible; by contrast, $\lambda x.(\lambda y.y\,x)$ is not.  The
+latter term, when applied to $z$ in a call-by-name regime, would reduce as
 \begin{align*}
             &\lambda x.(\lambda y.y\, x)\,z\\
 \rightarrow &\lambda x.x\,z\\
@@ -543,13 +586,32 @@ whereas that same application in a call-by-value regime would reduce as
 \rightarrow &\lambda y.y\,z\\
 \rightarrow &z
 \end{align*}
-Notice that in the call-by-value reduction, the argument is fully reduced before the abstraction is applied. In the call-by-name reduction, application occurs before the arguments are reduced. Although both terms reduce to the same term in this example, this distinction is not merely pedantic: terms may reduce definitively in some reduction regimes and fail to reduce completely in others! Historically at least, the call-by-value and call-by-name reduction regimes underlie the distinction between so-called eager and lazy languages.
+Notice that, in the call-by-name reduction, application occurs before the arguments are
+reduced. In the call-by-value reduction, the argument is fully reduced before the
+abstraction is applied. Although both terms reduce to the same term in this example, this
+distinction is not merely pedantic: terms may reduce definitively in some reduction
+regimes and fail to reduce completely in others! Historically at least, the call-by-name
+and call-by-value reduction regimes underlie the distinction between so-called lazy and
+eager languages.
 
-One final observation we should make about the $\lambda$-calculus is which terms denote values. A value should be, in a sense, irreducible and that criterion disqualifies applications from being considered as values. A value should remain indepedent of environment, i.e., it should not merely be a placeholder for arbitrary values, and that criterion disqualifies lone variables from being considered as values.\footnote{In actual fact, a value is an irreducible $\lambda$-calculus term paired with an environment which provides values for constituent free variables.} Thus, we shall consider abstractions to be the sole form values can take in the $\lambda$-calculus, habituating ourselves to the idea that functions are data.
+One final observation we should make about the $\lambda$-calculus is which terms denote
+values. A value should be, in a sense, irreducible and that criterion disqualifies
+applications from being considered as values. A value should remain indepedent of
+environment, i.e., it should not merely be a placeholder for arbitrary values, and that
+criterion disqualifies lone variables from being considered as values.\footnote{In actual
+fact, a value is an irreducible $\lambda$-calculus term paired with an environment which
+provides values for constituent free variables.} Thus, we shall consider abstractions to
+be the sole form values can take in the $\lambda$-calculus, habituating ourselves to the
+idea that functions are data.
 
 \subsubsection{CPS transform}
 
-A CPS transformation is a global syntactic transformation of language terms. Recall that terms in the $\lambda$-calculus take the form of lone variables $x$, $\lambda$-abstractions $\lambda x.M$, and applications $M\,N$ where $M$ and $N$ are themselves $\lambda$-calculus terms. A comprehensive CPS transform definition need only specify transformations for these three categories. As an example, consider Fischer's CPS transform \cite{fischer1972lambda}:
+A CPS transformation is a global syntactic transformation of language terms. Recall that
+terms in the $\lambda$-calculus take the form of lone variables $x$,
+$\lambda$-abstractions $\lambda x.M$, and applications $M\,N$ where $M$ and $N$ are
+themselves $\lambda$-calculus terms. A comprehensive CPS transform definition need only
+specify transformations for these three categories. As an example, consider Fischer's CPS
+transform \cite{fischer1972lambda}:
 \begin{align*}
 \mathcal{F}[x]           &= \lambda k.k\,x\\
 \mathcal{F}[\lambda x.M] &= \lambda k.k\,(\lambda x.\mathcal{F}[M])\\
@@ -559,10 +621,13 @@ Fischer's CPS transform abstracts each term in the $\lambda$-calculus: lone vari
 wait on a continuation, abstractions receive a degree of indirection, and even
 applications, the sole reduction facility of the $\lambda$-calculus, become abstractions.
 In essence, terms become suspended in wait of a continuation argument. By priming a term
-so-transformed with a continuation function, even as simple as the identity, we instigate
+so-transformed with a continuation function--even as simple as the identity--we instigate
 a cascade of computation.
 
-In the case of lone variables and applications, this transformation ultimately has no effect on the result of the computation. However, the values of the $\lambda$-calculus--abstractions--are contaminated by the transform. For example, consider the transformation of $\lambda x.x$
+In the case of lone variables and applications, this transformation ultimately has no
+effect on the result of the computation. However, abstractions, the values of the
+$\lambda$-calculus, are contaminated by the transform. For example, consider the
+transformation of $\lambda x.x$
 \begin{align*}
 \mathcal{F}[\lambda x.x] &= \lambda k.k\,(\lambda x.\mathcal{F}[x])\\
                          &= \lambda k.(k\,\lambda x.\lambda k.(k\,x))
@@ -573,143 +638,77 @@ If we apply this term to the identity function, it reduces as
 \rightarrow &\lambda y.y\,\lambda x.\lambda k.(k\,x)\\
 \rightarrow &\lambda x.\lambda k.(k\,x)
 \end{align*}
+The result of this reduction, in common with most others, contains residual terms from the
+CPS transform. We will need to account for this particular property of the Fischer's CPS
+transform.
 
-It is for this reason that we must take special care with our transform which is based on Plotkin's.
-
-Our use of call-by-value $\lambda$-calculus has assumed a distinction between terms which
-represent values and terms which do not. A term is a \emph{value} if it cannot be reduced
-further. This alone is not a satisfactory definition because it depends on when reduction
-can occur. In our definition, we consider both $\lambda x.x$ and $\lambda
-x.(\lambda y.y\,x)$ to be fully reduced (we consider them to be values, we cannot reduce
-either of these terms). [something about weak head normal form here] The Fischer-Plotkin 
-CPS transform allows us to transform the latter term into a term which can be evaluated as 
-fully as we would expect while still respecting our notion of reduction contexts. It may 
-be beneficial to show this:
-
-\begin{align*}
-\mathcal{F}[\lambda x.(\lambda y.y\,x)] &= \lambda k.(k\,\lambda x.\mathcal{F}[\lambda y.y\, x])\\
-&= \lambda k.(k\, \lambda x.(()))
-\end{align*}
-
-One of the many reasons CPS is useful is that is allows evaluation order to be controlled. 
-This is done by a definitional invariant: every term applied to a continuation returns a 
-value. We will visit each case of the definition and verify this property. Before doing 
-so, we emphasize that no reduction is performed by effect of the transformation.
-
+One of the many reasons continuation-passing style is useful is that is allows evaluation
+order to be controlled. In fact, Plotkin \cite{plotkin1975call} showed that it can be used
+to simulate the call-by-value $\lambda$-calculus with the call-by-name $\lambda$-calculus
+and vice versa. We can show that, in the call-by-value $\lambda$-calculus, the passed
+continuation is applied only to fully-reduced terms. This can be done by verifying this
+property for each case of the CPS transform definition. Before doing so, we remind that no
+reduction is performed by effect of the transformation.
 \[
-T[x]=\lambda k.(k x)
+T[x]=\lambda k.(k\,x)
 \]
-
-Variables are values, so the property holds immediately here.
-
+Variables are irreducible, so the property holds immediately here.
 \[
-T[\lambda x.E]=\lambda k.(k \lambda x.T[E])\]
-
-Here we reason inductively by assuming that the property holds for E. Abstractions are values, so the 
-property holds in this case also.
-
-\[
-T[E F]=\lambda k.(T[E] (\lambda e.(T[F] (\lambda f.((e f) k))))
+T[\lambda x.E]=\lambda k.(k\,\lambda x.T[E])
 \]
-
-Once again, we assume that the property holds for E and F. Then e and f are values. In order to conclude 
-that the property holds for the application, we must establish that the application of values yields a 
-value. The key lies in a case analysis of the operator. It must be either a variable or an abstraction.
-
-First, consider the application of a variable to a variable.
+Here we reason inductively by assuming that the property holds for E. Abstractions are
+irreducible in a call-by-value regime, so the property holds in this case also.
 \[
-x y
+T[E\,F]=\lambda k.(T[E]\,(\lambda e.(T[F]\,(\lambda f.((e\,f)\,k))))
 \]
-This is fully reduced according to direct application.
-\begin{align*}
-T[x\,y] &= \lambda k.(T[x] (\lambda e.T[y] (\lambda f.((e f) k))))\\
-       &= \lambda k.(\lambda k.(k x) (\lambda e.T[y] (\lambda f.((e f) k))))\\
-       &= \lambda k.(\lambda k.(k x) (\lambda e.\lambda k.(k y) (\lambda f.((e f) k))))\\
-\end{align*}
-We can evaluate this expression by applying it to the identity function $\lambda z.z$.
-\begin{align*}
-&\rightarrow \lambda k.(\lambda k.(k x) (\lambda e.\lambda k.(k y) (\lambda f.((e f) k)))) \lambda z.z\\
-&\rightarrow \lambda k.(k x) (\lambda e.\lambda k.(k y) (\lambda f.((e f) \lambda z.z)))\\
-&\rightarrow \lambda e.\lambda k.(k y) (\lambda f.((e f) \lambda z.z)) x\\
-&\rightarrow \lambda k.(k y) (\lambda f.((x f) \lambda z.z))\\
-&\rightarrow \lambda f.((x f) \lambda z.z) y\\
-&\rightarrow (x y) \lambda z.z\\
-\end{align*}
-Similar to a direct-style application, we remain stuck.
+In this case, we observe that the continuation $k$ provided is not directly applied.
+Instead, the operator is evaluated and a continuation is constructed into which its value
+may be passed. The operand is treated similarly. Finally, the operator is applied to the
+operand and $k$ is not invoked but passed to the result.
 
-Now, consider the application of an abstraction to a variable.
-\[
-\lambda x.x\,y
-\]
-This reduces to y, of course, when directly applied.
-\begin{align*}
-T[\lambda x.x\,y] &= \lambda k.(T[\lambda x.x]\,(\lambda e.(T[y] (\lambda f.((e\,f)\,k)))))\\
-                  &= \lambda k.(\lambda k.(k\,\lambda x.T[x])\,(\lambda e.(T[y]\,(\lambda f.((e\,f)\,k)))))\\
-                  &= \lambda k.(\lambda k.(k\,\lambda x.\lambda k.(k\,x))\,(\lambda e.(T[y]\,(\lambda f.((e\,f)\,k)))))\\
-                  &= \lambda k.(\lambda k.(k\,\lambda x.\lambda k.(k\,x))\,(\lambda e.(\lambda k.(k\,y)\,(\lambda f.((e\,f)\,k)))))
-\end{align*}
-Apply the identity function $\lambda z.z$ to this term.
-\begin{align*}
-&\rightarrow \lambda k.(\lambda k.(k\,\lambda x.\lambda k.(k\,x))\,(\lambda e.\lambda k.(k\,y) (\lambda f.((e\,f)\,k))))\,\lambda z.z\\
-&\rightarrow \lambda k.(k\,\lambda x.\lambda k.(k\,x))\,(\lambda e.\lambda k.(k\,y)\,(\lambda f.((e\,f)\,\lambda z.z)))\\
-&\rightarrow (\lambda e.\lambda k.(k\,y)\,(\lambda f.((e\,f)\,\lambda z.z)))\,\lambda x.\lambda k.(k\,x)\\
-&\rightarrow \lambda k.(k\,y)\,(\lambda f.((\lambda x.\lambda k.(k\,x)\,f)\,\lambda z.z))\\
-&\rightarrow \lambda f.((\lambda x.\lambda k.(k\,x)\,f)\,\lambda z.z)\,y\\
-&\rightarrow (\lambda x.\lambda k.(k\,x)\,y)\,\lambda z.z\\
-&\rightarrow \lambda k.(k\,y)\,\lambda z.z\\
-&\rightarrow \lambda z.z\,y\\
-&\rightarrow y
-\end{align*}
+Notice that $k$, which represents the rest of the continuation, is passed unmodified.
+Specifically, a new continuation which employs $k$ as a subcontinuation has not been
+constructed. This quality is characteristic of a tail call in which the evaluation context
+for the arguments, no longer necessary, is subsumed by the evaluation context of the newly
+formed application.
 
-We observe that, at the time of application, the remnant of the transformation of $\lambda x.x$ took the form 
-$\lambda x.\lambda k.(k x)$. This is a term which, when applied, will yield a value. We can generalize our reasoning 
-to establish this property for all applications by considering
+Finally, we observe that every transformed application passes--rather than invokes--the
+provided continuation and that only after reduction occurs. Then continuations can be
+invoked only as in the previous two cases and we can see that they are only applied to
+fully reduced terms.
 
-$T[\lambda x.E F]$
+%Suppose we want to embed direct-style terms in CPS terms. We are interested in what cases we can induce reduction.
 
-and noting that E also satisfies this property.
+%As an example which will become useful later, suppose we want to deal with a Church encoding of lists directly.
 
-[could perhaps do something more detailed and formal here]
+%Recall that we can represent \emph{nil} as [the Church encoding of] \emph{false} and \emph{cons a b} as $\lambda p.((p a) b)$.
 
-Suppose we want to embed direct-style terms in CPS terms. We are interested in what cases we can induce 
-reduction.
+%Like [the transformation] T, C has a similar property which we quickly verify:
 
-As an example which will become useful later, suppose we want to deal with a Church encoding of lists 
-directly.
+%\begin{align*}
+%C[x]           &= \lambda k.\lambda m.(k x)\\
+%C[\lambda x.E] &= \lambda k.\lambda m.(k \lambda x.C[E])\\
+%C[E F]         &= \lambda k.\lambda m.((C[E] (\lambda e.((C[F] (\lambda f.(((e f) k) m))) g[m]))) g[m])\\
+%C[wcm E F]     &= \lambda k.\lambda m.((C[E] (\lambda e.((C[F] k) h[e,m]))) g[m])\\
+%C[ccm]         &= \lambda k.\lambda m.(k i[m])\\
+%\end{align*}
 
-Recall that we can represent \emph{nil} as [the Church encoding of] \emph{false} and \emph{cons a b} as 
-$\lambda p.((p a) b)$.
+%where g[m]=cons false (snd m)
+%and h[e,m]=cons true (if fst m then rest (snd m) else snd m)
+%and i[m]=snd m
 
-Like [the transformation] T, C has a similar property which we quickly verify:
+%We use the definitions $g$, $h$, and $i$ to emphasize that these facilities enjoy privileged status in the transformation definition and are invisible to the program.
 
-\begin{align*}
-C[x]           &= \lambda k.\lambda m.(k x)\\
-C[\lambda x.E] &= \lambda k.\lambda m.(k \lambda x.C[E])\\
-C[E F]         &= \lambda k.\lambda m.((C[E] (\lambda e.((C[F] (\lambda f.(((e f) k) m))) g[m]))) g[m])\\
-C[wcm E F]     &= \lambda k.\lambda m.((C[E] (\lambda e.((C[F] k) h[e,m]))) g[m])\\
-C[ccm]         &= \lambda k.\lambda m.(k i[m])\\
-\end{align*}
-
-where g[m]=cons false (snd m)
-and h[e,m]=cons true (if fst m then rest (snd m) else snd m)
-and i[m]=snd m
-
-We use the definitions $g$, $h$, and $i$ to emphasize that these facilities enjoy privileged status 
-in the transformation definition and are invisible to the program.
-
--uses
--lambda calculus
--reference CPS due to Fischer/Plotkin
--properties
+%-uses
+%-lambda calculus
+%-reference CPS due to Fischer/Plotkin
+%-properties
 
 \chapter{$\lambda_{cm}$}
 
 We consider an extension of the call-by-value $\lambda$-calculus with facilities to
 manipulate continuation marks, introduced by Pettyjohn et al.
 \cite{pettyjohn2005continuations}, which we term $\lambda_{cm}$.
-
-We assume a call-by-value reduction convention in $\lambda_{cm}$ and similarly in our 
-target language, the $\lambda$-calculus, which we will denote $\lambda_{v}$.
 
 \section{Definition of $\lambda_{cm}$}
 
@@ -858,7 +857,7 @@ binding, but not the body. This allows for expressions like
   (with (x x)
     x))
 \end{verbatim}
-to behave as we expect.
+to behave as we expect (returning 5).
 
 Now that the syntactic forms and reduction rules of the language are defined, we can use 
 the randomized testing built into Redex to investigate properties of the language. We 
@@ -891,43 +890,54 @@ checks terms for properties. This function generates terms gradually increasing 
 applying the predicate to each in turn, and terminates with a counterexample or after a
 set number of terms have been checked (1000 by default).
 
+Randomized testing can increase our confidence in various assertions but is no substitute 
+for proof. We express the property of reducing to one value with the following theorem:
 
+%(e (+ e e) (with (x e) e) x v)
+\newtheorem*{toythm}{Toy Language One-Value Theorem}
+\begin{toythm}
+For all terms $e$ of the toy language, $e$ reduces to exactly one value.\footnote{We do 
+not use the term ``value'' loosely here; the toy language definition specifies what 
+constitutes values, and we appeal to this.}
+\end{toythm}
+We proceed by induction on the structure of terms $e$ of the toy language. First, we 
+consider the base cases.
+\begin{proof}[Case $v$]
+A term $e$ of the form $v$ is exactly one value and cannot be reduced, so the statement 
+holds.
+\end{proof}
+\begin{proof}[Case $x$]
+A term $e$ of the form $x$, a variable, reduces to \emph{undefined}, a value term, so the 
+statement holds.
+\end{proof}
+\begin{proof}[Case $(with\,(x\,e_{1})\,e_{2})$]
+By induction, we assume that $e_{1}$ reduces to exactly one value. Then the ``with''-rule
+can only be applied once, resulting in a single term $e_{2}$ in $e$ which, by our
+inductive hypothesis, reduces to only one value.
+\end{proof}
+\begin{proof}[Case $(+\,e_{1}\,e_{2})$]
+By induction, we assume both $e_{1}$ and $e_{2}$ reduce to a single value. We consider two
+subcases: If $e_{1}$ reduces to \emph{undefined}, the ``undefined in first position''-rule
+is applied, and the whole term reduces to \emph{undefined}. If $e_{1}$ reduces to a
+number, we consider two further subcases: If $e_{2}$ reduces to a number, the ``+''-rule
+is applied, and the entire expression reduces to the sum of the two numbers obtained. If
+$e_{2}$ reduces to \emph{undefined}, the ``undefined in second position''-rule is applied,
+and the entire term reduces to \emph{undefined}. Thus, in all subcases, the whole term 
+reduces to exactly one value.
+\end{proof}
 
-
-
-
-
-
-
-
-
-We will present a transformation in the spirit of CPS from $\lambda_{cm}$ to 
-the plain call-by-value $\lambda$-calculus. Furthermore, we will provide and 
-prove a meaning-preservation theorem.
-
-
-
-The evaluation rules for $\lambda_{cm}$ require us to distinguish between expressions and values
-
-For simple variables and abstractions, we use Plotkin's definitions almost exactly.
-
-\begin{align*}
-C[x]    &= \lambda k.\lambda m.(k\,x)\\
-C[\lambda x.M] &= \lambda k.\lambda m.(k\,\lambda x.C[M])
-\end{align*}
-
-
-
+This property is fairly trivial and its proof is similarly trivial, but it is a shadow of 
+the approach we will ultimately take to verify our transform preserves meaning.
 
 \section{Language translation}
 
-$\lambda_{cm}$ is a strict superset of $\lambda_{v}$; there are within $\lambda_{cm}$ 
-syntactic forms inscrutable to a $\lambda_{v}$ interpreter. Additionally, evaluation 
-order in $\lambda_{cm}$ is significant and differs from the call-by-value regime of the 
-target language somewhat (which is to say, we cannot simply inherit it). Recall that one 
-feature of the CPS transform, due to Plotkin \cite{plotkin1975call}, is to control 
-evaluation order. We will use this facility in our transformation to express terms in 
-$\lambda_{cm}$ in terms of $\lambda_{v}$. [Other analysis which the CPS transformation 
+$\lambda_{cm}$ is a strict superset of $\lambda_{v}$; there are within $\lambda_{cm}$
+syntactic forms inscrutable to a $\lambda_{v}$ interpreter. Additionally, evaluation order
+within these forms is significant and a naive treatment of these forms by $\lambda_{v}$
+will most likely be incorrect (which is to say, we cannot simply inherit its reduction
+order). Plotkin \cite{plotkin1975call} demonstrated that the CPS transform can be used to
+control evaluation order. We will use this facility in our transformation to express terms
+in $\lambda_{cm}$ in terms of $\lambda_{v}$. [Other analysis which the CPS transformation
 affords us \cite{appel2007compiling} is incidental.]
 
 The work of the transformation then is to express the five syntactic forms of
@@ -946,7 +956,6 @@ will pass not only a continuation but also a list of the current continuation ma
 
 Let us denote a first pass toward $\mathcal{C}$ as $\mathcal{C}_{1}$. We might define 
 $\mathcal{C}_{1}$ formally as 
-
 \begin{align*}
 \mathcal{C}_{1}[x]           &= \lambda k.\lambda m.(k\,x)\\
 \mathcal{C}_{1}[\lambda x.E] &= \lambda k.\lambda m.(k\,\lambda x.\mathcal{C}_{1}[E])\\
@@ -960,7 +969,15 @@ correct transform, namely, the explicit ordering of evaluation in the \emph{wcm}
 the conceptual simplicity of the \emph{ccm} form by virtue of our continuation
 mark-passing approach.
 
-say something about the order reversal of the marks
+We notice, however, that the list of marks retrieved by \emph{ccm} is ordered from the
+innermost context outward whereas the semantics of $\lambda_{cm}$ specify the reverse
+ordering. Typically, our approach would be to correct our transform to follow the semantic
+definition. We would probably do this by reversing the order of the marks within
+\emph{ccm}. However, the mark order is an inconsequential part of the definition. Rather
+than needlessly clutter our definition with manipulation, we will opt instead to modify
+our target semantics by modifying the $\chi$-metafunction, as we did in our Redex
+interpreter. We realize this is a slippery slope and promise this is the only time we'll
+do it.
 
 \subsection{What do you mean ``equivalent''?}
 
@@ -1059,21 +1076,84 @@ $(\mathrm{wcm}\,a\,(\mathrm{wcm}\,b\,(\mathrm{ccm})))$ evaluates to b:
 $(\mathrm{wcm} a (\lambda x.x (\mathrm{wcm}\,b\,(\mathrm{ccm}))))$. 
 
  
--introduce lambdacm once again with its syntactic forms and evaluation rules (semantics)
--introduce redex implementation of lambdacm
- -discuss reduction contexts and values
- -discuss call-by-value lambda calculus
+ 
+%proof of equivalence
+%we need to state it formally and meaningfully
 
--discuss transformation of lambdacm to lambdav at a high level
- -discuss choice of CPS (evaluation control)
--discuss properties the transformation should have
+%since cm is a superset of lcv, any purely lcv term should reduce in cm to the same value 
+%as if it were reduced in lcv and transformed
 
--discuss intuitive approach to transformation
--reason informally about special considerations
+%we init the transformed program to initiate reduction
 
--present transformation
--formalize properties and state as theorems
--prove each theorem
+%given a program fragment and a continuation and marks state, produce the same as the 
+%transformed program
+
+%C[x] \y.y (false,[]) ->cm \k.\m.(k x)
+%C[->lcv x] = \k.\m.(k x)
+
+%->cm[C[x] \x.x (false,[])] = \k.\m.(k x)
+%C[->lcv[x]] = \k.\m.(k x)
+
+%Theorem is
+
+%->cm[I[C[e]]] = C[->lcv[e]]
+
+%where C is given as the transformation
+
+%I[e] = \k.(k ((e \x.x) (false,C[empty]))) \x.\k.\m.(k x)
+ 
+%How do we prove this? By induction on either the grammar or the reduction contexts?
+
+%e=wcm e e
+% ccm
+% e e
+% \x.e
+% x
+
+%E = wcm v F
+%    F
+
+%F = hole
+%    wcm E e
+%    E e
+%    v E
+    
+%E e and v E are handled by the transform for application.
+
+
+%for all continuations k and all marks (flag,ms) and all contexts E
+%the value of variable x is C[x] (abstraction stripped away, then added)
+%the value of ccm is ms
+%ccm returns ms (do case by case)
+
+%for wcm v (wcm e1 e2) -> (e1 -> v1 => wcm v (wcm e1 e2) -> wcm v1 e2
+
+%\x.e v -> e[x<-v] (reason purely about CPSness)
+%wcm v1 (wcm v2 e1) -> wcm v2 e1 (by reasoning about transform of wcm)
+
+%transform of wcm:
+%evaluate mark
+%(true,cons mark if flag rest marks else marks)
+
+%wcm v1 v2 -> v2 (by reasoning about transform of wcm, tail position guaranteed by passing continuation)
+
+%E[ccm] = chi(E)
+
+%-introduce lambdacm once again with its syntactic forms and evaluation rules (semantics)
+%-introduce redex implementation of lambdacm
+% -discuss reduction contexts and values
+% -discuss call-by-value lambda calculus
+
+%-discuss transformation of lambdacm to lambdav at a high level
+% -discuss choice of CPS (evaluation control)
+%-discuss properties the transformation should have
+
+%-discuss intuitive approach to transformation
+%-reason informally about special considerations
+
+%-present transformation
+%-formalize properties and state as theorems
+%-prove each theorem
 
 \section{C}
 \subsection{properties of C}
@@ -1082,7 +1162,8 @@ $(\mathrm{wcm} a (\lambda x.x (\mathrm{wcm}\,b\,(\mathrm{ccm}))))$.
 -introduce ``direct-style'' transform (using static/dynamic continuation?)
 \section{Future work}
 -use this idea in compiler?
-\section{Conclusion}
+
+\chapter{Conclusion}
 \bibliographystyle{plainnat}
 \bibliography{dissertation}
 
