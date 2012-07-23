@@ -1,4 +1,4 @@
-\documentclass[ms]{byuprop}
+\documentclass[11pt,ms]{byuprop}
 
 % Options for this class include the following (* indicates default): 
 %   10pt -- 10 point font size 
@@ -125,14 +125,6 @@
 %Compiling with continuations, continued, Kennedy
 %PLAI
 
-%I assume a thesis proposal should be written so that a reader who is not familiar with 
-%your area of study is given a good chance to understand the (i) problem that you propose 
-%to solve, (ii) significance of the problem, (iii) proposed solution of the problem, and 
-%(iv) arguments that the solution should solve the problem. Of course the proposal 
-%should also justify the merit and uniqueness of your proposed solution. 
-%If any of these discussions is missing, then the proposal is incomplete and should be 
-%further revised accordingly.
-
 \abstract{Continuation marks are a programming language feature which generalize stack
 inspection. Continuation marks currently lack a meaning-preserving transformation to the
 $\lambda$-calculus, a useful and widely-used computation model. Such a transformation
@@ -142,12 +134,6 @@ with continuation marks to the pure call-by-value $\lambda$-calculus and verify 
 transformation indeed preserves meaning.}
 
 \section{Introduction}
-
-% remember that the audience in this case actually does not know what these things are 
-% so have a clear, useful exposition.
-
-Thesis: A CPS-like global transformation can compile the $\lambda$-calculus with
-continuation marks into the plain $\lambda$-calculus in a semantics-preserving way.
 
 Continuation marks \cite{clements2006portable} are a language feature that provides a
 mechanism to annotate the dynamic context of a program. This feature allows the
@@ -166,14 +152,16 @@ with their result. The CPS transformation then simplifies programs by representi
 control and data transfer uniformly and explicitly. In general, the ``spirit'' of the 
 CPS transformation is to represent all transfers of control uniformly \cite{sabry1994formal}.
 
-It is our interest to understand the essence of continuation marks--their behavior in the 
-absense of other language features and implementation details. For this, we take the core 
-of computation, the $\lambda$-calculus, and add facilities to manipulate continuation 
-marks. These two together comprise a language which we term $\lambda_{cm}$. By expressing 
-$\lambda_{cm}$ in terms of the plain $\lambda$-calculus, we uncover the meaning of 
-continuation marks in a pure computational language. We arrive at this expression by 
-performing a transformation in the spirit of CPS from $\lambda_{cm}$ to the $\lambda$-calculus 
-verified to preserve the meaning of the source language.
+It is our interest to understand the essence of continuation marks--their behavior in the
+absense of other language features and implementation details. For this, we take the core
+of computation, the $\lambda$-calculus, and add facilities to manipulate continuation
+marks. These two together comprise a language which we term $\lambda_{cm}$. By expressing
+$\lambda_{cm}$ in terms of the plain $\lambda$-calculus, we uncover the meaning of
+continuation marks in a pure computational language. Additionally, we obtain a sound
+characterization that can be used to construct a correct compiler for continuation marks.
+We arrive at this expression by performing a transformation in the spirit of CPS from
+$\lambda_{cm}$ to the $\lambda$-calculus verified to preserve the meaning of the source
+language.
 
 \section{Related Work}
 
@@ -221,13 +209,13 @@ syntax, this call appears like so:
 % will use slatex for the dissertation; too much of a hassle now
 \texttt{(with-continuation-mark} \emph{key-expr} \emph{value-expr} \emph{body-expr}\texttt{)}
 
-\emph{current-continuation-marks} has one parameter, a set of keys \emph{key-set}, and returns a list of
-all the associated values attached to the dynamic context of the invocation. If a particular 
-context has been annotated by more than one key in the set, this will be reflected in the 
-returned list\footnote{The returned list is typically a list of non-empty lists where each 
-sub-list represents the marks on a context.}. Additionally, the order in which values were 
-attached with a particular key is preserved. Scheme-like, \emph{current-continuation-marks}
-looks like this:
+\emph{current-continuation-marks} has one parameter, a set of keys \emph{key-set}, and
+returns a list of all the associated values attached to the dynamic context of the
+invocation. If a particular context has been annotated by more than one key in the set,
+this will be reflected in the returned list\footnote{The returned list is typically a list
+of non-empty lists where each sub-list represents the marks on a context.}. Additionally,
+the order in which values were attached with a particular key is preserved. Scheme-like,
+\emph{current-continuation-marks} looks like this:
 
 \texttt{(current-continuation-marks} \emph{key-set}\texttt{)}
 
@@ -423,6 +411,16 @@ to describe and analyze programming language features. (This category is also
 occupied by Moggi's computational lambda calculus--monads 
 \cite{moggi1989computational}.)
 
+\subsection{A CPS-like transform for continuation marks}
+
+Continuation marks currently lack a meaning-preserving transformation to the
+$\lambda$-calculus, a useful and widely-used computation model.
+
+\section{Thesis Statement}
+
+A CPS-like global transformation can compile the $\lambda$-calculus with continuation
+marks into the plain $\lambda$-calculus in a semantics-preserving way.
+
 \section{Project description}
 
 We consider an extension of the call-by-value $\lambda$-calculus with 
@@ -502,12 +500,14 @@ $\lambda$-abstractions $\lambda x.M$, and applications
 $M\,N$ where $M$ and $N$ are themselves $\lambda$-calculus terms.
 
 \begin{align*}
-\mathcal{F}[x]           &= \lambda k.k\,x\\
-\mathcal{F}[\lambda x.M] &= \lambda k.k(\lambda x.\mathcal{F}[M])\\
-\mathcal{F}[M\,N]       &= \lambda k.\mathcal{F}[M](\lambda m.\mathcal{F}[N](\lambda n.(m\,n)\,k))
+\mathcal{F}[x]           &= \lambda k.(k\,x)\\
+\mathcal{F}[\lambda x.M] &= \lambda k.(k\,(\lambda x.\mathcal{F}[M]))\\
+\mathcal{F}[M\,N]        &= \lambda k.(\mathcal{F}[M]\,\lambda m.(\mathcal{F}[N]\,\lambda n.((m\,n)\,k)))
 \end{align*}
 
-The term binding induced by this transform allowed Plotkin to simulate the call-by-value dialect of the $\lambda$-calculus by the call-by-name and vice versa \cite{plotkin1975call}.
+The term binding induced by this transform allowed Plotkin to simulate the call-by-value
+dialect of the $\lambda$-calculus by the call-by-name and vice versa
+\cite{plotkin1975call}.
 
 %go from compiling language with feature to language without feature -> 
 
