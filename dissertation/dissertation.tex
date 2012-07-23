@@ -1142,6 +1142,185 @@ example:
 
 term is ccm, marks argument is (false,[]) and continuation is
  
+\begin{align*}
+C[x]                  &= \lambda k.\lambda m.(k\,x)\\
+C[\lambda x.E]        &= \lambda k.\lambda m.(k\,\lambda x.C[E])\\
+C[E\,F]               &= \lambda k.\lambda m.(\lambda k_{1}.(k_{1}\,(m\,\lambda x.\lambda y.y))\,\lambda m'.(\lambda k_{2}.(k_{2}\,\lambda p.((p\,\lambda x.\lambda y.y)\,m'))\,\lambda m''.((C[E]\,\lambda e.((C[F]\,\lambda f.(((e\,f)\,k)\,m))\,m''))\,m'')\\
+C[\mathrm{wcm}\,E\,F] &= \lambda k.\lambda m.(\lambda k_{1}.(k_{1}\,(m\,\lambda x.\lambda y.y))\,\lambda m'.(\lambda \\
+C[\mathrm{ccm}]       &= \lambda k.\lambda m.(((m\,\lambda x.\lambda y.y)\,k)\,x
+\end{align*}
+
+For all contexts $E$, expressions $e$, marks $m$, and continuations $k$
+
+for any context $E$, marks $m$, and continuation $k$, \emph{ccm} applies the continuation $k$ to the applied value of the marks $m$.
+By definition, it strips away the flag and passes the continuation $k$ and a dummy variable $x$.
+Our inductive hypothesis is that the marks are of the form $\lambda k.\lambda m.(k\,E)$ where $E$ is some term.
+This holds if the marks are empty: the empty list is $\lambda k.\lambda m.(k \lambda x.\lambda k.\lambda m.(k \lambda y.\lambda k.\lambda m.(k y)))$
+and this is of the required form which can be seen by taking $E=\lambda x.\lambda...$
+If the marks are not the empty list, they are an encoded pair, of the form $\lambda k.\lambda m.(k\,\lambda p...)$
+
+preconditions for each form:
+abstracted to receive a continuation k and marks encoding m
+
+postconditions for each form:
+returns a "stripped" value
+
+show that the preconditions lead to the postconditions
+
+We must establish a few invariants.
+
+First, every evaluation will have a continuation and marks state passed to it. 
+Second, every continuation will be called with a "stripped" term--that is, 
+
+\newtheorem{thm}{Theorem}
+
+\begin{thm}
+Every evaluation is passed a continuation and an encoding of the tail state and the marks.
+\end{thm}
+In a continuation-passing style, which we have adopted, the evaluation which occurs by application does so in two stages. First, the arguments of the application, the operator and operand, are evaluated. Second, the application itself is performed which effects the evaluation of the result.
+The evaluation which occurs within a \emph{wcm} form also occurs in two stages, and continuation-passing style is used to control these stages.
+
+Application, \emph{wcm}, \emph{ccm}
+\begin{proof}[Case $E\,F$]
+stuff
+\end{proof}
+\begin{proof}[Case $\mathrm{wcm}\,E\,F$]
+stuff
+\end{proof}
+\begin{proof}[Case $\mathrm{ccm}$]
+stuff
+\end{proof}
+
+\begin{thm}
+Every continuation is applied to a stripped term.
+\end{thm}
+a term without a leading continuation and marks state parameterization but otherwise identical to a transformed term.
+
+\begin{proof}[Case $x$]
+stuff
+\end{proof}
+\begin{proof}[Case $\lambda x.E$]
+stuff
+\end{proof}
+\begin{proof}[Case $E\,F$]
+stuff
+\end{proof}
+\begin{proof}[Case $\mathrm{wcm}\,E\,F$]
+stuff
+\end{proof}
+\begin{proof}[Case $\mathrm{ccm}$]
+stuff
+\end{proof}
+Now we can proceed with for all contexts, for all expressions, etc. (Main theorem)
+
+
+\newtheorem*{maintheorem}{The awesomeness of $\mathcal{C}$}
+\begin{maintheorem}
+For all contexts $E$, expressions $e$, continuations $k$ and marks encodings $m$, $E[e]\rightarrow_{\lambda_{cm}}v\Rightarrow \mathcal{C}[E][\mathcal{C}[e]]\rightarrow_{\lambda_{v}}\mathcal{C}[v]$.
+\end{maintheorem}
+
+\begin{proof}[Case $e=E\,F$]
+
+\end{proof}
+
+\begin{proof}[Case $E=\mathrm{wcm}\,[] e$, $[]=wcm\,E'\,F'$]
+evaluate v (pretend it's not a value)
+attach to marks according to outer context
+
+\end{proof}
+
+\begin{proof}[Case $E=\mathrm{wcm}\,v []$, $e=wcm\,E'\,F'$]
+evaluate v (pretend it's not a value)
+attach to marks according to outer context (flag)
+pass continuation unmodified and (true,marks) to F'
+
+%\x.M N -> M[x:=N]
+%(wcm v (wcm v' E)) -> (wcm v' E)
+%(wcm v v') -> v'
+%(ccm) -> chi(E)
+
+%(wcm E (wcm E' (wcm E'' F)))
+%(wcm v (wcm E' (wcm E'' F))) evaluate mark, append to list, mark flag true
+%(wcm v (wcm v' (wcm E'' F))) evaluate mark
+%(wcm v' (wcm E'' F)) replace in list, mark flag true
+%(wcm v' (wcm v'' F)) evaluate mark
+%(wcm v'' F) replace in list, mark flag true
+\end{proof}
+
+If we're dealing with the outermost context, the continuation is $\lambda x.\lambda k.\lambda m.(k x)$.
+
+\begin{proof}[something]
+By theorem 2, the continuation $k$ is always applied to a "stripped" value. The supplied continuation serves to unstrip it. Thus, the end result of the computation is identical to a transformed value.
+\end{proof}
+
+so, why does (wcm 1 (wcm 2 (ccm)) evaluate as it should?
+
+1 is evaluated and attached to the list according to the tail flag
+the continuation is passed unmodified indicating a tail call
+thus, evaluation proceeds like this
+
+(wcm 1 (wcm 2 (ccm))) (false,[])
+(wcm 2 (ccm)) (true,[1])
+(ccm) (true,[2])
+[2]
+
+provide an interpreter or new semantics for lambda_cm that has the list of continuation 
+marks on the side. the semantics of this are
+
+%\x.E F (_,vs) -> E[x:=F] (false,vs)
+%(wcm v E) (false,vs) -> E (true,v:vs)
+%(wcm v E) (true,v':vs) -> E (true,v:vs)
+%(ccm) (_,vs) -> vs
+
+how do we show that these semantics are the same as the given?
+also, since we're throwing around semantics, cite the source of the given semantics
+
+call this reduction relation b where the other is a
+then the property we want to show is
+
+\[
+E\rightarrow_{a}v\Rightarrow(E,(false,[]))\rightarrow_{b}v
+\]
+
+this won't work entirely because there is not a stack of states
+consider (wcm E e)
+
+so (wcm E e) (_,vs) -> E (false,vs) -> (wcm v E) (_,vs)
+
+the rule is, for
+(wcm e f) (false,vs)
+
+if e (false,vs) -> v
+(wcm e f) (false,vs) -> f (true,v:vs)
+
+e f
+
+if e (false,vs) -> v and
+   f (false,vs) -> v' then
+   
+e f (flag,vs) -> v v' (flag,vs)
+
+(wcm 1 (\x.x ccm))
+(wcm 1 (\x.x [1]))
+(wcm 1 [1])
+[1]
+
+(wcm 1 (\x.x (wcm 2 (ccm))))
+(wcm 1 (\x.x (wcm 2 [1,2])))
+(wcm 1 (\x.x [1,2]))
+(wcm 1 [1,2])
+[1,2]
+
+
+
+
+\begin{proof}[Case $e=\mathrm{ccm}$]
+receives a continuation and marks argument by 1
+passes continuation and dummy variable by definition
+by structural induction (assumption that it contains the marks?), this holds
+\end{proof}
+
+Why does ccm have the same output as C[ccm] \x.\k.\m.(k x) \p.((p \x.\y.y) \k.\m.(k \x.\k.\m.(k \y.\k.\m.(k y))))
 %proof of equivalence
 %we need to state it formally and meaningfully
 
