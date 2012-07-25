@@ -1173,7 +1173,7 @@ First, every evaluation will have a continuation and marks state passed to it.
 Second, every continuation will be called with a "stripped" term--that is, 
 
 \newtheorem{thm}{Theorem}
-
+\newtheorem{case}{Case}
 \begin{thm}
 Every evaluation is passed a continuation and an encoding of the tail state and the marks.
 \end{thm}
@@ -1181,14 +1181,28 @@ In a continuation-passing style, which we have adopted, the evaluation which occ
 The evaluation which occurs within a \emph{wcm} form also occurs in two stages, and continuation-passing style is used to control these stages.
 
 Application, \emph{wcm}, \emph{ccm}
-\begin{proof}[Case $E\,F$]
+\begin{proof}
+\begin{case}
+$E\,F$
+\end{case}
+\begin{proof}
+proof of application
+\end{proof}
+
+\begin{case}
+$\mathrm{wcm}\,E\,F$
+\end{case}
+\begin{proof}
 stuff
 \end{proof}
-\begin{proof}[Case $\mathrm{wcm}\,E\,F$]
+
+\begin{case}
+$\mathrm{ccm}$
+\end{case}
+\begin{proof}
 stuff
 \end{proof}
-\begin{proof}[Case $\mathrm{ccm}$]
-stuff
+This completes the proof.
 \end{proof}
 
 \begin{thm}
@@ -1223,13 +1237,13 @@ For all contexts $E$, expressions $e$, continuations $k$ and marks encodings $m$
 
 \end{proof}
 
-\begin{proof}[Case $E=\mathrm{wcm}\,[] e$, $[]=wcm\,E'\,F'$]
+\begin{proof}[Case $E=\mathrm{wcm}\,hole e$, $redex=wcm\,E'\,F'$]
 evaluate v (pretend it's not a value)
 attach to marks according to outer context
 
 \end{proof}
 
-\begin{proof}[Case $E=\mathrm{wcm}\,v []$, $e=wcm\,E'\,F'$]
+\begin{proof}[Case $E=\mathrm{wcm}\,v hole$, $e=wcm\,E'\,F'$]
 evaluate v (pretend it's not a value)
 attach to marks according to outer context (flag)
 pass continuation unmodified and (true,marks) to F'
@@ -1264,7 +1278,7 @@ thus, evaluation proceeds like this
 (ccm) (true,[2])
 [2]
 
-provide an interpreter or new semantics for lambda_cm that has the list of continuation 
+provide an interpreter or new semantics for lambdacm that has the list of continuation 
 marks on the side. the semantics of this are
 
 %\x.E F (_,vs) -> E[x:=F] (false,vs)
@@ -1285,31 +1299,31 @@ E\rightarrow_{a}v\Rightarrow(E,(false,[]))\rightarrow_{b}v
 this won't work entirely because there is not a stack of states
 consider (wcm E e)
 
-so (wcm E e) (_,vs) -> E (false,vs) -> (wcm v E) (_,vs)
+%so (wcm E e) (_,vs) -> E (false,vs) -> (wcm v E) (_,vs)
 
-the rule is, for
-(wcm e f) (false,vs)
+%the rule is, for
+%(wcm e f) (false,vs)
 
-if e (false,vs) -> v
-(wcm e f) (false,vs) -> f (true,v:vs)
+%if e (false,vs) -> v
+%(wcm e f) (false,vs) -> f (true,v:vs)
 
-e f
+%e f
 
-if e (false,vs) -> v and
-   f (false,vs) -> v' then
-   
-e f (flag,vs) -> v v' (flag,vs)
+%if e (false,vs) -> v and
+%   f (false,vs) -> v' then
 
-(wcm 1 (\x.x ccm))
-(wcm 1 (\x.x [1]))
-(wcm 1 [1])
-[1]
+%e f (flag,vs) -> v v' (flag,vs)
 
-(wcm 1 (\x.x (wcm 2 (ccm))))
-(wcm 1 (\x.x (wcm 2 [1,2])))
-(wcm 1 (\x.x [1,2]))
-(wcm 1 [1,2])
-[1,2]
+%(wcm 1 (\x.x ccm))
+%(wcm 1 (\x.x [1]))
+%(wcm 1 [1])
+%[1]
+
+%(wcm 1 (\x.x (wcm 2 (ccm))))
+%(wcm 1 (\x.x (wcm 2 [1,2])))
+%(wcm 1 (\x.x [1,2]))
+%(wcm 1 [1,2])
+%[1,2]
 
 
 
@@ -1320,7 +1334,7 @@ passes continuation and dummy variable by definition
 by structural induction (assumption that it contains the marks?), this holds
 \end{proof}
 
-Why does ccm have the same output as C[ccm] \x.\k.\m.(k x) \p.((p \x.\y.y) \k.\m.(k \x.\k.\m.(k \y.\k.\m.(k y))))
+%Why does ccm have the same output as C[ccm] \x.\k.\m.(k x) \p.((p \x.\y.y) \k.\m.(k \x.\k.\m.(k \y.\k.\m.(k y))))
 %proof of equivalence
 %we need to state it formally and meaningfully
 
