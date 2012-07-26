@@ -465,7 +465,7 @@ figure \ref{language-grammar}.
 
 \begin{figure}
 \begin{align*}
-E[(\lambda x.e)\,v]                         &\rightarrow E[e[x\leftarrow v]]\\
+E[(\lambda x.e\,v)]                         &\rightarrow E[e[x\leftarrow v]]\\
 E[(\mathrm{wcm}\,v\,(\mathrm{wcm}\,v'\,e))] &\rightarrow E[(\mathrm{wcm}\,v'\,e)]\\
 E[(\mathrm{wcm}\,v\,v')]                    &\rightarrow E[v']\\
 E[(\mathrm{ccm})]                           &\rightarrow E[\chi(E)]
