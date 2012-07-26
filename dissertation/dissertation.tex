@@ -1225,8 +1225,77 @@ stuff
 \begin{proof}[Case $\mathrm{ccm}$]
 stuff
 \end{proof}
+
+e=e e
+  wcm e e
+  ccm
+  v
+
+E=wcm v F
+F=wcm E e
+  E e
+  v E
+  hole
+  
+abs x.E F -> E[x:=F]
+wcm v (wcm v' E) -> wcm v' E
+wcm v v' -> v'
+E[ccm]=chi[E]
+
+wcm v [
+
+  
+hole[e e]
+hole[wcm e e]
+hole[ccm]
+hole[v]
+
+
+if the context is empty (meaning in this case hole?), it is false because that is 
+passed in
+
+show that wcm v (wcm e e') evaluates as it should
+wcm v (ccm)
+wcm v (e e')
+wcm v v'
+
+for wcm v (wcm e e')
+suppose we have wcm e (wcm e' e'')
+the transform reduces the first value, respecting the tail flag
+(wcm v (wcm e' e'')
+the transform performs a tail call passing the mark (prove if marks were correct, they are correct) stuff
+(wcm e' e'') (true,[v])
+the transform reduces the first value, respecting the tail flag
+
+The tail marks flag is correct meaning iff the context is wcm v F, the flag will be true
+Proof
+The beginning of evaluation (hole, here?) passes false, which is correct.
+E e passes false
+v E passes false
+wcm E e passes false
+wcm v F passes true
+
+The tail marks list is correct.
+Proof
+The beginning of evaluation (hole, once again?) is the empty list, which is correct.
+E e passes list unmodified.
+v E passes list unmodified.
+wcm E e passes list unmodified.
+wcm v F overwrites if it is a tail call of another wcm, appends if not. correct either way.
 Now we can proceed with for all contexts, for all expressions, etc. (Main theorem)
 
+show behavior for ccm is correct for all contexts
+show behavior for (e e) is correct for all contexts (thus showing abs x E F rule?)
+show behavior for v is correct for all contexts (thus showing (wcm v v')?)
+show behavior for wcm v (wcm e e) is correct (thus showing (wcm v (wcm v' e)) -> wcm v' e)
+show behavior for wcm (wcm e e) e is correct
+show behavior for hole (wcm e e) is correct
+show behavior for (wcm e e) e is correct
+show behavior for e (wcm e e) is correct
+
+
+show that only values get put in the list?
+that's a result of the call-by-value CPS
 
 \newtheorem*{maintheorem}{The awesomeness of $\mathcal{C}$}
 \begin{maintheorem}
