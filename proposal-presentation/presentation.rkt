@@ -21,7 +21,7 @@
 ; maybe read the slide in this case
 ; "this statement may call for some unpacking"
 
-(slide
+#;(slide
  #:title "Thesis"
  (para "A CPS-like global transformation can compile the" (underline (t "λ-calculus")) "with"
         "continuation marks to the plain" (underline (t "λ-calculus")) "in a semantics-preserving way."))
@@ -48,12 +48,12 @@
  'next
  (para (tt "-> λy.y")))
 
-(slide
+#;(slide
  #:title "Thesis"
  (para "A CPS-like global transformation can compile the λ-calculus with"
        (underline (t "continuation marks")) "to the plain λ-calculus in a semantics-preserving way."))
  
-(slide
+#;(slide
  #:title "Thesis"
  (para "A" (underline (t "CPS-like")) "global transformation can compile the λ-calculus with"
        "continuation marks to the plain λ-calculus in a semantics-preserving way."))
@@ -84,7 +84,7 @@
 (slide
  #:title "Continuation-passing style"
  'alts
- (list (list (para (strike (tt "fun(x) -> return x+1"))))
+ (list (list (para (tt "fun(x) -> return x+1")))
 ; "continuation-passing style is a style in which functions never return a value."        
        (list (para (strike (tt "fun(x) -> return x+1")))
              (para (tt "fun(x,k) -> k(x+1)")))))
@@ -99,13 +99,115 @@
  (para "Why continuation-passing style?")
 ; "There are an immense number of benefits of CPS (see Appel), but we use it almost exclusively for this:
  'next
- (para "It allows control over evaluation order.")
+ (para "It allows control over evaluation order."))
 ; "I will discuss this in a few minutes."
  
 (slide
  #:title "Continuation marks"
  (para "a programming language feature that allows us to annotate the stack"))
  
+(slide
+ #:title "Continuation marks example"
+ (para (code (define (fac n)
+               (if (zero? n)
+                   1
+                   (* n (fac (- n 1))))))))
+
+(slide
+ #:title "Continuation marks example"
+ (para (code (define (fac n)
+               (if (zero? n)
+                   (begin
+                     (display (current-cont\'n-marks))
+                     (newline)
+                     1)
+                   (with-cont\'n-mark 'fac n (* n (fac (- n 1))))))))
+ 'next
+ (para (code (fac 3)))
+ 'next
+ (para (tt "(((fac 1)) ((fac 2)) (fac 3)))"))
+ (para (code 6)))
+
+(slide
+ #:title "Some applications of continuation marks"
+ (item "profilers")
+ (item "debuggers")
+ (item "steppers"))
+
+(slide
+ #:title "λcm"
+ (ht-append (vl-append (ht-append (tt "e=")
+                                  (vl-append (tt "x")
+                                             (tt "v")
+                                             (tt "(e e)")
+                                             (tt "(wcm e e)")
+                                             (tt "(ccm)")))
+                       (ht-append (tt "v=")
+                                  (tt "λx.e")))
+            (blank 128 0)
+            (vl-append (ht-append (tt "E=")
+                                  (vl-append (tt "(wcm v F)")
+                                             (tt "F")))
+                       (ht-append (tt "F=")
+                                  (vl-append (tt "•")
+                                             (tt "(E e)")
+                                             (tt "(v E)")
+                                             (tt "(wcm E e)"))))))
+; "we consider the λ-calculus with facilities for continuation marks"
+ 
+(slide
+ #:title "λcm"
+ (let ((semantics (ht-append (vr-append (tt "E[(λx.e v)]")
+                                        (tt "E[(wcm v (wcm v' e))]")
+                                        (tt "E[(wcm v v')]")
+                                        (tt "E[(ccm)]"))
+                             (vc-append (tt " --> ")
+                                        (tt " --> ")
+                                        (tt " --> ")
+                                        (tt " --> "))
+                             (vl-append (tt "E[e[x <- v]]")
+                                        (tt "E[(wcm v' e)]")
+                                        (tt "E[v']")
+                                        (tt "E[chi(E)]"))))
+       (chi (ht-append (vr-append (tt "chi(•)")
+                                  (tt "chi((E e))")
+                                  (tt "chi((v E))")
+                                  (tt "chi((wcm E e))")
+                                  (tt "chi((wcm v E))"))
+                       (vc-append (tt " = ")
+                                  (tt " = ")
+                                  (tt " = ")
+                                  (tt " = ")
+                                  (tt " = "))
+                       (vl-append (tt "empty")
+                                  (tt "chi(E)")
+                                  (tt "chi(E)")
+                                  (tt "chi(E)")
+                                  (tt "v:chi(E)")))))
+   (vc-append semantics
+              (blank 0 32)
+              chi)))
+
+(let ((arrow (tt "=> "))
+      (arrow-star (tt "=>*")))
+  (slide
+   #:title "Importance of evaluation order"
+   (hc-append (blank (pict-width arrow) 0) (code (wcm e (wcm e\' e\'\'))))
+   'next
+   (hc-append arrow-star (code (wcm v (wcm e\' e\'\'))))
+   'next
+   (hc-append arrow-star (code (wcm v (wcm v\' e\'\'))))
+   'next
+   (hc-append arrow (code (wcm v\' e\'\')))
+   'next
+   (hc-append arrow-star (code (wcm v\' v\'\')))
+   'next
+   (hc-append arrow (code v\'\'))))
+
+(slide
+ #:title "Thesis"
+ (para "A CPS-like global transformation can compile the λ-calculus with"
+       "continuation marks to the plain λ-calculus in a semantics-preserving way."))
 
 #|
 the λ-calculus
