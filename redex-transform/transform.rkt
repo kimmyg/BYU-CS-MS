@@ -50,7 +50,8 @@
                                                                                        (abs ,k (app (var ,k) (app (app (var ,flag) (var ,tail_marks)) (var ,marks))))
                                                                                        (abs ,rest_marks (app
                                                                                                          (abs ,k (app (var ,k) (abs p (app (app (var p) (abs x (abs y (var x)))) (abs ,k (abs ,m (app (var ,k) (abs p ,(substitute-app (substitute-app `(abs ,k (abs ,m (app (var ,k) (var p)))) `(abs ,k (abs ,m (app (var ,k) (var ,mark))))) `(var ,rest_marks))))))))))
-                                                                                                         (abs ,n (app (app ,(transform-inner (third wcm)) (var ,k)) (var ,n)))))))))) (abs p (app (app (var p) (abs x (abs y (var y)))) (var ,marks))))))))))))
+                                                                                                         (abs ,n (app (app ,(transform-inner (third wcm)) (var ,k)) (var ,n))))))))))
+                                                         (abs p (app (app (var p) (abs x (abs y (var y)))) (var ,marks))))))))))))
 
   
 (define (transform-ccm ccm)
