@@ -14,25 +14,37 @@
    (cc-superimpose p (colorize (linewidth 4 (hline (pict-width p) 0)) "red"))
    p))
 
+(define (reduces-to a b)
+  (let ((reduction (hc-append a (blank 32 0) b)))
+    (pin-arrow-line #:line-width 4 (/ (current-font-size) 2) reduction a rc-find b lc-find)))
+
+(define (maps-to a b)
+  (let ((reduction (hc-append a (blank 16 0) b)))
+    (pin-arrow-line #:line-width 4 (/ (current-font-size) 2) reduction a rc-find b lc-find)))
+
+
 (slide
  #:title "Thesis"
- (para "A CPS-like global transformation can compile the λ-calculus with"
+ #:layout 'top
+ (para #:width 768 "A CPS-like global transformation can compile the λ-calculus with"
        "continuation marks to the plain λ-calculus in a semantics-preserving way."))
 ; maybe read the slide in this case
 ; "this statement may call for some unpacking"
 
-#;(slide
+(slide
  #:title "Thesis"
- (para "A CPS-like global transformation can compile the" (underline (t "λ-calculus")) "with"
+ #:layout 'top
+ (para #:width 768 "A CPS-like global transformation can compile the" (underline (t "λ-calculus")) "with"
         "continuation marks to the plain" (underline (t "λ-calculus")) "in a semantics-preserving way."))
 ; "First, let's discuss the λ-calculus."
 
 (slide
  #:title "The λ-calculus"
+ #:layout 'top
  (t "a formal system for expressing computation")
 ; "Other formal systems include... (mention monads?)"
  'next
- (t "consists of")
+ (para (t "It consists of:"))
  (item (para (t "variables") (tt "x") (t ",") (tt "y") (t ",") (tt "z") (t ",...")))
 ; "There are an infinite number of variables and they are compared syntactically."
  'next
@@ -44,70 +56,80 @@
 
 (slide
  #:title "Example"
- (para (tt "λx.x λy.y"))
- 'next
- (para (tt "-> λy.y")))
-
-#;(slide
- #:title "Thesis"
- (para "A CPS-like global transformation can compile the λ-calculus with"
-       (underline (t "continuation marks")) "to the plain λ-calculus in a semantics-preserving way."))
+ #:layout 'top
+ 'alts
+ (list (list (para (tt "λx.(z x)") (tt "λy.y")))
+       (list (para (underline (tt "λx.(z x)")) (tt "λy.y")))
+       (list (para (tt "λx.(z x)") (underline (tt "λy.y"))))
+       (list (para (tt "λx.(z x)") (tt "λy.y")))
+       (list (para (reduces-to (hc-append (tt "λx.(z x)") (t " ") (tt "λy.y")) (hc-append (tt "z") (t " ") (tt "λy.y")))))))
  
-#;(slide
+(slide
  #:title "Thesis"
- (para "A" (underline (t "CPS-like")) "global transformation can compile the λ-calculus with"
+ #:layout 'top
+ (para #:width 768 "A" (underline (t "CPS-like")) "global transformation can compile the λ-calculus with"
        "continuation marks to the plain λ-calculus in a semantics-preserving way."))
 
 (slide
- #:title "CPS-like"
- (para "'CPS' abbreviates 'continuation-passing style'")
+ #:title "What does it mean to be CPS-like?"
+ #:layout 'top
+ (para "\"CPS\" abbreviates \"continuation-passing style\".")
  'next
- (para "the continuation represents the \"rest of the computation\""))
+ (para "The continuation represents the \"rest of the computation\"."))
 
 (slide
  #:title "Continuation Example"
+ #:layout 'top
  (para "Consider the evaluation of" (tt "(+ 1 (* 2 3))") ".")
 ; "this says, multiply 2 by 3 and add 1 to the result"
  'next
- (para "The continuation of" (tt "(* 2 3)") "is" (tt "(+ 1 •)") "."))
+ 'alts
+ (list (list (para "The continuation of" (tt "(* 2 3)") "is" (tt "(+ 1 •)") "."))
 ; "it represents the rest of the computation after the subexpression (* 2 3) is evaluated."
 ; "the hole represents where that value will be placed."
-
-(slide
- #:title "Continuation example"
- (para (tt "(+ 1 •)"))
+       (list (para "The continuation of" (tt "(* 2 3)") "is" (underline (tt "(+ 1 •)")) ".")    
 ; "the continuation (+ 1 •) awaits a value to perform a computation."
- 'next
- (para "This is like" (tt "fun(x) -> x+1") "."))
+             'next
+             (para "This is like" (maps-to (tt "fun(x)") (tt "x+1")) "."))))
 ; "this is like the function that takes x and adds 1 to it, only this function doesn't return the value back to the caller"
 
 (slide
  #:title "Continuation-passing style"
+ #:layout 'top
  'alts
- (list (list (para (tt "fun(x) -> return x+1")))
+ (list (list (para (maps-to (tt "fun(x)") (tt "return x+1"))))
 ; "continuation-passing style is a style in which functions never return a value."        
-       (list (para (strike (tt "fun(x) -> return x+1")))
-             (para (tt "fun(x,k) -> k(x+1)")))))
+       (list (para (strike (maps-to (tt "fun(x)") (tt "return x+1"))))
+             (para (maps-to (tt "fun(x,k)") (tt "k(x+1)"))))))
 ; "instead, they pass the computed value to another argument, the continuation"
 
 (slide
  #:title "Continuation-passing style"
- (para "In continuation-passing style," (text "every" (cons 'italic 'default) (current-font-size)) ; the current-font-size is /not/ the current font size
-       "function is given an additional formal parameter representing the current continuation."))
-
-(slide
- (para "Why continuation-passing style?")
+ #:layout 'top
+ (para "In continuation-passing style," (it "every") "function is given an additional"
+       "formal parameter representing the current continuation.")
+ 'next
+ (para "Why use continuation-passing style?")
 ; "There are an immense number of benefits of CPS (see Appel), but we use it almost exclusively for this:
  'next
  (para "It allows control over evaluation order."))
 ; "I will discuss this in a few minutes."
  
 (slide
+ #:title "Thesis"
+ #:layout 'top
+ (para #:width 768 "A CPS-like global transformation can compile the λ-calculus with"
+       (underline (t "continuation marks")) "to the plain λ-calculus in a semantics-preserving way."))
+
+(slide
  #:title "Continuation marks"
- (para "a programming language feature that allows us to annotate the stack"))
- 
+ #:layout 'top
+ (para "a programming language feature that allows us to annotate the continuation"))
+; "the continuation is often modelled with the stack."
+
 (slide
  #:title "Continuation marks example"
+ #:layout 'top
  (para (code (define (fac n)
                (if (zero? n)
                    1
@@ -115,21 +137,23 @@
 
 (slide
  #:title "Continuation marks example"
- (para (code (define (fac n)
-               (if (zero? n)
-                   (begin
-                     (display (current-cont\'n-marks))
-                     (newline)
-                     1)
-                   (with-cont\'n-mark 'fac n (* n (fac (- n 1))))))))
+ #:layout 'top
+ (para #:width 960 (code (define (fac n)
+                           (if (zero? n)
+                               (begin
+                                 (display (ccm))
+                                 (newline)
+                                 1)
+                               (wcm 'fac n (* n (fac (- n 1))))))))
  'next
- (para (code (fac 3)))
+ (para #:width 960 (code (fac 3)))
  'next
- (para (tt "(((fac 1)) ((fac 2)) (fac 3)))"))
- (para (code 6)))
+ (para #:width 960 (tt "(((fac 1)) ((fac 2)) (fac 3)))"))
+ (para #:width 960 (code 6)))
 
 (slide
  #:title "Some applications of continuation marks"
+ #:layout 'top
  (item "profilers")
  (item "debuggers")
  (item "steppers"))
@@ -188,25 +212,33 @@
               (blank 0 32)
               chi)))
 
-(let ((arrow (tt "=> "))
-      (arrow-star (tt "=>*")))
+(let* ((first-term (code (wcm e (wcm e\' e\'\'))))
+       (reduces-to (λ (term [first? #f])
+                     (let* ((ghost-first-term (ghost first-term))
+                            (divider (blank 32 0))
+                            (line (hc-append (if first? first-term ghost-first-term) divider term)))
+                       (para #:width 960 (pin-arrow-line 12 line (if first? first-term ghost-first-term) rc-find term lc-find #:line-width 4))))))
   (slide
    #:title "Importance of evaluation order"
-   (hc-append (blank (pict-width arrow) 0) (code (wcm e (wcm e\' e\'\'))))
+   #:layout 'left
+   'alts
+   (list (list (para #:width 960 first-term))
+         (list (reduces-to (code ((wcm v (wcm e\' e\'\')))) #t)))
    'next
-   (hc-append arrow-star (code (wcm v (wcm e\' e\'\'))))
+   (reduces-to (code (wcm v (wcm e\' e\'\'))))
    'next
-   (hc-append arrow-star (code (wcm v (wcm v\' e\'\'))))
+   (reduces-to (code (wcm v (wcm v\' e\'\'))))
    'next
-   (hc-append arrow (code (wcm v\' e\'\')))
+   (reduces-to (code (wcm v\' e\'\')))
    'next
-   (hc-append arrow-star (code (wcm v\' v\'\')))
+   (reduces-to (code (wcm v\' v\'\')))
    'next
-   (hc-append arrow (code v\'\'))))
+   (reduces-to (code v\'\'))))
 
 (slide
  #:title "Thesis"
- (para "A CPS-like global transformation can compile the λ-calculus with"
+ #:layout 'top
+ (para #:width 768 "A CPS-like global transformation can compile the λ-calculus with"
        "continuation marks to the plain λ-calculus in a semantics-preserving way."))
 
 #|
