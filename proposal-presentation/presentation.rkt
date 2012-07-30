@@ -22,6 +22,26 @@
   (let ((reduction (hc-append a (blank 16 0) b)))
     (pin-arrow-line #:line-width 4 (/ (current-font-size) 2) reduction a rc-find b lc-find)))
 
+(define (decompose a b c [blank? #f])
+  (if blank?
+      (vc-append a
+                 (blank 0 64)
+                 (hb-append (ghost b)
+                            (blank 32 0)
+                            (ghost c)))
+      (let* ((decomposition (vc-append a
+                                       (blank 0 64)
+                                       (hb-append b
+                                                  (blank 32 0)
+                                                  c)))
+             (left (pin-arrow-line #:line-width 4 (/ (current-font-size) 2) decomposition a cb-find b ct-find))
+             (left-and-right (pin-arrow-line #:line-width 4 (/ (current-font-size) 2) left a cb-find c ct-find)))
+        left-and-right)))
+
+(slide
+ (cc-superimpose (blank)
+                 (vc-append (text "A CPS-like Transformation for Continuation Marks" (current-main-font) 36)
+                            (text "Kimball Germane" (current-main-font) 36))))
 
 (slide
  #:title "Thesis"
@@ -44,9 +64,11 @@
  (t "a formal system for expressing computation")
 ; "Other formal systems include... (mention monads?)"
  'next
- (para (t "It consists of:"))
+ (para (t "Individual terms take one of three forms:"))
+; "Terms in the λ-calculus take one of three forms and are defined inductively"
+ 'next
  (item (para (t "variables") (tt "x") (t ",") (tt "y") (t ",") (tt "z") (t ",...")))
-; "There are an infinite number of variables and they are compared syntactically."
+; "There are an infinite number of variables and they are compared syntactically. Basically, we assume we can, in all circumstances, come up with a free variable..."
  'next
  (item (para (t "abstractions") (tt "λx.M")))
 ; "An abstraction corresponds to a function; it binds variables for substitution."
@@ -55,14 +77,18 @@
 ; "'application' refers to 'function application'. The process of application is called 'reduction'. It corresponds to 'evaluation'."
 
 (slide
- #:title "Example"
+ #:title "λ-calculus example"
  #:layout 'top
  'alts
  (list (list (para (tt "λx.(z x)") (tt "λy.y")))
        (list (para (underline (tt "λx.(z x)")) (tt "λy.y")))
        (list (para (tt "λx.(z x)") (underline (tt "λy.y"))))
-       (list (para (tt "λx.(z x)") (tt "λy.y")))
-       (list (para (reduces-to (hc-append (tt "λx.(z x)") (t " ") (tt "λy.y")) (hc-append (tt "z") (t " ") (tt "λy.y")))))))
+       (list (para (tt "λx.(z x)") (tt "λy.y"))))
+ 'next
+ (para (arrow 18 0) (tt "z λy.y"))
+ 'next
+ (blank)
+ (para "We use the call-by-value λ-calculus and refer to it as " (it "λv") "."))
  
 (slide
  #:title "Thesis"
@@ -75,40 +101,272 @@
  #:layout 'top
  (para "\"CPS\" abbreviates \"continuation-passing style\".")
  'next
- (para "The continuation represents the \"rest of the computation\"."))
+ (para "The continuation is simply the rest of the computation."))
 
-(slide
- #:title "Continuation Example"
- #:layout 'top
- (para "Consider the evaluation of" (tt "(+ 1 (* 2 3))") ".")
-; "this says, multiply 2 by 3 and add 1 to the result"
- 'next
- 'alts
- (list (list (para "The continuation of" (tt "(* 2 3)") "is" (tt "(+ 1 •)") "."))
-; "it represents the rest of the computation after the subexpression (* 2 3) is evaluated."
-; "the hole represents where that value will be placed."
-       (list (para "The continuation of" (tt "(* 2 3)") "is" (underline (tt "(+ 1 •)")) ".")    
-; "the continuation (+ 1 •) awaits a value to perform a computation."
-             'next
-             (para "This is like" (maps-to (tt "fun(x)") (tt "x+1")) "."))))
-; "this is like the function that takes x and adds 1 to it, only this function doesn't return the value back to the caller"
+(let ((redex-title (t "redex"))
+      (cont-title (t "continuation"))
+      (r0 (tt "(+ 1 (+ 2 (+ 3 4)))"))
+      (k0 (tt "•"))
+      (r1 (tt "(+ 2 (+ 3 4))"))
+      (k1 (tt "(+ 1 •)"))
+      (r2 (tt "(+ 3 4)"))
+      (k2 (tt "(+ 1 (+ 2 •))"))
+      (v2 (tt "7"))
+      (r3 (tt "(+ 2 7)"))
+      (v1 (tt "9"))
+      (r4 (tt "(+ 1 9)"))
+      (v0 (tt "10")))
+  (slide
+   #:title "Continuation Example"
+   #:layout 'top
+   (para "Consider the evaluation of" r0 ".")
+; "this says, add 3 and 4, add 2 to the result of that, and add 1 to the result of that"
+; "when we evaluate a nested expression such as this, we naturally decompose it into the evaluation of a subexpression and what we do with that result
+   'next
+   'alts
+   (list (list (ht-append (vl-append redex-title
+                                     (ghost r0)
+                                     (ghost r1)
+                                     (ghost r2)
+                                     (ghost v2)
+                                     (ghost r3)
+                                     (ghost v1)
+                                     (ghost r4)
+                                     (ghost v0))
+                          (blank 16 0)
+                          (vl-append (ghost cont-title)
+                                     (ghost k0)
+                                     (ghost k1)
+                                     (ghost k2)
+                                     (ghost k2)
+                                     (ghost k1)
+                                     (ghost k1)
+                                     (ghost k0)
+                                     (ghost k0))))
+         (list (ht-append (vl-append redex-title
+                                     (ghost r0)
+                                     (ghost r1)
+                                     (ghost r2)
+                                     (ghost v2)
+                                     (ghost r3)
+                                     (ghost v1)
+                                     (ghost r4)
+                                     (ghost v0))
+                          (blank 16 0)
+                          (vl-append cont-title
+                                     (ghost k0)
+                                     (ghost k1)
+                                     (ghost k2)
+                                     (ghost k2)
+                                     (ghost k1)
+                                     (ghost k1)
+                                     (ghost k0)
+                                     (ghost k0))))
+         (list (ht-append (vl-append redex-title
+                                     r0
+                                     (ghost r1)
+                                     (ghost r2)
+                                     (ghost v2)
+                                     (ghost r3)
+                                     (ghost v1)
+                                     (ghost r4)
+                                     (ghost v0))
+                          (blank 16 0)
+                          (vl-append cont-title
+                                     k0
+                                     (ghost k1)
+                                     (ghost k2)
+                                     (ghost k2)
+                                     (ghost k1)
+                                     (ghost k1)
+                                     (ghost k0)
+                                     (ghost k0))))
+; "the hole represents where the value will be placed."
+         (list (ht-append (vl-append redex-title
+                                     r0
+                                     r1
+                                     (ghost r2)
+                                     (ghost v2)
+                                     (ghost r3)
+                                     (ghost v1)
+                                     (ghost r4)
+                                     (ghost v0))
+                          (blank 16 0)
+                          (vl-append cont-title
+                                     k0
+                                     k1
+                                     (ghost k2)
+                                     (ghost k2)
+                                     (ghost k1)
+                                     (ghost k1)
+                                     (ghost k0)
+                                     (ghost k0))))
+         (list (ht-append (vl-append redex-title
+                                     r0
+                                     r1
+                                     r2
+                                     (ghost v2)
+                                     (ghost r3)
+                                     (ghost v1)
+                                     (ghost r4)
+                                     (ghost v0))
+                          (blank 16 0)
+                          (vl-append cont-title
+                                     k0
+                                     k1
+                                     k2
+                                     (ghost k2)
+                                     (ghost k1)
+                                     (ghost k1)
+                                     (ghost k0)
+                                     (ghost k0))))
+         (list (ht-append (vl-append redex-title
+                                     r0
+                                     r1
+                                     r2
+                                     (ghost v2)
+                                     (ghost r3)
+                                     (ghost v1)
+                                     (ghost r4)
+                                     (ghost v0))
+                          (blank 16 0)
+                          (vl-append cont-title
+                                     k0
+                                     k1
+                                     k2
+                                     (ghost k2)
+                                     (ghost k1)
+                                     (ghost k1)
+                                     (ghost k0)
+                                     (ghost k0))))
+         (list (ht-append (vl-append redex-title
+                                     r0
+                                     r1
+                                     r2
+                                     v2
+                                     (ghost r3)
+                                     (ghost v1)
+                                     (ghost r4)
+                                     (ghost v0))
+                          (blank 16 0)
+                          (vl-append cont-title
+                                     k0
+                                     k1
+                                     k2
+                                     k2
+                                     (ghost k1)
+                                     (ghost k1)
+                                     (ghost k0)
+                                     (ghost k0))))
+         (list (ht-append (vl-append redex-title
+                                     r0
+                                     r1
+                                     r2
+                                     v2
+                                     r3
+                                     (ghost v1)
+                                     (ghost r4)
+                                     (ghost v0))
+                          (blank 16 0)
+                          (vl-append cont-title
+                                     k0
+                                     k1
+                                     k2
+                                     k2
+                                     k1
+                                     (ghost k1)
+                                     (ghost k0)
+                                     (ghost k0))))
+         (list (ht-append (vl-append redex-title
+                                     r0
+                                     r1
+                                     r2
+                                     v2
+                                     r3
+                                     v1
+                                     (ghost r4)
+                                     (ghost v0))
+                          (blank 16 0)
+                          (vl-append cont-title
+                                     k0
+                                     k1
+                                     k2
+                                     k2
+                                     k1
+                                     k1
+                                     (ghost k0)
+                                     (ghost k0))))
+         (list (ht-append (vl-append redex-title
+                                     r0
+                                     r1
+                                     r2
+                                     v2
+                                     r3
+                                     v1
+                                     r4
+                                     (ghost v0))
+                          (blank 16 0)
+                          (vl-append cont-title
+                                     k0
+                                     k1
+                                     k2
+                                     k2
+                                     k1
+                                     k1
+                                     k0
+                                     (ghost k0))))
+         (list (ht-append (vl-append redex-title
+                                     r0
+                                     r1
+                                     r2
+                                     v2
+                                     r3
+                                     v1
+                                     r4
+                                     v0)
+                          (blank 16 0)
+                          (vl-append cont-title
+                                     k0
+                                     k1
+                                     k2
+                                     k2
+                                     k1
+                                     k1
+                                     k0
+                                     k0))))))
+
+(let ((r0 (tt "(+ 1 (+ 2 (+ 3 4)))"))
+      (k0 (tt "•"))
+      (r1 (tt "(+ 2 (+ 3 4))"))
+      (k1 (tt "(+ 1 •)"))
+      (r2 (tt "(+ 3 4)"))
+      (k2 (tt "(+ 1 (+ 2 •))")))
+  (slide
+   #:title "Continuation Example"
+   #:layout 'top
+   'alts
+   (list (list (decompose r0 r1 k1 #t))
+         (list (decompose r0 r1 k1))
+         (list (decompose r0 r1 (underline k1))))
+   'next
+   (para "This is like" (maps-to (tt "fun(x)") (tt "x+1")) ".")))
 
 (slide
  #:title "Continuation-passing style"
  #:layout 'top
+ (para "In continuation-passing style," (it "every") "function has an additional"
+       "formal parameter representing the current continuation.")
+ 'next
  'alts
- (list (list (para (maps-to (tt "fun(x)") (tt "return x+1"))))
+ (list (list (para (maps-to (tt "fun(x)") (tt "return x*2"))))
 ; "continuation-passing style is a style in which functions never return a value."        
-       (list (para (strike (maps-to (tt "fun(x)") (tt "return x+1"))))
-             (para (maps-to (tt "fun(x,k)") (tt "k(x+1)"))))))
+       (list (para (strike (maps-to (tt "fun(x)") (tt "return x*2"))))
+             (para (maps-to (tt "fun(x,k)") (tt "k(x*2)"))))))
 ; "instead, they pass the computed value to another argument, the continuation"
 
 (slide
  #:title "Continuation-passing style"
  #:layout 'top
- (para "In continuation-passing style," (it "every") "function is given an additional"
-       "formal parameter representing the current continuation.")
- 'next
  (para "Why use continuation-passing style?")
 ; "There are an immense number of benefits of CPS (see Appel), but we use it almost exclusively for this:
  'next
@@ -149,6 +407,30 @@
  (para #:width 960 (code (fac 3)))
  'next
  (para #:width 960 (tt "(((fac 1)) ((fac 2)) (fac 3)))"))
+ (para #:width 960 (code 6)))
+
+(slide
+ #:title "The tail-call behavior of continuation marks"
+ #:layout 'top
+ (para (code (define (fac n acc)
+               (if (zero? n)
+                   acc
+                   (fac (- n 1) (* n acc)))))))
+
+(slide
+ #:title "The tail-call behavior of continuation marks"
+ #:layout 'top
+ (para #:width 960 (code (define (fac n acc)
+                           (if (zero? n)
+                               (begin
+                                 (display (ccm))
+                                 (newline)
+                                 acc)
+                               (wcm 'fac n (fac (- n 1) (* n acc)))))))
+ 'next
+ (para #:width 960 (code (fac 3 1)))
+ 'next
+ (para #:width 960 (tt "(((fac 1)))"))
  (para #:width 960 (code 6)))
 
 (slide
@@ -212,6 +494,13 @@
               (blank 0 32)
               chi)))
 
+
+(slide
+ #:title "Thesis"
+ #:layout 'top
+ (para #:width 768 "A CPS-like global transformation can compile the λ-calculus with"
+       "continuation marks to the plain λ-calculus in a" (underline (t "semantics-preserving")) "way."))
+
 (let* ((first-term (code (wcm e (wcm e\' e\'\'))))
        (reduces-to (λ (term [first? #f])
                      (let* ((ghost-first-term (ghost first-term))
@@ -223,9 +512,7 @@
    #:layout 'left
    'alts
    (list (list (para #:width 960 first-term))
-         (list (reduces-to (code ((wcm v (wcm e\' e\'\')))) #t)))
-   'next
-   (reduces-to (code (wcm v (wcm e\' e\'\'))))
+         (list (reduces-to (code (wcm v (wcm e\' e\'\'))) #t)))
    'next
    (reduces-to (code (wcm v (wcm v\' e\'\'))))
    'next
@@ -234,6 +521,13 @@
    (reduces-to (code (wcm v\' v\'\')))
    'next
    (reduces-to (code v\'\'))))
+
+(slide
+ #:title "Meaning-preservation Theorem"
+ #:layout 'top
+ (para "For expressions" (it "e") "and values" (it "v") "," (it "C") "is a syntactic transformation with the property that")
+ (bitmap "theorem.png")
+ (para "with the reduction relations from λcm and λv, respectively."))
 
 (slide
  #:title "Thesis"
