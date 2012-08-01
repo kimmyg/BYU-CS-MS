@@ -249,20 +249,25 @@ Thesis: A CPS-like global transformation can compile the $\lambda$-calculus with
 continuation marks into the plain $\lambda$-calculus in a semantics-preserving way.
 
 Continuation marks \cite{clements2006portable} are a language feature that provides a
-mechanism to annotate the dynamic context of a program. This feature allows the
-association of arbitrary values with arbitrary keys for the lifetime of an execution
-context and the inquiry of currently defined values of pending contexts for a given set of
+mechanism to annotate the evaluation context of a program. This feature allows
+arbitrary keys to be associated with arbitrary values for the lifetime of an evaluation
+context and the inquiry of these values for a given set of
 keys. This is advantageous for programs that require dynamic information about a program
 execution such as debuggers, profilers, and steppers because it allows them to be defined
 at the same level as the language instead of some level below.
 
 The continuation-passing style (CPS) transformation is actually a family of 
-transformations designed to make certain analyses simpler. The simplest variation of the 
-CPS transformation augments each function with an additional formal parameter, the 
-\emph{continuation}, which is a functional representation of currently pending 
-computation. Functions in CPS never return; instead, they call the continuation argument 
-with their result. The CPS transformation then simplifies programs by representing all 
-control and data transfer uniformly and explicitly. In general, the ``spirit'' of the 
+transformations designed to make certain analyses simpler. Every member of this 
+family shares a common trait: their performance augments each function 
+with an additional formal parameter, the \emph{continuation}, a 
+functional representation of currently pending computation. Functions in CPS 
+never explicitly return; instead, they call the continuation argument with their 
+result. Because no function ever returns, function calls are the final act of the 
+caller. Thus, all calls are tail calls.
+%a function call represents a permanent surrender of control.
+%function calls permanently surrender control represents  
+The CPS transformation then simplifies programs by representing all control 
+and data transfer uniformly and explicitly. In general, the ``spirit'' of the 
 CPS transformation is to represent all transfers of control uniformly \cite{sabry1994formal}.
 
 It is our interest to understand the essence of continuation marks--their behavior in the 
@@ -898,7 +903,7 @@ for proof. We express the property of reducing to one value with the following t
 \begin{toythm}
 For all terms $e$ of the toy language, $e$ reduces to exactly one value.\footnote{We do 
 not use the term ``value'' loosely here; the toy language definition specifies what 
-constitutes values, and we appeal to this.}
+constitute values, and we appeal to this.}
 \end{toythm}
 We proceed by induction on the structure of terms $e$ of the toy language. First, we 
 consider the base cases.
@@ -1103,12 +1108,10 @@ and
 \[
 \mathcal{C}[e]\rightarrow_{\lambda_{v}}v'
 \]
-then $v\equiv v'$. We make a weaker assertion here that the terms are equivalent and not 
-that the terms are equal. This is not to say that the terms should have syntactic 
-equivalence or even $\alpha$-equivalence, but only that we should be able to formally 
-relate them.
+then $v\equiv v'$. We make a weaker assertion here that the terms are equivalent--not 
+equal--and, by this, expect only that we can formally relate them.
 
-Next, consider the program $ccm$, perhaps the simplest program strictly in $\lambda_{cm}$. 
+Next, consider the program $ccm$, the smallest program strictly in $\lambda_{cm}$. 
 The entire evaluation of this program exhibits only a single redex, a hole, and a $ccm$ 
 term which fills it. According to the semantics of $\lambda_{cm}$ and further the definition of the 
 $\chi$-metafunction, the result of this program is the empty list.
@@ -1128,19 +1131,19 @@ and then to the marks argument
 
 We certainly could reduce this by steps and see it work, but that would give us no intuition as to \emph{why} it works. Recall that our transform, in CPS spirit, augments each call site with two additional parameters, the second being an encoding of the tail position of the context and the continuation marks. The transform of $ccm$ discards the tail-position encoding and applies the supplied continuation to the encoding of the continuation marks. However, as each call site also requires an argument encoding the marks, a dummy variable is passed. This is sound as the marks parameter does not bind any variable in the body, so the dummy variable is promptly ignored. In this process, the double abstraction surrounding the list has been stripped away and should be restored. This is accomplished by the passed continuation which does exactly that. Since the result of the reduction is known to be irreducible--that is, either a variable or an abstraction--and since irreducible terms are wrapped in the same way, we can wrap the value manually, yielding a transformed value as if directly.
 
----
-ok
+%---
+%ok
 
-terms are nested in this language
-in other words, terms are built up from primitives or smaller terms
-then proof that the transform works amounts to:
+%terms are nested in this language
+%in other words, terms are built up from primitives or smaller terms
+%then proof that the transform works amounts to:
 
-if the term is x and the marks argument (with flag) is y and the continuation k
-then the result is ...
+%if the term is x and the marks argument (with flag) is y and the continuation k
+%then the result is ...
 
-example:
+%example:
 
-term is ccm, marks argument is (false,[]) and continuation is
+%term is ccm, marks argument is (false,[]) and continuation is
  
 \begin{align*}
 C[x]                  &= \lambda k.\lambda m.(k\,x)\\
@@ -1150,27 +1153,27 @@ C[\mathrm{wcm}\,E\,F] &= \lambda k.\lambda m.(\lambda k_{1}.(k_{1}\,(m\,\lambda 
 C[\mathrm{ccm}]       &= \lambda k.\lambda m.(((m\,\lambda x.\lambda y.y)\,k)\,x
 \end{align*}
 
-For all contexts $E$, expressions $e$, marks $m$, and continuations $k$
+%For all contexts $E$, expressions $e$, marks $m$, and continuations $k$
 
-for any context $E$, marks $m$, and continuation $k$, \emph{ccm} applies the continuation $k$ to the applied value of the marks $m$.
-By definition, it strips away the flag and passes the continuation $k$ and a dummy variable $x$.
-Our inductive hypothesis is that the marks are of the form $\lambda k.\lambda m.(k\,E)$ where $E$ is some term.
-This holds if the marks are empty: the empty list is $\lambda k.\lambda m.(k \lambda x.\lambda k.\lambda m.(k \lambda y.\lambda k.\lambda m.(k y)))$
-and this is of the required form which can be seen by taking $E=\lambda x.\lambda...$
-If the marks are not the empty list, they are an encoded pair, of the form $\lambda k.\lambda m.(k\,\lambda p...)$
+%for any context $E$, marks $m$, and continuation $k$, \emph{ccm} applies the continuation $k$ to the applied value of the marks $m$.
+%By definition, it strips away the flag and passes the continuation $k$ and a dummy variable $x$.
+%Our inductive hypothesis is that the marks are of the form $\lambda k.\lambda m.(k\,E)$ where $E$ is some term.
+%This holds if the marks are empty: the empty list is $\lambda k.\lambda m.(k \lambda x.\lambda k.\lambda m.(k \lambda y.\lambda k.\lambda m.(k y)))$
+%and this is of the required form which can be seen by taking $E=\lambda x.\lambda...$
+%If the marks are not the empty list, they are an encoded pair, of the form $\lambda k.\lambda m.(k\,\lambda p...)$
 
-preconditions for each form:
-abstracted to receive a continuation k and marks encoding m
+%preconditions for each form:
+%abstracted to receive a continuation k and marks encoding m
 
-postconditions for each form:
-returns a "stripped" value
+%postconditions for each form:
+%returns a "stripped" value
 
-show that the preconditions lead to the postconditions
+%show that the preconditions lead to the postconditions
 
-We must establish a few invariants.
+%We must establish a few invariants.
 
-First, every evaluation will have a continuation and marks state passed to it. 
-Second, every continuation will be called with a "stripped" term--that is, 
+%First, every evaluation will have a continuation and marks state passed to it. 
+%Second, every continuation will be called with a "stripped" term--that is, 
 
 \newtheorem{thm}{Theorem}
 \newtheorem{case}{Case}
@@ -1180,7 +1183,7 @@ Every evaluation is passed a continuation and an encoding of the tail state and 
 In a continuation-passing style, which we have adopted, the evaluation which occurs by application does so in two stages. First, the arguments of the application, the operator and operand, are evaluated. Second, the application itself is performed which effects the evaluation of the result.
 The evaluation which occurs within a \emph{wcm} form also occurs in two stages, and continuation-passing style is used to control these stages.
 
-Application, \emph{wcm}, \emph{ccm}
+%Application, \emph{wcm}, \emph{ccm}
 \begin{proof}
 \begin{case}
 $E\,F$
@@ -1208,7 +1211,7 @@ This completes the proof.
 \begin{thm}
 Every continuation is applied to a stripped term.
 \end{thm}
-a term without a leading continuation and marks state parameterization but otherwise identical to a transformed term.
+%a term without a leading continuation and marks state parameterization but otherwise identical to a transformed term.
 
 \begin{proof}[Case $x$]
 stuff
@@ -1226,46 +1229,46 @@ stuff
 stuff
 \end{proof}
 
-e=e e
-  wcm e e
-  ccm
-  v
+%e=e e
+%  wcm e e
+%  ccm
+%  v
 
-E=wcm v F
-F=wcm E e
-  E e
-  v E
-  hole
+%E=wcm v F
+%F=wcm E e
+%  E e
+%  v E
+%  hole
   
-abs x.E F -> E[x:=F]
-wcm v (wcm v' E) -> wcm v' E
-wcm v v' -> v'
-E[ccm]=chi[E]
+%abs x.E F -> E[x:=F]
+%wcm v (wcm v' E) -> wcm v' E
+%wcm v v' -> v'
+%E[ccm]=chi[E]
 
-wcm v [
+%wcm v [
 
   
-hole[e e]
-hole[wcm e e]
-hole[ccm]
-hole[v]
+%hole[e e]
+%hole[wcm e e]
+%hole[ccm]
+%hole[v]
 
 
-if the context is empty (meaning in this case hole?), it is false because that is 
-passed in
+%if the context is empty (meaning in this case hole?), it is false because that is 
+%passed in
 
-show that wcm v (wcm e e') evaluates as it should
-wcm v (ccm)
-wcm v (e e')
-wcm v v'
+%show that wcm v (wcm e e') evaluates as it should
+%wcm v (ccm)
+%wcm v (e e')
+%wcm v v'
 
-for wcm v (wcm e e')
-suppose we have wcm e (wcm e' e'')
-the transform reduces the first value, respecting the tail flag
-(wcm v (wcm e' e'')
-the transform performs a tail call passing the mark (prove if marks were correct, they are correct) stuff
-(wcm e' e'') (true,[v])
-the transform reduces the first value, respecting the tail flag
+%for wcm v (wcm e e')
+%suppose we have wcm e (wcm e' e'')
+%the transform reduces the first value, respecting the tail flag
+%(wcm v (wcm e' e'')
+%the transform performs a tail call passing the mark (prove if marks were correct, they are correct) stuff
+%(wcm e' e'') (true,[v])
+%the transform reduces the first value, respecting the tail flag
 
 \newtheorem{case_tpf}{Case}
 \begin{thm}
@@ -1277,45 +1280,100 @@ $E=\mathrm{hole}$ %The beginning of evaluation (hole, here?) passes false, which
 \begin{proof}
 By definition, the initial continuation marks tail position flag is false.
 \end{proof}
-\end{case}
+\end{case_tpf}
 \begin{case_tpf}
 $E=(E\,e)$
 \begin{proof}
-By definition, the initial continuation marks tail position flag is false.
+proof here
 \end{proof}
-\end{case}
-E e passes false
-v E passes false
-wcm E e passes false
-wcm v F passes true
+\end{case_tpf}
+\begin{case_tpf}
+$E=(v\,E)$
+\begin{proof}
+proof here
+\end{proof}
+\end{case_tpf}
+\begin{case_tpf}
+$E=(\mathrm{wcm}\,E\,e)$
+\begin{proof}
+proof here
+\end{proof}
+\end{case_tpf}
+\begin{case_tpf}
+$E=(\mathrm{wcm}\,e\,F)$
+\begin{proof}
+proof here
+\end{proof}
+\end{case_tpf}
+%E e passes false
+%v E passes false
+%wcm E e passes false
+%wcm v F passes true
 \end{proof}
 
-The tail marks list is correct.
-Proof
-The beginning of evaluation (hole, once again?) is the empty list, which is correct.
-E e passes list unmodified.
-v E passes list unmodified.
-wcm E e passes list unmodified.
-wcm v F overwrites if it is a tail call of another wcm, appends if not. correct either way.
-Now we can proceed with for all contexts, for all expressions, etc. (Main theorem)
+%The tail marks list is correct.
+%Proof
+%The beginning of evaluation (hole, once again?) is the empty list, which is correct.
+%E e passes list unmodified.
+%v E passes list unmodified.
+%wcm E e passes list unmodified.
+%wcm v F overwrites if it is a tail call of another wcm, appends if not. correct either way.
+%Now we can proceed with for all contexts, for all expressions, etc. (Main theorem)
 
-show behavior for ccm is correct for all contexts
-show behavior for (e e) is correct for all contexts (thus showing abs x E F rule?)
-show behavior for v is correct for all contexts (thus showing (wcm v v')?)
-show behavior for wcm v (wcm e e) is correct (thus showing (wcm v (wcm v' e)) -> wcm v' e) or (wcm v v') -> v'?
-show behavior for wcm (wcm e e) e is correct
-show behavior for hole (wcm e e) is correct
-show behavior for (wcm e e) e is correct
-show behavior for e (wcm e e) is correct
+%show behavior for ccm is correct for all contexts
+%show behavior for (e e) is correct for all contexts (thus showing abs x E F rule?)
+%show behavior for v is correct for all contexts (thus showing (wcm v v')?)
+%show behavior for wcm v (wcm e e) is correct (thus showing (wcm v (wcm v' e)) -> wcm v' e) or (wcm v v') -> v'?
+%show behavior for wcm (wcm e e) e is correct
+%show behavior for hole (wcm e e) is correct
+%show behavior for (wcm e e) e is correct
+%show behavior for e (wcm e e) is correct
 
 
-show that only values get put in the list?
-that's a result of the call-by-value CPS
+%show that only values get put in the list?
+%that's a result of the call-by-value CPS
 
 \newtheorem*{maintheorem}{The awesomeness of $\mathcal{C}$}
 \begin{maintheorem}
 For all contexts $E$, expressions $e$, continuations $k$ and marks encodings $m$, $E[e]\rightarrow_{\lambda_{cm}}v\Rightarrow \mathcal{C}[E][\mathcal{C}[e]]\rightarrow_{\lambda_{v}}\mathcal{C}[v]$.
 \end{maintheorem}
+
+%%%%%
+
+%->_lv = t (\ans.\k.\m.k ans) (#f,nil)
+
+%E[e] = x
+%E = *, e = x
+%C[E[e]] = \k.\m.k x
+%v = x
+%C[x] = \k.\m.k x
+%v^ = \k.\m.k x
+
+%(\k.\m.k x) (\ans.\k.\m.k ans) (#f,nil)
+%(\ans.\k.\m.k ans) x
+%(\k.\m.k x)
+
+%E = * e_1, e = x
+%C[E[e]] = (λ (k1387)
+%   (λ (m1388)
+ %    ((λ (k1387) (k1387 (m1388 (λ (x) (λ (y) y)))))
+ %     (λ (snd_m1391)
+  %      ((λ (k1387) (k1387 (λ (p) ((p (λ (x) (λ (y) y))) snd_m1391))))
+   %      (λ (m1388)
+    %       (((λ (k1383) (λ (m1384) (k1383 x)))
+     %        (λ (e1389)
+      %         (((λ (k1385) (λ (m1386) (k1385 e_1))) (λ (f1390) (((e1389 f1390) k1387) m1388)))
+       %         m1388)))
+        %    m1388)))))))
+%e_1 ->* v_1
+%v = x v_1
+
+
+
+%%%%%
+
+
+
 
 \begin{proof}[Case $e=E\,F$]
 
