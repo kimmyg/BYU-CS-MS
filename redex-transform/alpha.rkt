@@ -13,6 +13,8 @@
      `(λ ,(term->static-distance e1 (cons x1 nest)))]
     [(list e1 e2)
      `(,(term->static-distance e1 (cons #f nest)) ,(term->static-distance e2 (cons #f nest)))]
+    [(? number? n1)
+     n1]
     [x1
      (calculate-index x1 nest 0)]))
 

@@ -4,58 +4,61 @@
 (define-language λv
   (e (e e) x v)
   (x variable-not-otherwise-mentioned)
-  (v number (λ (x) e))
+  (v (λ (x) e) error number)
   (E (E e) (v E) hole))
 
 (define λv-rr
   (reduction-relation
    λv
+   (--> (in-hole E x)
+        (in-hole E error)
+        "error: unbound identifier")
+   (--> (in-hole E (number v))
+        (in-hole E error)
+        "number in operator position")
+   (--> (in-hole E (error v))
+        (in-hole E error)
+        "error in operator")
    (--> (in-hole E ((λ (x) e) v))
-        (in-hole E (subst-n (x v) e))
+        (in-hole E (subst x v e))
         "βv")
-   (--> (in-hole E ((λ (x_1) e) x_2))
-        (in-hole E (subst-n (x_1 x_2) e))
+   #;(--> (in-hole E ((λ (x_1) e) x_2))
+        (in-hole E (subst (x_1 x_2) e))
         "βv-x")))
 
-(define-metafunction λv
-  subst-n : (x any) ... any -> any
-  [(subst-n (x_1 any_1) (x_2 any_2) ... any_3)
-   (subst x_1 any_1 (subst-n (x_2 any_2) ... any_3))]
-  [(subst-n any_3) any_3])
-
-(define-metafunction λv
-  subst : x any any -> any
+#;(define-metafunction λv
+  rename : x x e -> e
   ;; 1. x_1 bound, so don't continue in λ body
-  [(subst x_1 any_1 (λ (x_2 ... x_1 x_3 ...) any_2))
-   (λ (x_2 ... x_1 x_3 ...) any_2)
-   (side-condition (not (member (term x_1)
-                                (term (x_2 ...)))))]
-  ;; 2. general purpose capture avoiding case
-  [(subst x_1 any_1 (λ (x_2 ...) any_2))
-   (λ (x_new ...) 
-     (subst x_1 any_1
-            (subst-vars (x_2 x_new) ... any_2)))
-   (where (x_new ...) ,(variables-not-in (term (x_1 any_1 any_2)) 
-                                         (term (x_2 ...))))]
-  ;; 3. replace x_1 with e_1
-  [(subst x_1 any_1 x_1) any_1]
-  ;; 4. x_1 and x_2 are different, so don't replace
-  [(subst x_1 any_1 x_2) x_2]
-  ;; the last cases cover all other expressions
-  [(subst x_1 any_1 (any_2 ...))
-   ((subst x_1 any_1 any_2) ...)]
-  [(subst x_1 any_1 any_2) any_2])
+  [(rename x_1 x_2 (λ (x_1) e_1))
+   (λ (x_1) e_1)]
+  ;; 2. 
+    )
 
 (define-metafunction λv
-  subst-vars : (x any) ... any -> any
-  [(subst-vars (x_1 any_1) x_1) any_1]
-  [(subst-vars (x_1 any_1) (any_2 ...)) 
-   ((subst-vars (x_1 any_1) any_2) ...)]
-  [(subst-vars (x_1 any_1) any_2) any_2]
-  [(subst-vars (x_1 any_1) (x_2 any_2) ... any_3) 
-   (subst-vars (x_1 any_1) 
-               (subst-vars (x_2 any_2) ... any_3))]
-  [(subst-vars any) any])
+  subst : x v e -> e
+  ;; 1. x_1 bound, so don't continue in λ body
+  [(subst x_1 v_1 (λ (x_1) e_1))
+   (λ (x_1) e_1)]
+  ;; 2. descend into abstraction
+  [(subst x_1 v_1 (λ (x_2) e_1))
+   (λ (x_2) (subst x_1 v_1 e_1))]
+  
+  [(subst x_1 v_1 error)
+   error]
+  
+  [(subst x_1 v_1 number_1)
+   number_1]
+  ;; 3. substitute in application
+  [(subst x_1 v_1 (e_1 e_2))
+   ((subst x_1 v_1 e_1) (subst x_1 v_1 e_2))]
+  
+  [(subst x_1 v_1 x_1)
+   v_1]
+  
+  [(subst x_1 v_1 x_2)
+   x_2])
+  
+
 
 (provide λv
          λv-rr)

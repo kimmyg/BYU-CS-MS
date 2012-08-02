@@ -1,7 +1,8 @@
 #lang racket
 (require redex)
 
-(require "cm.rkt"
+(require racket/pretty
+         "cm.rkt"
          "lc.rkt"
          "transform.rkt"
          "alpha.rkt")
@@ -11,7 +12,16 @@
          (value1 (transform value))
          (value2 (first (apply-reduction-relation* λv-rr (init (transform program))))))
     (if (alpha-eq? value1 value2)
-        #t
+        (if #f
+            (begin
+              (display value)
+              (newline)
+              (display (term->first-alpha value1))
+              (newline)
+              (display (term->first-alpha value2))
+              (newline)
+              #t)
+            #t)
         (begin
           (display value)
           (newline)
@@ -24,10 +34,12 @@
 (define (trace program)
   (traces λv-rr (init (transform program))))
 
+
+;(transform-test '1)
 ;(transform-test '(λ (x) x))
-(transform-test '(ccm))
+;(transform-test '(ccm))
 ;(transform-test '((λ (x) x) (ccm)))
-;(transform-test '(wcm 1 (ccm)))
+;(transform-test '(wcm 0 (ccm)))
 ;(transform-test '(wcm (ccm) (ccm)))
 ;(transform-test '(wcm (wcm (ccm) (ccm)) (λ (x) x)))
 ;(transform-test '(wcm (wcm (ccm) (ccm)) b))
@@ -41,7 +53,23 @@
 ;(transform-test '(wcm ((ccm) 1) (ccm)))
 ;(transform-test '(wcm 0 ((ccm) (ccm))))
 ;(transform-test '(wcm 1 ((ccm) (λ (x) (λ (y) x)))))
-(transform-test '(a b))
+;(transform-test '(a b))
+;(transform-test '(wcm (ccm) (ccm)))
+;(transform-test '((wcm (ccm) (ccm)) 1))
+;(transform-test '(Y (wcm (ccm) (ccm))))
+
+(traces λcm-rr 'z)
+(traces λv-rr (transform 'z))
+
+(define (apply-reduction-relation/n rr e n [i 0])
+  (if (= i n)
+      (list e)
+      (apply append (map (λ (t) (apply-reduction-relation/n rr t n (+ i 1))) (apply-reduction-relation rr e))))) 
+
+(define t '((((((λ (k) (λ (m) (k (λ (p) (λ (k) (λ (m) ((λ (k) (k (m (λ (x) (λ (y) y))))) (λ (s) ((λ (k) (k (λ (p) ((p (λ (x) (λ (y) y))) s)))) (λ (n) (((λ (k) (λ (m) ((λ (k) (k (m (λ (x) (λ (y) y))))) (λ (s) ((λ (k) (k (λ (p) ((p (λ (x) (λ (y) y))) s)))) (λ (n) (((λ (k) (λ (m) (k p))) (λ (e) (((λ (k) (λ (m) (k 1))) (λ (f) (((e f) k) m))) n))) n))))))) (λ (e) (((λ (k) (λ (m) (k (λ (x) (λ (k) (λ (m) (k (λ (y) (λ (k) (λ (m) (k y))))))))))) (λ (f) (((e f) k) m))) n))) n))))))))))) (λ (x) x)) z) (λ (x) (λ (k) (λ (m) (k (λ (y) (λ (k) (λ (m) (k y))))))))) (λ (x) x)) z))
+
+;(pretty-print t)
+;(apply-reduction-relation/n λv-rr t 39) 
 
 #;(transform-test '(wcm 0
        ((λ (ignored)
@@ -70,4 +98,4 @@
 (define (prepare-cm-term term)
   term)
 
-;(redex-check λcm e (the-important-property-holds (term e)) #:attempts 1000 #:prepare prepare-cm-term)
+(redex-check λcm e (the-important-property-holds (term e)) #:attempts 100 #:prepare prepare-cm-term)
