@@ -16,12 +16,14 @@
      (format "~a" x)]))
 
 (define (apply-reduction-relation*/tags R e)
-  (match (apply-reduction-relation/tag-with-names R e)
+  (let ((things (apply-reduction-relation/tag-with-names R e)))
+    ;(pretty-print things)
+  (match things
     [(list (list rule t))
      (cons (list rule e t)
            (apply-reduction-relation*/tags R t))]
     [(list)
-     (list (list #f e e))]))
+     (list (list #f e e))])))
 
 (define (transform-test P)
   (define P-ans-steps (apply-reduction-relation*/tags λcm-rr P))
@@ -33,7 +35,9 @@
   (displayln (alpha-eq? C.P-ans C.ans))
   #;(pretty-print P-ans-steps)
   (display (term->latex P-ans))
-  (pretty-print (term->first-alpha C.P-ans))
+  (newline)
+  (display (term->latex (term->first-alpha C.P-ans)))
+  (newline)
   (pretty-print C-steps)
   (pretty-print (term->first-alpha C.ans)))
 
