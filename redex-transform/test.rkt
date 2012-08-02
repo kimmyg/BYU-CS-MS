@@ -39,8 +39,9 @@
 ;(transform-test '(wcm (ccm) 3))
 ;(transform-test '((ccm) 2))
 ;(transform-test '(wcm ((ccm) 1) (ccm)))
-(transform-test '(wcm 0 ((ccm) (ccm))))
+;(transform-test '(wcm 0 ((ccm) (ccm))))
 ;(transform-test '(wcm 1 ((ccm) (λ (x) (λ (y) x)))))
+(transform-test '(a b))
 
 #;(transform-test '(wcm 0
        ((λ (ignored)
