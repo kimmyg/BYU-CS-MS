@@ -25,7 +25,7 @@
   (traces λv-rr (init (transform program))))
 
 ;(transform-test '(λ (x) x))
-;(transform-test '(ccm))
+(transform-test '(ccm))
 ;(transform-test '((λ (x) x) (ccm)))
 ;(transform-test '(wcm 1 (ccm)))
 ;(transform-test '(wcm (ccm) (ccm)))

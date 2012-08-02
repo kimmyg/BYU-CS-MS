@@ -2,7 +2,10 @@
 
 (require slideshow/base
          slideshow/code
-         slideshow/pict)
+         slideshow/pict
+         racket/gui)
+
+(current-page-number-font (make-object font% 40 'default))
 
 (define (underline p)
   (refocus
@@ -37,6 +40,9 @@
              (left (pin-arrow-line #:line-width 4 (/ (current-font-size) 2) decomposition a cb-find b ct-find))
              (left-and-right (pin-arrow-line #:line-width 4 (/ (current-font-size) 2) left a cb-find c ct-find)))
         left-and-right)))
+
+(define (emphasize p)
+  (frame p #:color "red" #:line-width 4))
 
 (slide
  (cc-superimpose (blank)
@@ -103,7 +109,7 @@
  'next
  (para "The continuation is simply the rest of the computation."))
 
-(let ((redex-title (t "redex"))
+(let ((redex-title (t "possible redex"))
       (cont-title (t "continuation"))
       (r0 (tt "(+ 1 (+ 2 (+ 3 4)))"))
       (k0 (tt "•"))
@@ -370,7 +376,10 @@
  (para "Why use continuation-passing style?")
 ; "There are an immense number of benefits of CPS (see Appel), but we use it almost exclusively for this:
  'next
- (para "It allows control over evaluation order."))
+ (para "To \"compile away\" continuation marks")
+ 'next
+ (blank)
+ (para "Bonus: It allows control over evaluation order."))
 ; "I will discuss this in a few minutes."
  
 (slide
@@ -440,18 +449,15 @@
  (item "debuggers")
  (item "steppers"))
 
-(slide
- #:title "λcm"
- (ht-append (vl-append (ht-append (tt "e=")
-                                  (vl-append (tt "x")
-                                             (tt "v")
-                                             (tt "(e e)")
-                                             (tt "(wcm e e)")
-                                             (tt "(ccm)")))
-                       (ht-append (tt "v=")
-                                  (tt "λx.e")))
-            (blank 128 0)
-            (vl-append (ht-append (tt "E=")
+(let ((ev (vl-append (ht-append (tt "e=")
+                                (vl-append (tt "x")
+                                           (tt "v")
+                                           (tt "(e e)")
+                                           (tt "(wcm e e)")
+                                           (tt "(ccm)")))
+                     (ht-append (tt "v=")
+                                (tt "λx.e"))))
+      (EF (vl-append (ht-append (tt "E=")
                                   (vl-append (tt "(wcm v F)")
                                              (tt "F")))
                        (ht-append (tt "F=")
@@ -459,47 +465,62 @@
                                              (tt "(E e)")
                                              (tt "(v E)")
                                              (tt "(wcm E e)"))))))
+  (slide
+   #:title "λcm"
+   'alts
+   (list (list (ht-append ev (blank 128 0) EF))
+         (list (ht-append (emphasize ev) (blank 128 0) EF))
+         (list (ht-append ev (blank 128 0) (emphasize EF))))))
+ 
 ; "we consider the λ-calculus with facilities for continuation marks"
  
-(slide
- #:title "λcm"
- (let ((semantics (ht-append (vr-append (tt "E[(λx.e v)]")
-                                        (tt "E[(wcm v (wcm v' e))]")
-                                        (tt "E[(wcm v v')]")
-                                        (tt "E[(ccm)]"))
-                             (vc-append (tt " --> ")
-                                        (tt " --> ")
-                                        (tt " --> ")
-                                        (tt " --> "))
-                             (vl-append (tt "E[e[x <- v]]")
-                                        (tt "E[(wcm v' e)]")
-                                        (tt "E[v']")
-                                        (tt "E[chi(E)]"))))
-       (chi (ht-append (vr-append (tt "chi(•)")
-                                  (tt "chi((E e))")
-                                  (tt "chi((v E))")
-                                  (tt "chi((wcm E e))")
-                                  (tt "chi((wcm v E))"))
-                       (vc-append (tt " = ")
-                                  (tt " = ")
-                                  (tt " = ")
-                                  (tt " = ")
-                                  (tt " = "))
-                       (vl-append (tt "empty")
-                                  (tt "chi(E)")
-                                  (tt "chi(E)")
-                                  (tt "chi(E)")
-                                  (tt "v:chi(E)")))))
-   (vc-append semantics
-              (blank 0 32)
-              chi)))
 
+(let ((r1 (tt "E[(λx.e) v]"))
+      (r2 (tt "E[(wcm v (wcm v' e))]"))
+      (r3 (tt "E[(wcm v v')]"))
+      (r4 (tt "E[(ccm)]"))
+      (q1 (tt "E[e[x <- v]]"))
+      (q2 (tt "E[(wcm v' e)]"))
+      (q3 (tt "E[v']"))
+      (q4 (tt "E[chi(E)]"))
+      (ar (tt "-->"))
+      (chi (ht-append (vr-append (tt "chi(•)")
+                                 (tt "chi((E e))")
+                                 (tt "chi((v E))")
+                                 (tt "chi((wcm E e))")
+                                 (tt "chi((wcm v E))"))
+                      (vc-append (tt " = ")
+                                 (tt " = ")
+                                 (tt " = ")
+                                 (tt " = ")
+                                 (tt " = "))
+                      (vl-append (tt "empty")
+                                 (tt "chi(E)")
+                                 (tt "chi(E)")
+                                 (tt "chi(E)")
+                                 (tt "v:chi(E)")))))
+  (slide
+   #:title "λcm"
+   'alts
+   (list (list (vc-append (ht-append (vr-append r1 r2 r3 r4) (vc-append ar ar ar ar) (vl-append q1 q2 q3 q4)) (blank 0 32) chi))
+         (list (vc-append (ht-append (vr-append (underline r1) r2 r3 r4) (vc-append ar ar ar ar) (vl-append (underline q1) q2 q3 q4)) (blank 0 32) chi))
+         (list (vc-append (ht-append (vr-append r1 (underline r2) r3 r4) (vc-append ar ar ar ar) (vl-append q1 (underline q2) q3 q4)) (blank 0 32) chi))
+         (list (vc-append (ht-append (vr-append r1 r2 (underline r3) r4) (vc-append ar ar ar ar) (vl-append q1 q2 (underline q3) q4)) (blank 0 32) chi))
+         (list (vc-append (ht-append (vr-append r1 r2 r3 (underline r4)) (vc-append ar ar ar ar) (vl-append q1 q2 q3 (underline q4))) (blank 0 32) chi))
+         (list (vc-append (ht-append (vr-append r1 r2 r3 r4) (vc-append ar ar ar ar) (vl-append q1 q2 q3 q4)) (blank 0 32) (emphasize chi))))))
 
 (slide
  #:title "Thesis"
  #:layout 'top
  (para #:width 768 "A CPS-like global transformation can compile the λ-calculus with"
        "continuation marks to the plain λ-calculus in a" (underline (t "semantics-preserving")) "way."))
+
+(slide
+ #:title "Meaning-preservation Theorem"
+ #:layout 'top
+ (para "For expressions" (it "e") "and values" (it "v") "," (it "C") "is a syntactic transformation with the property that")
+ (bitmap "theorem.png")
+ (para "with the reduction relations from λcm and λv, respectively."))
 
 (let* ((first-term (code (wcm e (wcm e\' e\'\'))))
        (reduces-to (λ (term [first? #f])
@@ -523,18 +544,17 @@
    (reduces-to (code v\'\'))))
 
 (slide
- #:title "Meaning-preservation Theorem"
- #:layout 'top
- (para "For expressions" (it "e") "and values" (it "v") "," (it "C") "is a syntactic transformation with the property that")
- (bitmap "theorem.png")
- (para "with the reduction relations from λcm and λv, respectively."))
-
-(slide
  #:title "Thesis"
  #:layout 'top
  (para #:width 768 "A CPS-like global transformation can compile the λ-calculus with"
        "continuation marks to the plain λ-calculus in a semantics-preserving way."))
 
+(slide
+ #:title "The road to legitimacy..."
+ (item (text "monad*" (current-main-font) 48))
+ (item (text "CPS transform" (current-main-font) 48))
+ (item (text "type system" (current-main-font) 48))
+ (item (text "expressiveness proof" (current-main-font) 48)))
 #|
 the λ-calculus
 a formal system that expresses computation
