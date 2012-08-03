@@ -47,7 +47,7 @@
 ;(transform-test '(wcm (λ (x) x) (ccm)))
 ;(transform-test '(wcm (λ (x) (λ (y) x)) (ccm)))
 ;(transform-test '(wcm 0 (wcm 1 (ccm))))
-;(transform-test 'm)
+;(transform-test 'F)
 ;(transform-test '(wcm (ccm) 3))
 ;(transform-test '((ccm) 2))
 ;(transform-test '(wcm ((ccm) 1) (ccm)))
@@ -57,19 +57,17 @@
 ;(transform-test '(wcm (ccm) (ccm)))
 ;(transform-test '((wcm (ccm) (ccm)) 1))
 ;(transform-test '(Y (wcm (ccm) (ccm))))
+;(transform-test '(error (ccm)))
 
-(traces λcm-rr 'z)
-(traces λv-rr (transform 'z))
+(define p '(wcm 0 (ccm)))
+
+(traces λcm-rr p)
+(traces λv-rr (init (transform p)))
 
 (define (apply-reduction-relation/n rr e n [i 0])
   (if (= i n)
       (list e)
       (apply append (map (λ (t) (apply-reduction-relation/n rr t n (+ i 1))) (apply-reduction-relation rr e))))) 
-
-(define t '((((((λ (k) (λ (m) (k (λ (p) (λ (k) (λ (m) ((λ (k) (k (m (λ (x) (λ (y) y))))) (λ (s) ((λ (k) (k (λ (p) ((p (λ (x) (λ (y) y))) s)))) (λ (n) (((λ (k) (λ (m) ((λ (k) (k (m (λ (x) (λ (y) y))))) (λ (s) ((λ (k) (k (λ (p) ((p (λ (x) (λ (y) y))) s)))) (λ (n) (((λ (k) (λ (m) (k p))) (λ (e) (((λ (k) (λ (m) (k 1))) (λ (f) (((e f) k) m))) n))) n))))))) (λ (e) (((λ (k) (λ (m) (k (λ (x) (λ (k) (λ (m) (k (λ (y) (λ (k) (λ (m) (k y))))))))))) (λ (f) (((e f) k) m))) n))) n))))))))))) (λ (x) x)) z) (λ (x) (λ (k) (λ (m) (k (λ (y) (λ (k) (λ (m) (k y))))))))) (λ (x) x)) z))
-
-;(pretty-print t)
-;(apply-reduction-relation/n λv-rr t 39) 
 
 #;(transform-test '(wcm 0
        ((λ (ignored)
@@ -98,4 +96,4 @@
 (define (prepare-cm-term term)
   term)
 
-(redex-check λcm e (the-important-property-holds (term e)) #:attempts 100 #:prepare prepare-cm-term)
+(redex-check λcm e (the-important-property-holds (term e)) #:attempts 1000 #:prepare prepare-cm-term)

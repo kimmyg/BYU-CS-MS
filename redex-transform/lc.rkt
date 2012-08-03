@@ -2,9 +2,9 @@
 (require redex)
 
 (define-language λv
-  (e (e e) x v)
+  (e (e e) x v error)
   (x variable-not-otherwise-mentioned)
-  (v (λ (x) e) error number)
+  (v (λ (x) e) number)
   (E (E e) (v E) hole))
 
 (define λv-rr
@@ -16,9 +16,12 @@
    (--> (in-hole E (number v))
         (in-hole E error)
         "number in operator position")
-   (--> (in-hole E (error v))
+   (--> (in-hole E (error e))
         (in-hole E error)
         "error in operator")
+   (--> (in-hole E (v error))
+        (in-hole E error)
+        "error in operand")
    (--> (in-hole E ((λ (x) e) v))
         (in-hole E (subst x v e))
         "βv")
