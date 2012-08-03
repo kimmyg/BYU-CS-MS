@@ -42,4 +42,4 @@
 
 #;(transform-test 'x)
 #;(transform-test '(x e_2))
-(transform-test '(e_1 x))
+(transform-test '(wcm 0 1))
