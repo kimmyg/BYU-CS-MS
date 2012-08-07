@@ -49,7 +49,9 @@
        `(λ (,k) (λ (,m) (,k ,x1)))])))
   
 (define (init e)
-  `((,e (λ (v) (λ (k) (λ (m) (k v))))) (λ (p) ((p (λ (x) (λ (y) y))) ,(transform '(λ (x) (λ (y) y)))))))
+  (let ((k (gensym 'k))
+        (m (gensym 'm)))
+    `((,e (λ (v) (λ (,k) (λ (,m) (,k v))))) (λ (p) ((p (λ (x) (λ (y) y))) ,(transform '(λ (x) (λ (y) y))))))))
 
 (provide transform
          init)
