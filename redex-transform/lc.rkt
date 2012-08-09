@@ -2,7 +2,7 @@
 (require redex)
 
 (define-language λv
-  (e (e e) x v error)
+  (e (e e) x v error ph)
   (x variable-not-otherwise-mentioned)
   (v (λ (x) e) number)
   (E (E e) (v E) hole))
@@ -24,10 +24,7 @@
         "error in operand")
    (--> (in-hole E ((λ (x) e) v))
         (in-hole E (subst x v e))
-        "βv")
-   #;(--> (in-hole E ((λ (x_1) e) x_2))
-        (in-hole E (subst (x_1 x_2) e))
-        "βv-x")))
+        "βv")))
 
 #;(define-metafunction λv
   rename : x x e -> e
@@ -51,6 +48,8 @@
   
   [(subst x_1 v_1 number_1)
    number_1]
+  [(subst x_1 v_1 ph)
+   ph]
   ;; 3. substitute in application
   [(subst x_1 v_1 (e_1 e_2))
    ((subst x_1 v_1 e_1) (subst x_1 v_1 e_2))]
