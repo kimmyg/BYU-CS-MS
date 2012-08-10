@@ -1152,6 +1152,32 @@ C[\mathrm{wcm}\,E\,F] &= \lambda k.\lambda m.(\lambda k_{1}.(k_{1}\,(m\,\lambda 
 C[\mathrm{ccm}]       &= \lambda k.\lambda m.(((m\,\lambda x.\lambda y.y)\,k)\,x
 \end{align*}
 
+{{{
+\renewcommand{\baselinestretch}{0.5}
+\begin{verbatim}
+\k.\m.(\k.(k (m \x.\y.y))
+       \s.(\k.(k \p.((p \x.\y.y) s))
+           \u.((C[e1]
+                \v.(\k.(k (((((s \x.x) \z.z)
+                             \x.\k.\m.(k \y.\k.\m.(k y)))
+                            \v.\k.\m.(k v)) \z.z))
+                    \t.(\k.(k (m \x.\y.x))
+                        \f.(\k.(k ((f t) s))
+                            \a.(\k.(k \p.((p \x.\y.x)
+                                          \k.\m.(k \p.\k.\m.(\k.(k (m \x.\y.y))
+                                                             \s.(\k.(k \p.((p \x.\y.y) s))
+                                                                 \n.((\k.\m.(\k.(k (m \x.\y.y))
+                                                                             \s.(\k.(k \p.((p \x.\y.y) s))
+                                                                                 \n.((\k.\m.(k p)
+                                                                                      \e.((\k.\m.(k v)
+                                                                                           \f.(((e f) k) m)) n)) n)))
+                                                                      \e.((a \f.(((e f) k) m)) n)) n))))))
+                                \m.((C[e2] k) m)))))) u)))
+\end{verbatim}
+}}}
+
+%keep the substitute-transform by doing C[E][e] (as opposed to C[E][C[e]])
+
 %For all contexts $E$, expressions $e$, marks $m$, and continuations $k$
 
 %for any context $E$, marks $m$, and continuation $k$, \emph{ccm} applies the continuation $k$ to the applied value of the marks $m$.
@@ -1332,9 +1358,9 @@ proof here
 %show that only values get put in the list?
 %that's a result of the call-by-value CPS
 
-\newtheorem*{maintheorem}{The awesomeness of $\mathcal{C}$}
+\newtheorem*{maintheorem}{Correctness of $\mathcal{C}$}
 \begin{maintheorem}
-For all contexts $E$, expressions $e$, continuations $k$ and marks encodings $m$, $E[e]\rightarrow_{\lambda_{cm}}v\Rightarrow \mathcal{C}[E][\mathcal{C}[e]]\rightarrow_{\lambda_{v}}\mathcal{C}[v]$.
+For all programs $p\in\lambda_{cm}$, $p\rightarrow_{\lambda_{cm}}^{*}v\Rightarrow \mathcal{C}[p]\rightarrow_{\lambda_{v}}^{*}\mathcal{C}[v]$.
 \end{maintheorem}
 
 %%%%%
@@ -1370,24 +1396,30 @@ For all contexts $E$, expressions $e$, continuations $k$ and marks encodings $m$
 
 
 %%%%%
-We need to show that for /every/ evaluation context (i.e. continuation), we get the same
-answer.
+%We need to show that for /every/ evaluation context (i.e. continuation), we get the same
+%answer.
 
-E=*, e=(ccm)
-E[e]=(ccm)
-C[E[e]]=\k.\m.(((m \x.\y.y) k) \z.z)
-v=\x.\y.y
-C[v]=\k.\m.(k \x.\k.\m.(k \y.\k.\m.(k y)))
+%E=*, e=(ccm)
+%E[e]=(ccm)
+%C[E[e]]=\k.\m.(((m \x.\y.y) k) \z.z)
+%v=\x.\y.y
+%C[v]=\k.\m.(k \x.\k.\m.(k \y.\k.\m.(k y)))
 
-((\k.\m.(((m \x.\y.y) k) \z.z) \v.\k.\m.(k v)) (#f,nil))
-(\m.(((m \x.\y.y) \v.\k.\m.(k v)) \z.z) (#f,nil))
-((((#f,nil) \x.\y.y) \v.\k.\m.(k v)) \z.z)
+%((\k.\m.(((m \x.\y.y) k) \z.z) \v.\k.\m.(k v)) (#f,nil))
+%(\m.(((m \x.\y.y) \v.\k.\m.(k v)) \z.z) (#f,nil))
+%((((#f,nil) \x.\y.y) \v.\k.\m.(k v)) \z.z)
 
-E=*, e=wcm e_1 e_2
+%E=*, e=wcm e_1 e_2
 
-C
+%C
 
+%E=wcm v_1 *, e=wcm e_1 e_2
+%C[E[e]]=
 
+\begin{verbatim}
+\x.x
+\y.y
+\end{verbatim}
 
 \begin{proof}[Case $e=E\,F$]
 
@@ -1577,6 +1609,69 @@ by structural induction (assumption that it contains the marks?), this holds
 \section{Future work}
 -use this idea in compiler?
 
+
+%
+% E*[(wcm e1 e2)] ->* E*[(wcm v1 e2)] -> E'*[(wcm v1 e2)] ->* E'*[(wcm v1 v2)] -> E'*[v2]
+% C[E*][C[(wcm e1 e2)]]
+% how do we know this thing works?
+% think of it like abstract interpretation?
+% we show they're the same by showing they commute
+% x = *[x] -> error
+% 
+% x e = (* e)[x] -> error
+% 
+% take any program p
+% it has one of these forms: (e e) (wcm e e) (ccm) x v
+% the evaluation of it must follow E[e] where (E,e) is one of these:
+% (*,...)?
+% (* e,(e e)), (* e,(wcm e e)), (* e,(ccm)), (* e,x), (* e,v)
+% (v *,(e e)), (v *,(wcm e e)), (v *,(ccm)), (v *,x), (v *,v)
+% (wcm * e,...)
+% (wcm v *,...)
+
+% we want to show that E[e] ->* v => C[E[e]] ->* C[v]
+% we may need something like C[E[e]] = C[E][C[e]]
+
+% take (*,(e1 e2))
+% assume e1 -> v1, e2 -> v2
+% by (structural) induction, we assume then that C[e1] -> C[v1], C[e2] -> C[v2]
+% we run (e1 e2) ->* (v1 e2) ->* (v1 v2) -> ?
+% then we run C[(e1 e2)] 'abstractly', assuming C[e1] -> C[v1], C[e2] -> C[v2]
+% and show what?
+
+% do we have to go as deep as the semantics need? e.g., (wcm v1 (wcm v2 e)) needs two levels deep
+
+% for now, suppose we ignore contexts
+
+% every program p takes one of these forms:
+% (e e) (wcm e e) (ccm) x v
+
+% consider (e1 e2)
+% assume e1 ->* v1, e2 ->* v2
+% assume by structural induction that C[e1] ->* C[v1], C[e2] ->* C[v2]
+% then show the steps to demonstrate (v1 v2) ->* v3 => C[v1 v2] ->* C[v3]
+
+% suppose that e1 ->* error
+% and by induction that C[e1] ->* C[error]
+% then show that (error e2) ->* error => C[error e2] ->* C[error]
+
+% consider (wcm e1 e2)
+% assume that e1 ->* v1 => e2 ->* v2 (yes, implication)
+% assume by structural induction that C[e1] ->* C[v1]
+% show that (wcm v1 e2) ->* (wcm v1 v2) => C[(wcm v1 e2)] ->* C[(wcm v1 v2)]
+% (this one probably isn't correct)
+
+% consider (ccm)
+% (ccm) ->* v1 (by definition)
+% show that C[(ccm)] ->* C[v1]
+
+% consider x
+% x -> error
+% show (by steps) that C[x] ->* C[error]
+
+% consider v
+% v is evaluated
+% show by steps that C[v] ->* C[v]
 \chapter{Conclusion}
 \bibliographystyle{plainnat}
 \bibliography{dissertation}
