@@ -106,6 +106,8 @@
 ;(traces λcm-rr p)
 ;(traces λv-rr (init (transform p)))
 
+;(trace '((λ (x) (x x)) (λ (x) (x x))))
+
 (define (apply-reduction-relation/n rr e n [i 0])
   (if (= i n)
       (list e)
@@ -127,7 +129,7 @@
 
 ;
 ;(transform-test '(λ (u) u))
-(trace '((λ (x366504) (λ (x366505) ((wcm (wcm (λ (x366506) x366504) (wcm 3 x366504)) (λ (x366507) x366505)) (λ (x366508) (λ (x366509) (wcm (λ (x366510) (λ (x366511) (x366505 2))) (λ (x366512) (λ (x366513) (wcm ((wcm 3 0) 2) 1))))))))) (λ (x366514) ((wcm (λ (x366515) x366515) x366514) x366514))))
+;(trace '((λ (x366504) (λ (x366505) ((wcm (wcm (λ (x366506) x366504) (wcm 3 x366504)) (λ (x366507) x366505)) (λ (x366508) (λ (x366509) (wcm (λ (x366510) (λ (x366511) (x366505 2))) (λ (x366512) (λ (x366513) (wcm ((wcm 3 0) 2) 1))))))))) (λ (x366514) ((wcm (λ (x366515) x366515) x366514) x366514))))
 ;(trace '((ccm) 2))
 
 (define (the-important-property-holds program)
@@ -154,7 +156,7 @@
                   (newline))))
     result))
 
-;(check random-cm-term the-important-property-holds #:attempts 25)
+(check random-cm-term the-important-property-holds #:attempts 10)
 
 
 ;(redex-check λcm e (the-important-property-holds (term e)) #:attempts 1000 #:prepare prepare-cm-term)
