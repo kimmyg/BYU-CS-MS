@@ -1620,14 +1620,7 @@ by structural induction (assumption that it contains the marks?), this holds
 % 
 % x e = (* e)[x] -> error
 % 
-% take any program p
-% it has one of these forms: (e e) (wcm e e) (ccm) x v
-% the evaluation of it must follow E[e] where (E,e) is one of these:
-% (*,...)?
-% (* e,(e e)), (* e,(wcm e e)), (* e,(ccm)), (* e,x), (* e,v)
-% (v *,(e e)), (v *,(wcm e e)), (v *,(ccm)), (v *,x), (v *,v)
-% (wcm * e,...)
-% (wcm v *,...)
+
 
 % we want to show that E[e] ->* v => C[E[e]] ->* C[v]
 % we may need something like C[E[e]] = C[E][C[e]]
@@ -1672,6 +1665,53 @@ by structural induction (assumption that it contains the marks?), this holds
 % consider v
 % v is evaluated
 % show by steps that C[v] ->* C[v]
+
+% now consider the context (continuation) in which an expression is evaluated
+% what we'll do is inductively strip away the continuation in layers
+% suppose we have (wcm e1 (wcm e2 (e3 e4) e5))
+% we show that C[(wcm v1 *)[(wcm e2 (e3 e4) e5)]] is the same as C[(wcm v1 *][C[(wcm e2 (e3 e4) e5)]]
+% C[E1[E2[E3[e]]]] <= C[E1][C[E2[E3[e]]]] <= C[E1][C[E2][C[E3[e]]] <= C[E1][C[E2][C[E3][C[e]]]]
+% (of course, these aren't static)
+% as in, if we can show C[E[e]]=C[E][C[e]], we can show the above
+
+% take any program p
+% it has one of these forms: (e e) (wcm e e) (ccm) x v
+% the evaluation of it must follow E[e] where (E,e) is one of these:
+% (*,...)?
+% (* e,(e e)), (* e,(wcm e e)), (* e,(ccm)), (* e,x), (* e,v)
+% (v *,(e e)), (v *,(wcm e e)), (v *,(ccm)), (v *,x), (v *,v)
+% (wcm * e,...)
+% (wcm v *,...)
+
+% for E=*, it is trivial since C[*]=*
+% for E=* e2, e=e1, show that C[e1 e2]=C[* e2][C[e1]]
+% we can argue this by virtue of the recursive nature of the transform
+
+% reason about (wcm (\x.x 2) (\y.y (ccm)))
+% (wcm 2 (\y.y (ccm)))
+% (wcm 2 (\y.y \p.((p 2) \x.\y.y)))
+% (wcm 2 \p.((p 2) \x.\y.y))
+% \p.((p 2) \x.\y.y)
+
+% C[(wcm (\x.x 2) (\y.y (ccm)))] =
+% C[(wcm * (\y.y (ccm)))][C[(\x.x 2)]] = 
+% C[(wcm * (\y.y (ccm)))][C[2]] =
+% C[(wcm 2 (\y.y (ccm)))] =
+% C[(wcm 2 *)][C[(\y.y (ccm))]] =
+% C[(wcm 2 *)][C[(\y.y *)][C[(ccm)]]] =
+% C[(wcm 2 *)][C[(\y.y *)][C[\p.((p 2) \x.\y.y)]]] (why?) =
+% C[(wcm 2 *)][C[(\y.y \p.((p 2) \x.\y.y))]] =
+% C[(wcm 2 *)][C[\p.((p 2) \x.\y.y)]] =
+% C[(wcm 2 \p.((p 2) \x.\y.y)] =
+% C[\p.((p 2) \x.\y.y)]
+
+% need to show that C[E[(ccm)]]=C[E][C[(ccm)]]?
+% C[E1[E2[(ccm)]]]=C[E1][C[E2[(ccm)]]]=C[E1][C[E2][C[(ccm)]]]
+% no, this is begging the question
+
+% show compositionality and "simulation"?
+% simulation: C[e1] -> C[v1], C[e2] -> C[v2] => (e1 e2) -> (v1 v2) or
+% (e1 e2) -> v1 => C[(e1 e2)] -> C[v1] (which of these two?)
 \chapter{Conclusion}
 \bibliographystyle{plainnat}
 \bibliography{dissertation}
