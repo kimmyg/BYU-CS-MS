@@ -1358,10 +1358,55 @@ proof here
 %show that only values get put in the list?
 %that's a result of the call-by-value CPS
 
+Let
+\[
+eval_{cm}(p)=\begin{cases}
+v     &\text{if $p\rightarrow_{cm}^{*}v$}\\
+\perp &\text{if $p\rightarrow_{cm}^{*}\cdots$}
+\end{cases}
+\]
+and
+\[
+eval_{v}(p)=\begin{cases}
+v     &\text{if $((p\,\lambda v.\lambda k.\lambda m.(k\,v))\,\lambda p.((p\,\lambda x.\lambda y.y)\,C[\lambda x.\lambda y.y]))\rightarrow_{v}^{*}v$}\\
+\perp &\text{if $((p\,\lambda v.\lambda k.\lambda m.(k\,v))\,\lambda p.((p\,\lambda x.\lambda y.y)\,C[\lambda x.\lambda y.y]))\rightarrow_{v}^{*}\cdots$}
+\end{cases}
+\]
+
+% define pair, false and nil in terms of church encodings
+
 \newtheorem*{maintheorem}{Correctness of $\mathcal{C}$}
 \begin{maintheorem}
-For all programs $p\in\lambda_{cm}$, $p\rightarrow_{\lambda_{cm}}^{*}v\Rightarrow \mathcal{C}[p]\rightarrow_{\lambda_{v}}^{*}\mathcal{C}[v]$.
+For all programs $p\in\lambda_{cm}$, $\mathcal{C}[eval_{cm}(p)]\Rightarrow eval_{v}(\mathcal{C}[p])$.
 \end{maintheorem}
+
+\[
+((\mathcal{C}[(\mathrm{wcm}\,e_0\,e_1)]\,k)\,\lambda p.((p\,\mathrm{flag})\,\mathcal{C}[\mathrm{ms}])
+\]
+
+% show that (wcm e0 e1) -> v means that C[(wcm e0 e1)] -> C[v]
+% we're showing C[(wcm v0 e1)] k (flag,vs) -> C[v] => C[e1] k (true,v0:vs) -> C[v]
+
+% C[(wcm v0 e1)] k (flag,vs) = C[e1] k (true,v0:vs)
+% C[(ccm)] k (flag,vs) = vs = C[ms]
+% ? => ( (wcm v0 e1) -> v1 => C[(wcm v0 e1)] -> C[v1])
+% (wcm v0 e1) -> v1 and C[(wcm v0 e1)] k (flag,ms) -> C[v1] <=> C[e1] k (true,v1:ms') -> C[v1] 
+
+
+% we want to show that (wcm 1 (ccm)) ->* [1] => C[(wcm 1 (ccm)] k (false,[]) ->* C[[1]]
+% 
+
+% C[(wcm 1 (wcm 2 (ccm)))] k (false,[])=C[(wcm 1 *)][C[(wcm 1 (wcm 2 (ccm)))] k] 
+% at the bottom, we have C[E[(ccm)]] k (false,[])-> chi(E) => C[(ccm)] k (true,[2,1]) -> [2,1]
+
+
+\[
+((\mathcal{C}[(\mathrm{wcm}\,e_0\,e_1)]\,k)\,\lambda p.((p\,\mathrm{flag})\,\mathcal{C}[\mathrm{vs}])\rightarrow_{v}^{*}((\mathcal{C}[(\mathrm{wcm}\,v_0\,e_1)]\,k)\,\lambda p.((p\,\mathrm{flag})\,\mathcal{C}[\mathrm{vs}])
+\]
+(inductive hypothesis asserts that $((\mathcal{C}[e_0]\,k')\,\lambda p.((p\,\lambda x.\lambda y.y)\,\mathcal{C}[\mathrm{vs}])$ will be correct)
+\[
+((\mathcal{C}[(\mathrm{wcm}\,v_0\,e_1)]\,k)\,\lambda p.((p\,\lambda x.\lambda y.y)\,\mathcal{C}[\mathrm{vs}])\equiv((\mathcal{C}[e_1]\,k)\,\lambda p.((p\,\lambda x.\lambda y.x)\,\mathcal{C}[v_0 : \mathrm{vs}])
+\]
 
 %%%%%
 
@@ -1642,7 +1687,7 @@ by structural induction (assumption that it contains the marks?), this holds
 % consider (e1 e2)
 % assume e1 ->* v1, e2 ->* v2
 % assume by structural induction that C[e1] ->* C[v1], C[e2] ->* C[v2]
-% then show the steps to demonstrate (v1 v2) ->* v3 => C[v1 v2] ->* C[v3]
+% then show the steps to demonstrate (v1 v2) ->* v3 => C[(v1 v2)] ->* C[v3]
 
 % suppose that e1 ->* error
 % and by induction that C[e1] ->* C[error]
@@ -1694,11 +1739,11 @@ by structural induction (assumption that it contains the marks?), this holds
 % \p.((p 2) \x.\y.y)
 
 % C[(wcm (\x.x 2) (\y.y (ccm)))] =
-% C[(wcm * (\y.y (ccm)))][C[(\x.x 2)]] = 
+% C[(wcm * (\y.y (ccm)))][C[(\x.x 2)]] -> 
 % C[(wcm * (\y.y (ccm)))][C[2]] =
 % C[(wcm 2 (\y.y (ccm)))] =
 % C[(wcm 2 *)][C[(\y.y (ccm))]] =
-% C[(wcm 2 *)][C[(\y.y *)][C[(ccm)]]] =
+% C[(wcm 2 *)][C[(\y.y *)][C[(ccm)]]] ->
 % C[(wcm 2 *)][C[(\y.y *)][C[\p.((p 2) \x.\y.y)]]] (why?) =
 % C[(wcm 2 *)][C[(\y.y \p.((p 2) \x.\y.y))]] =
 % C[(wcm 2 *)][C[\p.((p 2) \x.\y.y)]] =
@@ -1712,6 +1757,58 @@ by structural induction (assumption that it contains the marks?), this holds
 % show compositionality and "simulation"?
 % simulation: C[e1] -> C[v1], C[e2] -> C[v2] => (e1 e2) -> (v1 v2) or
 % (e1 e2) -> v1 => C[(e1 e2)] -> C[v1] (which of these two?)
+
+
+
+% define transformation of contexts
+% take fischer's CPS as an example
+% C[x] = \k.(k x)
+% C[\x.M] = \k.(k \x.C[M])
+% C[(M N)] = \k.(C[M] (\m.(C[N] (\n.((m n) k)))))
+
+% C[*] = *
+% C[E e] = \k.(C[E] (\v.(C[e] (\e'.((v e') k))))
+% C[v E] = \k.(C[v] (\v'.(C[E] (\e.((v' e) k))))
+
+% we have that C[E[e]]=C[E][C[e]]
+
+% E[(e1 e2)] -> E[v3] => C[E[(e1 e2)]] -> C[E[v3]]
+% proof
+% assume e1 -> v1 => C[e1] -> C[v1] and e2 -> v2 => C[e2] -> C[v2]
+% C[(e1 e2)] = C[(* e2)][C[e1]] -> C[(* e2)][C[v1]] = C[(v1 e2)] = 
+% C[(v1 *)][C[e2]] -> C[(v1 *)][C[v2]] = C[(v1 v2)]
+% then we evaluate abstractly to show that (v1 v2) -> v3 => C[(v1 v2)] => C[v3]
+% Is this specifically for the first rule in the semantics or for the general
+% proof about the transform?
+
+
+% for all E, E[(ccm)] -> E[v] => C[E[(ccm)]] -> C[E[v]]
+% proof
+% 
+
+% for all p in lambda-cm, p -> v => C[p] -> C[v]
+% p is of the form (e1 e2), (wcm e1 e2), (ccm), v or x
+% x goes to error
+% v is trivial
+
+% show that C[E[(wcm v1 (wcm v2 e1))]] -> C[E[(wcm v2 e1)]]?
+
+% at some level, we need to show that (false,C[ms]) -> (true,C[v:ms]) and (true,C[m:ms]) -> (true,C[v:ms])
+% and that (ccm) yields C[ms]
+% how about this: show that given (wcm v1 e1) and (flag,ms), it's equivalent to e1 (true,v1:ms')
+% where ms' is correct (do by case analysis on flag)
+% for (wcm e1 e2), assume e1 (false,ms) is correct by induction and -> v1
+% by C[(wcm * e2)][C[e1]]
+% for (e1 e2), assume e1 (false,ms) is correct by induction and -> v1
+% for (
+
+% establish that e1 -> v1 and e2 -> v2 and (v1 v2) -> v3 => C[(e1 e2)] -> C[v3] (by structural induction and abstract reduction)
+
+
+% case C[e] = C[(wcm e1 e2)] given k, (flag,vs)
+% C[(wcm * e2)][C[e1]], assume by induction C[e1] -> C[v1] is correct given k', (false,vs)
+% C[(wcm v1 *)][C[e2]]
+% if flag, assume by induction that (wcm  
 \chapter{Conclusion}
 \bibliographystyle{plainnat}
 \bibliography{dissertation}
