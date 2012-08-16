@@ -1200,59 +1200,59 @@ C[\mathrm{ccm}]       &= \lambda k.\lambda m.(((m\,\lambda x.\lambda y.y)\,k)\,x
 %First, every evaluation will have a continuation and marks state passed to it. 
 %Second, every continuation will be called with a "stripped" term--that is, 
 
-\newtheorem{thm}{Theorem}
-\newtheorem{case}{Case}
-\begin{thm}
-Every evaluation is passed a continuation and an encoding of the tail state and the marks.
-\end{thm}
-In a continuation-passing style, which we have adopted, the evaluation which occurs by application does so in two stages. First, the arguments of the application, the operator and operand, are evaluated. Second, the application itself is performed which effects the evaluation of the result.
-The evaluation which occurs within a \emph{wcm} form also occurs in two stages, and continuation-passing style is used to control these stages.
+%\newtheorem{thm}{Theorem}
+%\newtheorem{case}{Case}
+%\begin{thm}
+%Every evaluation is passed a continuation and an encoding of the tail state and the marks.
+%\end{thm}
+%In a continuation-passing style, which we have adopted, the evaluation which occurs by application does so in two stages. First, the arguments of the application, the operator and operand, are evaluated. Second, the application itself is performed which effects the evaluation of the result.
+%The evaluation which occurs within a \emph{wcm} form also occurs in two stages, and continuation-passing style is used to control these stages.
 
 %Application, \emph{wcm}, \emph{ccm}
-\begin{proof}
-\begin{case}
-$E\,F$
-\end{case}
-\begin{proof}
-proof of application
-\end{proof}
+%\begin{proof}
+%\begin{case}
+%$E\,F$
+%\end{case}
+%\begin{proof}
+%proof of application
+%\end{proof}
 
-\begin{case}
-$\mathrm{wcm}\,E\,F$
-\end{case}
-\begin{proof}
-stuff
-\end{proof}
+%\begin{case}
+%$\mathrm{wcm}\,E\,F$
+%\end{case}
+%\begin{proof}
+%stuff
+%\end{proof}
 
-\begin{case}
-$\mathrm{ccm}$
-\end{case}
-\begin{proof}
-stuff
-\end{proof}
-This completes the proof.
-\end{proof}
+%\begin{case}
+%$\mathrm{ccm}$
+%\end{case}
+%\begin{proof}
+%stuff
+%\end{proof}
+%This completes the proof.
+%\end{proof}
 
-\begin{thm}
-Every continuation is applied to a stripped term.
-\end{thm}
+%\begin{thm}
+%Every continuation is applied to a stripped term.
+%\end{thm}
 %a term without a leading continuation and marks state parameterization but otherwise identical to a transformed term.
 
-\begin{proof}[Case $x$]
-stuff
-\end{proof}
-\begin{proof}[Case $\lambda x.E$]
-stuff
-\end{proof}
-\begin{proof}[Case $E\,F$]
-stuff
-\end{proof}
-\begin{proof}[Case $\mathrm{wcm}\,E\,F$]
-stuff
-\end{proof}
-\begin{proof}[Case $\mathrm{ccm}$]
-stuff
-\end{proof}
+%\begin{proof}[Case $x$]
+%stuff
+%\end{proof}
+%\begin{proof}[Case $\lambda x.E$]
+%stuff
+%\end{proof}
+%\begin{proof}[Case $E\,F$]
+%stuff
+%\end{proof}
+%\begin{proof}[Case $\mathrm{wcm}\,E\,F$]
+%stuff
+%\end{proof}
+%\begin{proof}[Case $\mathrm{ccm}$]
+%stuff
+%\end{proof}
 
 %e=e e
 %  wcm e e
@@ -1295,46 +1295,46 @@ stuff
 %(wcm e' e'') (true,[v])
 %the transform reduces the first value, respecting the tail flag
 
-\newtheorem{case_tpf}{Case}
-\begin{thm}
-The tail position flag is correct meaning it is true if and only if the context $E=\mathrm{wcm}\,v\,F$.
-\end{thm}
-\begin{proof}
-\begin{case_tpf}
-$E=\mathrm{hole}$ %The beginning of evaluation (hole, here?) passes false, which is correct.
-\begin{proof}
-By definition, the initial continuation marks tail position flag is false.
-\end{proof}
-\end{case_tpf}
-\begin{case_tpf}
-$E=(E\,e)$
-\begin{proof}
-proof here
-\end{proof}
-\end{case_tpf}
-\begin{case_tpf}
-$E=(v\,E)$
-\begin{proof}
-proof here
-\end{proof}
-\end{case_tpf}
-\begin{case_tpf}
-$E=(\mathrm{wcm}\,E\,e)$
-\begin{proof}
-proof here
-\end{proof}
-\end{case_tpf}
-\begin{case_tpf}
-$E=(\mathrm{wcm}\,e\,F)$
-\begin{proof}
-proof here
-\end{proof}
-\end{case_tpf}
+%\newtheorem{case_tpf}{Case}
+%\begin{thm}
+%The tail position flag is correct meaning it is true if and only if the context $E=\mathrm{wcm}\,v\,F$.
+%\end{thm}
+%\begin{proof}
+%\begin{case_tpf}
+%$E=\mathrm{hole}$ %The beginning of evaluation (hole, here?) passes false, which is correct.
+%\begin{proof}
+%By definition, the initial continuation marks tail position flag is false.
+%\end{proof}
+%\end{case_tpf}
+%\begin{case_tpf}
+%$E=(E\,e)$
+%\begin{proof}
+%proof here
+%\end{proof}
+%\end{case_tpf}
+%\begin{case_tpf}
+%$E=(v\,E)$
+%\begin{proof}
+%proof here
+%\end{proof}
+%\end{case_tpf}
+%\begin{case_tpf}
+%$E=(\mathrm{wcm}\,E\,e)$
+%\begin{proof}
+%proof here
+%\end{proof}
+%\end{case_tpf}
+%\begin{case_tpf}
+%$E=(\mathrm{wcm}\,e\,F)$
+%\begin{proof}
+%proof here
+%\end{proof}
+%\end{case_tpf}
 %E e passes false
 %v E passes false
 %wcm E e passes false
 %wcm v F passes true
-\end{proof}
+%\end{proof}
 
 %The tail marks list is correct.
 %Proof
@@ -1358,6 +1358,8 @@ proof here
 %show that only values get put in the list?
 %that's a result of the call-by-value CPS
 
+Define $\textbf{true}=\lambda x.\lambda y.x$, $\textbf{false}=\lambda x.\lambda y.y$, and $\textbf{nil}=\lambda x.\lambda y.y$.
+
 Let
 \[
 eval_{cm}(p)=\begin{cases}
@@ -1368,8 +1370,8 @@ v     &\text{if $p\rightarrow_{cm}^{*}v$}\\
 and
 \[
 eval_{v}(p)=\begin{cases}
-v     &\text{if $((p\,\lambda v.\lambda k.\lambda m.(k\,v))\,\lambda p.((p\,\lambda x.\lambda y.y)\,C[\lambda x.\lambda y.y]))\rightarrow_{v}^{*}v$}\\
-\perp &\text{if $((p\,\lambda v.\lambda k.\lambda m.(k\,v))\,\lambda p.((p\,\lambda x.\lambda y.y)\,C[\lambda x.\lambda y.y]))\rightarrow_{v}^{*}\cdots$}
+v     &\text{if $((p\,\lambda v.\lambda k.\lambda m.(k\,v))\,\lambda p.((p\,\textbf{false})\,C[\textbf{nil}]))\rightarrow_{v}^{*}v$}\\
+\perp &\text{if $((p\,\lambda v.\lambda k.\lambda m.(k\,v))\,\lambda p.((p\,\textbf{false})\,C[\textbf{nil}]))\rightarrow_{v}^{*}\cdots$}
 \end{cases}
 \]
 
@@ -1383,6 +1385,9 @@ For all programs $p\in\lambda_{cm}$, $\mathcal{C}[eval_{cm}(p)]\Rightarrow eval_
 \[
 ((\mathcal{C}[(\mathrm{wcm}\,e_0\,e_1)]\,k)\,\lambda p.((p\,\mathrm{flag})\,\mathcal{C}[\mathrm{ms}])
 \]
+
+% C[(e0 e1)] -> C[(* e1)][C[e0]] ->* C[(* e1)][C[v0]] -> C[(v0 e1)] -> C[(v0 *)][C[e1]]
+% ->* C[(v0 *)][C[v1]] -> C[(v0 v1)] ->* C[v2]
 
 % show that (wcm e0 e1) -> v means that C[(wcm e0 e1)] -> C[v]
 % we're showing C[(wcm v0 e1)] k (flag,vs) -> C[v] => C[e1] k (true,v0:vs) -> C[v]
@@ -1399,6 +1404,31 @@ For all programs $p\in\lambda_{cm}$, $\mathcal{C}[eval_{cm}(p)]\Rightarrow eval_
 % C[(wcm 1 (wcm 2 (ccm)))] k (false,[])=C[(wcm 1 *)][C[(wcm 1 (wcm 2 (ccm)))] k] 
 % at the bottom, we have C[E[(ccm)]] k (false,[])-> chi(E) => C[(ccm)] k (true,[2,1]) -> [2,1]
 
+% basically, we compute the chi metafunction as we go
+% we can show we follow the rules
+% \x.e v -> e[x<-v]
+% (wcm v v') -> v'
+% (wcm v (wcm v' e)) -> (wcm v' e)
+% (ccm) -> chi(E)
+
+% for all contexts E, snd m = C[chi(E)]
+% structural induction on contexts
+% case E=*, snd m = C[nil] = C[chi(E)]
+% case E=wcm v E'
+
+% prove that the marks argument is the evaluation of the chi metafunction
+
+% for every program p, the evaluations are the same
+% p -> v => C[p] -> C[v]
+% proof
+% p is of the form (e0 e1), (wcm e0 e1), (ccm), \x.e, or x
+% case (e0 e1): (e0 e1) -> v1 => C[(e0 e1)] -> C[v1]
+% assume e0 -> v0 => C[e0] -> C[v0], e1 -> v1 => C[e1] -> C[v1]
+% show 
+
+% case (wcm e0 e1)
+% C[(wcm e0 e1)] -> C[(wcm * e1)][C[e0]] ->* C[(wcm * e1)][C[v0]] -> C[(wcm v0 e1)]
+% -> C[
 
 \[
 ((\mathcal{C}[(\mathrm{wcm}\,e_0\,e_1)]\,k)\,\lambda p.((p\,\mathrm{flag})\,\mathcal{C}[\mathrm{vs}])\rightarrow_{v}^{*}((\mathcal{C}[(\mathrm{wcm}\,v_0\,e_1)]\,k)\,\lambda p.((p\,\mathrm{flag})\,\mathcal{C}[\mathrm{vs}])
@@ -1466,20 +1496,20 @@ For all programs $p\in\lambda_{cm}$, $\mathcal{C}[eval_{cm}(p)]\Rightarrow eval_
 \y.y
 \end{verbatim}
 
-\begin{proof}[Case $e=E\,F$]
+%\begin{proof}[Case $e=E\,F$]
 
-\end{proof}
+%\end{proof}
 
-\begin{proof}[Case $E=\mathrm{wcm}\,hole e$, $redex=wcm\,E'\,F'$]
-evaluate v (pretend it's not a value)
-attach to marks according to outer context
+%\begin{proof}[Case $E=\mathrm{wcm}\,hole e$, $redex=wcm\,E'\,F'$]
+%evaluate v (pretend it's not a value)
+%attach to marks according to outer context
 
-\end{proof}
+%\end{proof}
 
-\begin{proof}[Case $E=\mathrm{wcm}\,v hole$, $e=wcm\,E'\,F'$]
-evaluate v (pretend it's not a value)
-attach to marks according to outer context (flag)
-pass continuation unmodified and (true,marks) to F'
+%\begin{proof}[Case $E=\mathrm{wcm}\,v hole$, $e=wcm\,E'\,F'$]
+%evaluate v (pretend it's not a value)
+%attach to marks according to outer context (flag)
+%pass continuation unmodified and (true,marks) to F'
 
 %\x.M N -> M[x:=N]
 %(wcm v (wcm v' E)) -> (wcm v' E)
@@ -1492,45 +1522,45 @@ pass continuation unmodified and (true,marks) to F'
 %(wcm v' (wcm E'' F)) replace in list, mark flag true
 %(wcm v' (wcm v'' F)) evaluate mark
 %(wcm v'' F) replace in list, mark flag true
-\end{proof}
+%\end{proof}
 
-If we're dealing with the outermost context, the continuation is $\lambda x.\lambda k.\lambda m.(k x)$.
+%If we're dealing with the outermost context, the continuation is $\lambda x.\lambda k.\lambda m.(k x)$.
 
-\begin{proof}[something]
-By theorem 2, the continuation $k$ is always applied to a "stripped" value. The supplied continuation serves to unstrip it. Thus, the end result of the computation is identical to a transformed value.
-\end{proof}
+%\begin{proof}[something]
+%By theorem 2, the continuation $k$ is always applied to a "stripped" value. The supplied continuation serves to unstrip it. Thus, the end result of the computation is identical to a transformed value.
+%\end{proof}
 
-so, why does (wcm 1 (wcm 2 (ccm)) evaluate as it should?
+%so, why does (wcm 1 (wcm 2 (ccm)) evaluate as it should?
 
-1 is evaluated and attached to the list according to the tail flag
-the continuation is passed unmodified indicating a tail call
-thus, evaluation proceeds like this
+%1 is evaluated and attached to the list according to the tail flag
+%the continuation is passed unmodified indicating a tail call
+%thus, evaluation proceeds like this
 
-(wcm 1 (wcm 2 (ccm))) (false,[])
-(wcm 2 (ccm)) (true,[1])
-(ccm) (true,[2])
-[2]
+%(wcm 1 (wcm 2 (ccm))) (false,[])
+%(wcm 2 (ccm)) (true,[1])
+%(ccm) (true,[2])
+%[2]
 
-provide an interpreter or new semantics for lambdacm that has the list of continuation 
-marks on the side. the semantics of this are
+%provide an interpreter or new semantics for lambdacm that has the list of continuation 
+%marks on the side. the semantics of this are
 
 %\x.E F (_,vs) -> E[x:=F] (false,vs)
 %(wcm v E) (false,vs) -> E (true,v:vs)
 %(wcm v E) (true,v':vs) -> E (true,v:vs)
 %(ccm) (_,vs) -> vs
 
-how do we show that these semantics are the same as the given?
-also, since we're throwing around semantics, cite the source of the given semantics
+%how do we show that these semantics are the same as the given?
+%also, since we're throwing around semantics, cite the source of the given semantics
 
-call this reduction relation b where the other is a
-then the property we want to show is
+%call this reduction relation b where the other is a
+%then the property we want to show is
 
-\[
-E\rightarrow_{a}v\Rightarrow(E,(false,[]))\rightarrow_{b}v
-\]
+%\[
+%E\rightarrow_{a}v\Rightarrow(E,(false,[]))\rightarrow_{b}v
+%\]
 
-this won't work entirely because there is not a stack of states
-consider (wcm E e)
+%this won't work entirely because there is not a stack of states
+%consider (wcm E e)
 
 %so (wcm E e) (_,vs) -> E (false,vs) -> (wcm v E) (_,vs)
 
@@ -1561,11 +1591,11 @@ consider (wcm E e)
 
 
 
-\begin{proof}[Case $e=\mathrm{ccm}$]
-receives a continuation and marks argument by 1
-passes continuation and dummy variable by definition
-by structural induction (assumption that it contains the marks?), this holds
-\end{proof}
+%\begin{proof}[Case $e=\mathrm{ccm}$]
+%receives a continuation and marks argument by 1
+%passes continuation and dummy variable by definition
+%by structural induction (assumption that it contains the marks?), this holds
+%\end{proof}
 
 %Why does ccm have the same output as C[ccm] \x.\k.\m.(k x) \p.((p \x.\y.y) \k.\m.(k \x.\k.\m.(k \y.\k.\m.(k y))))
 %proof of equivalence
@@ -1646,13 +1676,13 @@ by structural induction (assumption that it contains the marks?), this holds
 %-formalize properties and state as theorems
 %-prove each theorem
 
-\section{C}
-\subsection{properties of C}
-\subsection{preservation theorem}
--informally analyze time/space complexity (via reductions)
--introduce ``direct-style'' transform (using static/dynamic continuation?)
-\section{Future work}
--use this idea in compiler?
+%\section{C}
+%\subsection{properties of C}
+%\subsection{preservation theorem}
+%-informally analyze time/space complexity (via reductions)
+%-introduce ``direct-style'' transform (using static/dynamic continuation?)
+%\section{Future work}
+%-use this idea in compiler?
 
 
 %
@@ -1809,7 +1839,7 @@ by structural induction (assumption that it contains the marks?), this holds
 % C[(wcm * e2)][C[e1]], assume by induction C[e1] -> C[v1] is correct given k', (false,vs)
 % C[(wcm v1 *)][C[e2]]
 % if flag, assume by induction that (wcm  
-\chapter{Conclusion}
+%\chapter{Conclusion}
 \bibliographystyle{plainnat}
 \bibliography{dissertation}
 
