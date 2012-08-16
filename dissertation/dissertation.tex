@@ -1176,7 +1176,7 @@ C[\mathrm{ccm}]       &= \lambda k.\lambda m.(((m\,\lambda x.\lambda y.y)\,k)\,x
 \end{verbatim}
 }}}
 
-Define $\textbf{true}=\lambda x.\lambda y.x$, $\textbf{false}=\lambda x.\lambda y.y$, and $\textbf{nil}=\lambda x.\lambda y.y$.
+Define $\textbf{true}=\lambda x.\lambda y.x$, $\textbf{false}=\lambda x.\lambda y.y$, $\textbf{nil}=\lambda x.\lambda y.y$, and $\textbf{(}\lceil x\rceil\textbf{,}\lceil y\rceil\textbf{)}=\lambda p.((p\,\lceil x\rceil),\lceil y\rceil)$.
 
 Let
 \[
@@ -1193,10 +1193,24 @@ v     &\text{if $((p\,\lambda v.\lambda k.\lambda m.(k\,v))\,\lambda p.((p\,\tex
 \end{cases}
 \]
 
+\newtheorem{theorem}{Theorem}
+
 \newtheorem*{maintheorem}{Correctness of $\mathcal{C}$}
 \begin{maintheorem}
 For all programs $p\in\lambda_{cm}$, $\mathcal{C}[eval_{cm}(p)]\Rightarrow eval_{v}(\mathcal{C}[p])$.
 \end{maintheorem}
+
+\begin{theorem}
+Test
+\begin{align*}
+            &((\mathcal{C}[(\mathrm{wcm}\,v_0\,e_1)]\,k)\,\lambda p.((p\,\mathbf{false})\,\mathcal{C}[\mathit{ms}]))\rightarrow_{\lambda_{v}}^{*}\mathcal{C}[v_1]\\
+\Rightarrow &((\mathcal{C}[e_1]\,k)\,\lambda p.((p\,\mathbf{true})\,\mathcal{C}[\lambda p.((p\,v_0)\,\mathit{ms})])\rightarrow_{\lambda_{v}}^{*}\mathcal{C}[v_1]
+\end{align*}
+\begin{align*}
+            &((\mathcal{C}[(\mathrm{wcm}\,v_0\,e_1)]\,k)\,\lambda p.((p\,\mathbf{true})\,\mathcal{C}[\lambda p.((p\,m)\,\mathit{ms})]))\rightarrow_{\lambda_{v}}^{*}\mathcal{C}[v_1]\\
+\Rightarrow &((\mathcal{C}[e_1]\,k)\,\lambda p.((p\,\mathbf{true})\,\mathcal{C}[\lambda p.((p\,v_0)\,\mathit{ms})])\rightarrow_{\lambda_{v}}^{*}\mathcal{C}[v_1]
+\end{align*}
+\end{theorem}
 
 \[
 ((\mathcal{C}[(\mathrm{wcm}\,e_0\,e_1)]\,k)\,\lambda p.((p\,\mathrm{flag})\,\mathcal{C}[\mathrm{ms}])
@@ -1210,6 +1224,35 @@ For all programs $p\in\lambda_{cm}$, $\mathcal{C}[eval_{cm}(p)]\Rightarrow eval_
 ((\mathcal{C}[(\mathrm{wcm}\,v_0\,e_1)]\,k)\,\lambda p.((p\,\lambda x.\lambda y.y)\,\mathcal{C}[\mathrm{vs}])\equiv((\mathcal{C}[e_1]\,k)\,\lambda p.((p\,\lambda x.\lambda y.x)\,\mathcal{C}[v_0 : \mathrm{vs}])
 \]
 
+
+% for all p, C[p] \v.\k.\m.(k v) (false,nil) = C[v] (for p ->* v)
+% p is of form (e0 e1), (wcm e0 e1), (ccm), \x.e0, x, or error
+% for (e0 e1), show C[(e0 e1)] -> C[(* e1)][C[e0]] ->* C[(* e1)][C[v0]] -> ... -> C[(v0 v1)] ->* C[v3]
+% for (wcm e0 e1):
+% show C[(wcm e0 e1)] -> C[(wcm * e1)][C[e0]] ->* C[(wcm * e1)][C[v0]]
+% show C[(wcm v0 e1)] k (flag,C[vs]) = C[e1] k (true,C[v:vs'])
+% show C[(wcm v0 (wcm v1 e2))] -> C[(wcm v1 e2)]
+% for (ccm)
+% show that for all contexts E, snd m=C[chi(E)] so that C[E][C[(ccm)]]=C[(ccm)] k (flag,C[chi(E)]) -> C[chi(E)]
+% for \x.e0, it's a value so it holds
+% for x, x -> error, C[x] \v.\k.\m.(k v) (false,nil)
+% = \k.\m.(k x) \v.\k.\m.(k v) (false,nil)
+% -> \m.(\v.\k.\m.(k v) x) (false,nil)
+% -> \v.\k.\m.(k v) x
+% -> \v.\k.\m.(k v) error
+% -> error
+% where x is any variable; this is what we mean by 'show'
+
+% for all contexts E, snd m = C[chi(E)]
+% case *[any?]
+% snd m = C[nil] = C[chi(E)]
+% case (wcm * e1)[e0]
+
+% C[(wcm v0 (wcm v1 e2))] k (false,C[vs]) = C[(wcm v1 e2)] k (true,C[v0:vs]) = C[e2] k (true,C[v1:vs])
+% C[(wcm e0 e1)] k (flag,C[vs]) -> C[(wcm * e1)] k
+
+
+% C[E[(ccm)]] k (?,C[nil]?) = C[(ccm)] k (flag,C[chi(E)]) -> \k.\m.(((snd m) k) \z.z) \v.\k.\m.(k v) (flag,C[chi(E)]) -> \m.(((snd m) \v.\k.\m.(k v)) \z.z) -> (((snd (flag,C[chi(E)])) \v.\k.\m.(k v)) \z.z) -> ((C[chi(E)] \v.\k.\m.(k v)) \z.z)
 
 \bibliographystyle{plainnat}
 \bibliography{dissertation}
