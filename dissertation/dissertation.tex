@@ -1130,6 +1130,8 @@ and then to the marks argument
 
 We certainly could reduce this by steps and see it work, but that would give us no intuition as to \emph{why} it works. Recall that our transform, in CPS spirit, augments each call site with two additional parameters, the second being an encoding of the tail position of the context and the continuation marks. The transform of $ccm$ discards the tail-position encoding and applies the supplied continuation to the encoding of the continuation marks. However, as each call site also requires an argument encoding the marks, a dummy variable is passed. This is sound as the marks parameter does not bind any variable in the body, so the dummy variable is promptly ignored. In this process, the double abstraction surrounding the list has been stripped away and should be restored. This is accomplished by the passed continuation which does exactly that. Since the result of the reduction is known to be irreducible--that is, either a variable or an abstraction--and since irreducible terms are wrapped in the same way, we can wrap the value manually, yielding a transformed value as if directly.
 
+Programs in $\lambda_{cm}$ can observe the context in which they are evaluated. Programs in $\lambda_v$, however, cannot. The intuition behind the transform is to 
+
 %---
 %ok
 
@@ -1194,12 +1196,144 @@ v     &\text{if $((p\,\lambda v.\lambda k.\lambda m.(k\,v))\,\lambda p.((p\,\tex
 \]
 
 \newtheorem{theorem}{Theorem}
+\newtheorem{case}{Case}
 
 \newtheorem*{maintheorem}{Correctness of $\mathcal{C}$}
 \begin{maintheorem}
 For all programs $p\in\lambda_{cm}$, $\mathcal{C}[eval_{cm}(p)]\Rightarrow eval_{v}(\mathcal{C}[p])$.
 \end{maintheorem}
+\begin{proof}
+A program $p$ must take the form $(e_0\,e_1)$, $(\mathrm{wcm}\,e_0\,e_1)$, $(\mathrm{ccm})$, $v_0$, or $x$. We will consider each case.
 
+%snd = \p.(p \x.\y.y)
+
+\begin{proof}[Case $(e_0\,e_1)$]
+\begin{align*}
+  &((\mathcal{C}[(e_0\,e_1)]\,k)\,\textbf{(}\textbf{flag}\textbf{,}\mathcal{C}[vs]\textbf{)})\\
+= &((\lambda k.\lambda m.(\lambda k.(k\,(\textbf{snd}\,m))\,\lambda s.(\lambda k.(k\,\textbf{(}\textbf{false}\textbf{,}s\textbf{)})\,\lambda n.((\mathcal{C}[e_0]\,\lambda e.((\mathcal{C}[e_1]\,\lambda f.(((e\,f)\,k)\,m))\,n))\,n)))\,k)\,\textbf{(}\textbf{flag}\textbf{,}\mathcal{C}[vs]\textbf{)})
+\end{align*}
+
+\begin{align*}
+                        &((\lambda k.\lambda m.(\lambda k.(k\,(\textbf{snd}\,m))\,\lambda s.(\lambda k.(k\,\textbf{(}\textbf{false}\textbf{,}s\textbf{)})\,\lambda n.((\mathcal{C}[e_0]\,\lambda e.((\mathcal{C}[e_1]\,\lambda f.(((e\,f)\,k)\,m)\,n)\,n))\,k)\,\textbf{(}\textit{flag}\textbf{,}\mathcal{C}[vs]\textbf{)})\\
+\rightarrow_{\lambda_v} &(\lambda m.(\lambda k.(k\,(\textbf{snd}\,m))\,\lambda s.(\lambda k.(k\,\textbf{(}\textbf{false}\textbf{,}s\textbf{)})\,\lambda n.((\mathcal{C}[e_0]\,\lambda e.((\mathcal{C}[e_1]\,\lambda f.(((e\,f)\,k)\,m)\,n)\,n))\,\textbf{(}\textit{flag}\textbf{,}\mathcal{C}[vs]\textbf{)})\\
+\rightarrow_{\lambda_v} &(\lambda k.(k\,(\textbf{snd}\,\textbf{(}\textit{flag}\textbf{,}\mathcal{C}[vs]\textbf{)}))\,\lambda s.(\lambda k.(k\,\textbf{(}\textbf{false}\textbf{,}s\textbf{)})\,\lambda n.((\mathcal{C}[e_0]\,\lambda e.((\mathcal{C}[e_1]\,\lambda f.(((e\,f)\,k)\,\textbf{(}\textit{flag}\textbf{,}\mathcal{C}[vs]\textbf{)})\,n)\,n))\\
+\rightarrow_{\lambda_v} &(\lambda s.(\lambda k.(k\,\textbf{(}\textbf{false}\textbf{,}s\textbf{)})\,\lambda n.((\mathcal{C}[e_0]\,\lambda e.((\mathcal{C}[e_1]\,\lambda f.(((e\,f)\,k)\,\textbf{(}\textit{flag}\textbf{,}\mathcal{C}[vs]\textbf{)})\,n)\,n)\,(\textbf{snd}\,\textbf{(}\textit{flag}\textbf{,}\mathcal{C}[vs]\textbf{)})))\\
+\rightarrow_{\lambda_v} &(\lambda s.(\lambda k.(k\,\textbf{(}\textbf{false}\textbf{,}s\textbf{)})\,\lambda n.((\mathcal{C}[e_0]\,\lambda e.((\mathcal{C}[e_1]\,\lambda f.(((e\,f)\,k)\,\textbf{(}\textit{flag}\textbf{,}\mathcal{C}[vs]\textbf{)})\,n)\,n)\,\mathcal{C}[vs]))\\
+\rightarrow_{\lambda_v} &(\lambda k.(k\,\textbf{(}\textbf{false}\textbf{,}\mathcal{C}[vs]\textbf{)})\,\lambda n.((\mathcal{C}[e_0]\,\lambda e.((\mathcal{C}[e_1]\,\lambda f.(((e\,f)\,k)\,\textbf{(}\textit{flag}\textbf{,}\mathcal{C}[vs]\textbf{)})\,n)\,n))\\
+\rightarrow_{\lambda_v} &(\lambda n.((\mathcal{C}[e_0]\,\lambda e.((\mathcal{C}[e_1]\,\lambda f.(((e\,f)\,k)\,\textbf{(}\textit{flag}\textbf{,}\mathcal{C}[vs]\textbf{)}))\,n)\,n)\,\textbf{(}\textbf{false}\textbf{,}\mathcal{C}[vs]\textbf{)})\\
+\rightarrow_{\lambda_v} &((\mathcal{C}[e_0]\,\lambda e.((\mathcal{C}[e_1]\,\lambda f.(((e\,f)\,k)\,\textbf{(}\textit{flag}\textbf{,}\mathcal{C}[vs]\textbf{)})\,\textbf{(}\textbf{false}\textbf{,}\mathcal{C}[vs]\textbf{)})\,\textbf{(}\textbf{false}\textbf{,}\mathcal{C}[vs]\textbf{)})\\
+\rightarrow_{\lambda_v} &((\mathcal{C}[e_0]\,\lambda e.((\mathcal{C}[e_1]\,\lambda f.(((e\,f)\,k)\,\textbf{(}\textit{flag}\textbf{,}\mathcal{C}[vs]\textbf{)})\,\textbf{(}\textbf{false}\textbf{,}\mathcal{C}[vs]\textbf{)})\,\textbf{(}\textbf{false}\textbf{,}\mathcal{C}[vs]\textbf{)})\\
+\rightarrow_{\lambda_v}^{*} &((\mathcal{C}[e_1]\,\lambda f.(((\lambda x.\mathcal{C}[e_0']\,f)\,k)\,\textbf{(}\textit{flag}\textbf{,}\mathcal{C}[vs]\textbf{)})\,\textbf{(}\textbf{false}\textbf{,}\mathcal{C}[vs]\textbf{)})\\
+\rightarrow_{\lambda_v}^{*} &(((\lambda x.\mathcal{C}[e_0']\,\lambda y.\mathcal{C}[e_1'])\,k)\,\textbf{(}\textit{flag}\textbf{,}\mathcal{C}[vs]\textbf{)})\\
+\end{align*}
+\end{proof}
+
+\begin{proof}[Case $(\mathrm{wcm}\,e_0\,e_1)$]
+
+Test
+
+$((\mathcal{C}[(\mathrm{wcm}\,e_0\,e_1)]\,k)\,\textbf{(}\textbf{true}\textbf{,}\mathcal{C}[\textbf{(}v\textbf{,}vs\textbf{)}]\textbf{)})$
+
+$((\mathcal{C}[(\mathrm{wcm}\,e_0\,e_1)]\,k)\,\textbf{(}\textbf{false}\textbf{,}\mathcal{C}[vs]\textbf{)})$
+\end{proof}
+
+\begin{proof}[Case $(\mathrm{ccm})$]
+
+\begin{align*}
+  &((\mathcal{C}[(\mathrm{ccm})]\,k)\,\textbf{(}\textit{flag}\textbf{,}\mathcal{C}[vs]\textbf{)})\\
+= &((\lambda k.\lambda m.(((\mathbf{snd}\,m)\,k)\,\lambda z.z)\,k)\,\textbf{(}\textit{flag}\textbf{,}\mathcal{C}[vs]\textbf{)})
+\end{align*}
+
+\begin{align*}
+                        &((\lambda k.\lambda m.(((\mathbf{snd}\,m)\,k)\,\lambda z.z)\,k)\,\textbf{(}\textit{flag}\textbf{,}\mathcal{C}[vs]\textbf{)})\\
+\rightarrow_{\lambda_v} &(\lambda m.(((\mathbf{snd}\,m)\,k)\,\lambda z.z)\,\textbf{(}\textit{flag}\textbf{,}\mathcal{C}[vs]\textbf{)})\\
+\rightarrow_{\lambda_v} &(((\mathbf{snd}\,\textbf{(}\textit{flag}\textbf{,}\mathcal{C}[vs]\textbf{)})\,k)\,\lambda z.z)\\
+\rightarrow_{\lambda_v} &((\mathcal{C}[vs]\,k)\,\lambda z.z)\\
+\end{align*}
+
+\end{proof}
+
+\begin{proof}[Case $v_0$]
+\begin{align*}
+  &((\mathcal{C}[v_0]\,\lambda v.\lambda k.\lambda m.(k\,v))\,\textbf{(}\textit{flag}\textbf{,}\mathcal{C}[vs]\textbf{)})\\
+= &((\mathcal{C}[\lambda x.e_0]\,\lambda v.\lambda k.\lambda m.(k\,v))\,\textbf{(}\textit{flag}\textbf{,}\mathcal{C}[vs]\textbf{)})\\
+= &((\lambda k.\lambda m.(k\,\lambda x.\mathcal{C}[e_0])\,\lambda v.\lambda k.\lambda m.(k\,v))\,\textbf{(}\textit{flag}\textbf{,}\mathcal{C}[vs]\textbf{)})\\
+\end{align*}
+
+\begin{align*}
+                        &((\lambda k.\lambda m.(k\,\lambda x.\mathcal{C}[e_0])\,\lambda v.\lambda k.\lambda m.(k\,v))\,\textbf{(}\textit{flag}\textbf{,}\mathcal{C}[vs]\textbf{)})\\
+\rightarrow_{\lambda_v} &(\lambda m.(\lambda v.\lambda k.\lambda m.(k\,v)\,\lambda x.\mathcal{C}[e_0])\,\textbf{(}\textit{flag}\textbf{,}\mathcal{C}[vs]\textbf{)})\\
+\rightarrow_{\lambda_v} &(\lambda v.\lambda k.\lambda m.(k\,v)\,\lambda x.\mathcal{C}[e_0])\\
+\rightarrow_{\lambda_v} &\lambda k.\lambda m.(k\,\lambda x.\mathcal{C}[e_0])\\
+\end{align*}
+
+\begin{align*}
+  &\lambda k.\lambda m.(k\,\lambda x.\mathcal{C}[e_0])\\
+= &\mathcal{C}[\lambda x.e_0]\\
+= &\mathcal{C}[v_0]\\
+\end{align*}
+\end{proof}
+
+\begin{proof}[Case $x$]
+\begin{align*}
+  &((\mathcal{C}[x]\,\lambda v.\lambda k.\lambda m.(k\,v))\,\textbf{(}\textit{flag}\textbf{,}\mathcal{C}[vs]\textbf{)})\\
+= &((\lambda k.\lambda m.(k\,x)\,\lambda v.\lambda k.\lambda m.(k\,v))\,\textbf{(}\textit{flag}\textbf{,}\mathcal{C}[vs]\textbf{)})\\
+\end{align*}
+
+\begin{align*}
+                        &((\lambda k.\lambda m.(k\,x)\,\lambda v.\lambda k.\lambda m.(k\,v))\,\textbf{(}\textit{flag}\textbf{,}\mathcal{C}[vs]\textbf{)})\\
+\rightarrow_{\lambda_v} &(\lambda m.(\lambda v.\lambda k.\lambda m.(k\,v)\,x)\,\textbf{(}\textit{flag}\textbf{,}\mathcal{C}[vs]\textbf{)})\\
+\rightarrow_{\lambda_v} &(\lambda v.\lambda k.\lambda m.(k\,v)\,x)\\
+\rightarrow_{\lambda_v} &(\lambda v.\lambda k.\lambda m.(k\,v)\,\mathrm{error})\\
+\rightarrow_{\lambda_v} &\mathrm{error}\\
+\end{align*}
+\end{proof}
+
+\end{proof}
+
+\begin{theorem}
+For all contexts $E$,
+
+$((\mathcal{C}[(\mathrm{wcm}\,v_0\,e_1)]\,k)\,\textbf{(}\textbf{true}\textbf{,}\mathcal{C}[\textbf{(}v\textbf{,}vs\textbf{)}]\textbf{)})\equiv((\mathcal{C}[e_1]\,k)\,\textbf{(}\textbf{true}\textbf{,}\mathcal{C}[\textbf{(}v_0\textbf{,}vs\textbf{)}]\textbf{)})$
+
+The above implies $((\mathcal{C}[(\mathrm{wcm}\,v_0\,(\mathrm{wcm}\,v_1\,e_2))]\,k)\,\textbf{(}\textbf{false}\textbf{,}\mathcal{C}[vs]\textbf{)})$
+
+$((\mathcal{C}[(\mathrm{wcm}\,v_0\,e_1)]\,k)\,\textbf{(}\textbf{false}\textbf{,}\mathcal{C}[vs]\textbf{)})\equiv((\mathcal{C}[e_1]\,k)\,\textbf{(}\textbf{true}\textbf{,}\mathcal{C}[\textbf{(}v_0\textbf{,}vs\textbf{)}]\textbf{)})$
+
+$((\mathcal{C}[E[e]]\,k)\,\textbf{(}\textbf{false}\textbf{,}\mathcal{C}[vs]\textbf{)})\equiv((\mathcal{C}[e]\,k)\,\textbf{(}\textit{flag}\textbf{,}\mathcal{C}[\chi(E)]\textbf{)})$
+
+by induction
+
+when E=*, it holds
+suppose E=E'[(wcm v1 *)], E'[(* e1)], E'[(v0 *)], E'[(wcm * e1)], E'[*]
+
+assume it holds for E'
+
+E=(E' e1), (v0 E'), (wcm E' e1), (wcm v0 E'), or *
+
+
+base case at start: k (false,C[nil])
+
+assume C[e] k (flag,C[chi(E)])
+
+C[(e0 e1)] k (flag,C[chi(E)]) -> C[(* e1)[e0]] k (flag,
+
+% C[*] = *
+% C[(* e1)] k (flag,C[vs]) = ((C[e1] \f.(((* f) k) (flag,C[vs]))) (false,C[vs]))
+% C[(* e1)] = \k.\m.(\k.(k (snd m)) \s.(\k.(k (false,s)) \n.((C[e1] \f.(((* f) k) (flag,C[vs]))) n))
+% C[(v0 *)] k (flag,C[vs]) = (((v0 *) k) (flag,C[vs]))
+% C[(v0 *)] = \k.\m.(((v0 *) k) m)
+% C[(wcm * e1)] = 
+% C[(wcm v0 *)] = 
+
+   ((C[(e0 e1)] k) (flag,C[vs]))
+-> ((C[(* e1)] k) (flag,C[vs]))[((C[e0] k') (false,C[vs]))
+
+   ((C[(wcm e0 e1)] k) (flag,C[vs]))
+-> ((C[(wcm * e1)
+
+
+\end{theorem}
 \begin{theorem}
 Test
 \begin{align*}
@@ -1253,6 +1387,9 @@ Test
 
 
 % C[E[(ccm)]] k (?,C[nil]?) = C[(ccm)] k (flag,C[chi(E)]) -> \k.\m.(((snd m) k) \z.z) \v.\k.\m.(k v) (flag,C[chi(E)]) -> \m.(((snd m) \v.\k.\m.(k v)) \z.z) -> (((snd (flag,C[chi(E)])) \v.\k.\m.(k v)) \z.z) -> ((C[chi(E)] \v.\k.\m.(k v)) \z.z)
+
+
+
 
 \bibliographystyle{plainnat}
 \bibliography{dissertation}
