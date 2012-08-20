@@ -234,7 +234,7 @@ My wife is the hottest thing ever.
 
 \usepackage{amsmath}
 \usepackage{amsthm}
-%\usepackage{slatex}
+\usepackage{slatex}
 
 \begin{document}
 
@@ -1182,49 +1182,91 @@ Define $\textbf{true}=\lambda x.\lambda y.x$, $\textbf{false}=\lambda x.\lambda 
 
 Let
 \[
-eval_{cm}(p)=\begin{cases}
+\mathrm{eval}_{cm}(p)=\begin{cases}
 v     &\text{if $p\rightarrow_{cm}^{*}v$}\\
 \perp &\text{if $p\rightarrow_{cm}^{*}\cdots$}
 \end{cases}
 \]
 and
 \[
-eval_{v}(p)=\begin{cases}
+\mathrm{eval}_{v}(p)=\begin{cases}
 v     &\text{if $((p\,\lambda v.\lambda k.\lambda m.(k\,v))\,\lambda p.((p\,\textbf{false})\,C[\textbf{nil}]))\rightarrow_{v}^{*}v$}\\
 \perp &\text{if $((p\,\lambda v.\lambda k.\lambda m.(k\,v))\,\lambda p.((p\,\textbf{false})\,C[\textbf{nil}]))\rightarrow_{v}^{*}\cdots$}
 \end{cases}
 \]
+
+% C[eval_cm[p]]=eval_v[C[p]]
+
+% suppose we know ((C[E[e]] k) (false,C[nil])) ->* C[v] <= ((C[e] k) (flag,C[chi(E)])) -> C[v]
+% ((C[(wcm e0 e1)] k) (false,chi(E)))\equiv ((C[e1] k) (true,
+
+% composeability doesn't rely on evaluation
+
+% C[E][C[e]] = C[E[e]]
+% we want to be able to say
+% C[(wcm e0 e1)] = C[(wcm * e1)][C[e0]]
 
 \newtheorem{theorem}{Theorem}
 \newtheorem{case}{Case}
 
 \newtheorem*{maintheorem}{Correctness of $\mathcal{C}$}
 \begin{maintheorem}
-For all programs $p\in\lambda_{cm}$, $\mathcal{C}[eval_{cm}(p)]\Rightarrow eval_{v}(\mathcal{C}[p])$.
+For all programs $p\in\lambda_{cm}$, $\mathcal{C}[\mathrm{eval}_{cm}(p)]=\mathrm{eval}_{v}(\mathcal{C}[p])$.
 \end{maintheorem}
 \begin{proof}
 A program $p$ must take the form $(e_0\,e_1)$, $(\mathrm{wcm}\,e_0\,e_1)$, $(\mathrm{ccm})$, $v_0$, or $x$. We will consider each case.
 
+By some lemma, we know that $((C[(e_0\,e_1)] k) (flag,\chi(E)))\rightarrow_{\lambda_{v}}^{*}((C[v]\,k)\,(flag,\chi(E)))$ iff $E[(e_0\,e_1)]\rightarrow_{\lambda_{cm}}^{*}v$
+
+%C[(wcm e0 e1)] k (true,chi(E))
+% by structural induction, we know C[e0] k' (false,chi(E')) (where E'=E(wcm * e1) and chi(E')=chi(E))
+% ->* C[v0] k' (false,chi(E'))?
+
+%C[(wcm v0 *)][C[e1]] (true,chi(E))\equiv
+
+
+%C[(wcm e0 e1)] k (flag,chi(E)) yields
+%C[e0] k' (false,chi(E')) where E'=E(wcm * e1) and then
+%C[e1] k (true,chi(E'')) where E''=E^(wcm v1 *) and E^ is correct wrt tail behavior
+
+%C[(e0 e1)] k (flag,chi(E)) yields
+%C[e0] k' (false,chi(E')) where E'=E(* e1)
+%C[e1] k'' (false,chi(E'')) where E''=E(v0 *)
+
+% C[(ccm)] k (flag,C[chi(E)])
+% -> C[(chi(E)] k \z.z
+
+%in program proof
+%
+
 %snd = \p.(p \x.\y.y)
 
 \begin{proof}[Case $(e_0\,e_1)$]
+%\begin{align*}
+Assume $(\bullet\,e_1)[e_0]\rightarrow_{\lambda_{cm}}^{*}(\bullet\,e_1)[v_0]$ and $(v_0\,\bullet)[e_1]\rightarrow_{\lambda_{cm}}^{*}(v_0\,\bullet)[v_1]$
+\[
+\mathrm{eval}_{cm}((e_0\,e_1))=(v_0\,v_1)=(\lambda x.e_0'\,v_1)=e_0'[x\leftarrow v_1]\\
+\]
+%\end{align*}
 \begin{align*}
-  &((\mathcal{C}[(e_0\,e_1)]\,k)\,\textbf{(}\textbf{flag}\textbf{,}\mathcal{C}[vs]\textbf{)})\\
-= &((\lambda k.\lambda m.(\lambda k.(k\,(\textbf{snd}\,m))\,\lambda s.(\lambda k.(k\,\textbf{(}\textbf{false}\textbf{,}s\textbf{)})\,\lambda n.((\mathcal{C}[e_0]\,\lambda e.((\mathcal{C}[e_1]\,\lambda f.(((e\,f)\,k)\,m))\,n))\,n)))\,k)\,\textbf{(}\textbf{flag}\textbf{,}\mathcal{C}[vs]\textbf{)})
+= &((\mathcal{C}[(e_0\,e_1)]\,k)\,\textbf{(}\textit{flag}\textbf{,}\mathcal{C}[\chi(E)]\textbf{)})\\
+= &((\lambda k.\lambda m.(\lambda k.(k\,(\textbf{snd}\,m))\,\lambda s.(\lambda k.(k\,\textbf{(}\textbf{false}\textbf{,}s\textbf{)})\,\lambda n.((\mathcal{C}[e_0]\,\lambda e.((\mathcal{C}[e_1]\,\lambda f.(((e\,f)\,k)\,m))\,n))\,n)))\,k)\,\textbf{(}\textit{flag}\textbf{,}\mathcal{C}[\chi(E)]\textbf{)})
 \end{align*}
 
 \begin{align*}
-                        &((\lambda k.\lambda m.(\lambda k.(k\,(\textbf{snd}\,m))\,\lambda s.(\lambda k.(k\,\textbf{(}\textbf{false}\textbf{,}s\textbf{)})\,\lambda n.((\mathcal{C}[e_0]\,\lambda e.((\mathcal{C}[e_1]\,\lambda f.(((e\,f)\,k)\,m)\,n)\,n))\,k)\,\textbf{(}\textit{flag}\textbf{,}\mathcal{C}[vs]\textbf{)})\\
-\rightarrow_{\lambda_v} &(\lambda m.(\lambda k.(k\,(\textbf{snd}\,m))\,\lambda s.(\lambda k.(k\,\textbf{(}\textbf{false}\textbf{,}s\textbf{)})\,\lambda n.((\mathcal{C}[e_0]\,\lambda e.((\mathcal{C}[e_1]\,\lambda f.(((e\,f)\,k)\,m)\,n)\,n))\,\textbf{(}\textit{flag}\textbf{,}\mathcal{C}[vs]\textbf{)})\\
-\rightarrow_{\lambda_v} &(\lambda k.(k\,(\textbf{snd}\,\textbf{(}\textit{flag}\textbf{,}\mathcal{C}[vs]\textbf{)}))\,\lambda s.(\lambda k.(k\,\textbf{(}\textbf{false}\textbf{,}s\textbf{)})\,\lambda n.((\mathcal{C}[e_0]\,\lambda e.((\mathcal{C}[e_1]\,\lambda f.(((e\,f)\,k)\,\textbf{(}\textit{flag}\textbf{,}\mathcal{C}[vs]\textbf{)})\,n)\,n))\\
-\rightarrow_{\lambda_v} &(\lambda s.(\lambda k.(k\,\textbf{(}\textbf{false}\textbf{,}s\textbf{)})\,\lambda n.((\mathcal{C}[e_0]\,\lambda e.((\mathcal{C}[e_1]\,\lambda f.(((e\,f)\,k)\,\textbf{(}\textit{flag}\textbf{,}\mathcal{C}[vs]\textbf{)})\,n)\,n)\,(\textbf{snd}\,\textbf{(}\textit{flag}\textbf{,}\mathcal{C}[vs]\textbf{)})))\\
-\rightarrow_{\lambda_v} &(\lambda s.(\lambda k.(k\,\textbf{(}\textbf{false}\textbf{,}s\textbf{)})\,\lambda n.((\mathcal{C}[e_0]\,\lambda e.((\mathcal{C}[e_1]\,\lambda f.(((e\,f)\,k)\,\textbf{(}\textit{flag}\textbf{,}\mathcal{C}[vs]\textbf{)})\,n)\,n)\,\mathcal{C}[vs]))\\
-\rightarrow_{\lambda_v} &(\lambda k.(k\,\textbf{(}\textbf{false}\textbf{,}\mathcal{C}[vs]\textbf{)})\,\lambda n.((\mathcal{C}[e_0]\,\lambda e.((\mathcal{C}[e_1]\,\lambda f.(((e\,f)\,k)\,\textbf{(}\textit{flag}\textbf{,}\mathcal{C}[vs]\textbf{)})\,n)\,n))\\
-\rightarrow_{\lambda_v} &(\lambda n.((\mathcal{C}[e_0]\,\lambda e.((\mathcal{C}[e_1]\,\lambda f.(((e\,f)\,k)\,\textbf{(}\textit{flag}\textbf{,}\mathcal{C}[vs]\textbf{)}))\,n)\,n)\,\textbf{(}\textbf{false}\textbf{,}\mathcal{C}[vs]\textbf{)})\\
-\rightarrow_{\lambda_v} &((\mathcal{C}[e_0]\,\lambda e.((\mathcal{C}[e_1]\,\lambda f.(((e\,f)\,k)\,\textbf{(}\textit{flag}\textbf{,}\mathcal{C}[vs]\textbf{)})\,\textbf{(}\textbf{false}\textbf{,}\mathcal{C}[vs]\textbf{)})\,\textbf{(}\textbf{false}\textbf{,}\mathcal{C}[vs]\textbf{)})\\
-\rightarrow_{\lambda_v} &((\mathcal{C}[e_0]\,\lambda e.((\mathcal{C}[e_1]\,\lambda f.(((e\,f)\,k)\,\textbf{(}\textit{flag}\textbf{,}\mathcal{C}[vs]\textbf{)})\,\textbf{(}\textbf{false}\textbf{,}\mathcal{C}[vs]\textbf{)})\,\textbf{(}\textbf{false}\textbf{,}\mathcal{C}[vs]\textbf{)})\\
-\rightarrow_{\lambda_v}^{*} &((\mathcal{C}[e_1]\,\lambda f.(((\lambda x.\mathcal{C}[e_0']\,f)\,k)\,\textbf{(}\textit{flag}\textbf{,}\mathcal{C}[vs]\textbf{)})\,\textbf{(}\textbf{false}\textbf{,}\mathcal{C}[vs]\textbf{)})\\
-\rightarrow_{\lambda_v}^{*} &(((\lambda x.\mathcal{C}[e_0']\,\lambda y.\mathcal{C}[e_1'])\,k)\,\textbf{(}\textit{flag}\textbf{,}\mathcal{C}[vs]\textbf{)})\\
+                        &((\lambda k.\lambda m.(\lambda k.(k\,(\textbf{snd}\,m))\,\lambda s.(\lambda k.(k\,\textbf{(}\textbf{false}\textbf{,}s\textbf{)})\,\lambda n.((\mathcal{C}[e_0]\,\lambda e.((\mathcal{C}[e_1]\,\lambda f.(((e\,f)\,k)\,m)\,n)\,n))\,k)\,\textbf{(}\textit{flag}\textbf{,}\mathcal{C}[\chi(E)]\textbf{)})\\
+\rightarrow_{\lambda_v} &(\lambda m.(\lambda k.(k\,(\textbf{snd}\,m))\,\lambda s.(\lambda k.(k\,\textbf{(}\textbf{false}\textbf{,}s\textbf{)})\,\lambda n.((\mathcal{C}[e_0]\,\lambda e.((\mathcal{C}[e_1]\,\lambda f.(((e\,f)\,k)\,m)\,n)\,n))\,\textbf{(}\textit{flag}\textbf{,}\mathcal{C}[\chi(E)]\textbf{)})\\
+\rightarrow_{\lambda_v} &(\lambda k.(k\,(\textbf{snd}\,\textbf{(}\textit{flag}\textbf{,}\mathcal{C}[\chi(E)]\textbf{)}))\,\lambda s.(\lambda k.(k\,\textbf{(}\textbf{false}\textbf{,}s\textbf{)})\,\lambda n.((\mathcal{C}[e_0]\,\lambda e.((\mathcal{C}[e_1]\,\lambda f.(((e\,f)\,k)\,\textbf{(}\textit{flag}\textbf{,}\mathcal{C}[\chi(E)]\textbf{)})\,n)\,n))\\
+\rightarrow_{\lambda_v} &(\lambda s.(\lambda k.(k\,\textbf{(}\textbf{false}\textbf{,}s\textbf{)})\,\lambda n.((\mathcal{C}[e_0]\,\lambda e.((\mathcal{C}[e_1]\,\lambda f.(((e\,f)\,k)\,\textbf{(}\textit{flag}\textbf{,}\mathcal{C}[\chi(E)]\textbf{)})\,n)\,n)\,(\textbf{snd}\,\textbf{(}\textit{flag}\textbf{,}\mathcal{C}[\chi(E)]\textbf{)})))\\
+\rightarrow_{\lambda_v} &(\lambda s.(\lambda k.(k\,\textbf{(}\textbf{false}\textbf{,}s\textbf{)})\,\lambda n.((\mathcal{C}[e_0]\,\lambda e.((\mathcal{C}[e_1]\,\lambda f.(((e\,f)\,k)\,\textbf{(}\textit{flag}\textbf{,}\mathcal{C}[\chi(E)]\textbf{)})\,n)\,n)\,\mathcal{C}[\chi(E)]))\\
+\rightarrow_{\lambda_v} &(\lambda k.(k\,\textbf{(}\textbf{false}\textbf{,}\mathcal{C}[\chi(E)]\textbf{)})\,\lambda n.((\mathcal{C}[e_0]\,\lambda e.((\mathcal{C}[e_1]\,\lambda f.(((e\,f)\,k)\,\textbf{(}\textit{flag}\textbf{,}\mathcal{C}[\chi(E)]\textbf{)})\,n)\,n))\\
+\rightarrow_{\lambda_v} &(\lambda n.((\mathcal{C}[e_0]\,\lambda e.((\mathcal{C}[e_1]\,\lambda f.(((e\,f)\,k)\,\textbf{(}\textit{flag}\textbf{,}\mathcal{C}[\chi(E)]\textbf{)}))\,n)\,n)\,\textbf{(}\textbf{false}\textbf{,}\mathcal{C}[\chi(E)]\textbf{)})\\
+\rightarrow_{\lambda_v} &((\mathcal{C}[e_0]\,\lambda e.((\mathcal{C}[e_1]\,\lambda f.(((e\,f)\,k)\,\textbf{(}\textit{flag}\textbf{,}\mathcal{C}[\chi(E)]\textbf{)})\,\textbf{(}\textbf{false}\textbf{,}\mathcal{C}[\chi(E)]\textbf{)})\,\textbf{(}\textbf{false}\textbf{,}\mathcal{C}[\chi(E)]\textbf{)})\\
+\rightarrow_{\lambda_v} &((\mathcal{C}[e_0]\,\lambda e.((\mathcal{C}[e_1]\,\lambda f.(((e\,f)\,k)\,\textbf{(}\textit{flag}\textbf{,}\mathcal{C}[\chi(E)]\textbf{)})\,\textbf{(}\textbf{false}\textbf{,}\mathcal{C}[\chi(E)]\textbf{)})\,\textbf{(}\textbf{false}\textbf{,}\mathcal{C}[\chi(E)]\textbf{)})\\
+\rightarrow_{\lambda_v}^{*} &((\mathcal{C}[e_1]\,\lambda f.(((\lambda x.\mathcal{C}[e_0']\,f)\,k)\,\textbf{(}\textit{flag}\textbf{,}\mathcal{C}[\chi(E)]\textbf{)})\,\textbf{(}\textbf{false}\textbf{,}\mathcal{C}[\chi(E)]\textbf{)})\\
+\rightarrow_{\lambda_v}^{*} &(((\lambda x.\mathcal{C}[e_0']\,\lambda y.\mathcal{C}[e_1'])\,k)\,\textbf{(}\textit{flag}\textbf{,}\mathcal{C}[\chi(E)]\textbf{)})\\
+\rightarrow_{\lambda_v}^{*} &(((\mathcal{C}[e_0'][x\leftarrow\lambda y.\mathcal{C}[e_1']]\,k)\,\textbf{(}\textit{flag}\textbf{,}\mathcal{C}[\chi(E)]\textbf{)})\\
+\rightarrow_{\lambda_v}^{*}? &(((\mathcal{C}[e_0'[x\leftarrow v_1]]\,k)\,\textbf{(}\textit{flag}\textbf{,}\mathcal{C}[\chi(E)]\textbf{)})\\
 \end{align*}
 \end{proof}
 
@@ -1234,35 +1276,57 @@ Test
 
 $((\mathcal{C}[(\mathrm{wcm}\,e_0\,e_1)]\,k)\,\textbf{(}\textbf{true}\textbf{,}\mathcal{C}[\textbf{(}v\textbf{,}vs\textbf{)}]\textbf{)})$
 
-$((\mathcal{C}[(\mathrm{wcm}\,e_0\,e_1)]\,k)\,\textbf{(}\textbf{false}\textbf{,}\mathcal{C}[vs]\textbf{)})$
+$((\mathcal{C}[(\mathrm{wcm}\,e_0\,e_1)]\,k)\,\textbf{(}\textbf{false}\textbf{,}\mathcal{C}[\chi(E)]\textbf{)})$
 \end{proof}
 
 \begin{proof}[Case $(\mathrm{ccm})$]
 
+\[
+((\mathcal{C}[E[(ccm)]]\,k)\,\textbf{(}\textbf{false}\textbf{,}\mathcal{C}[\textbf{nil}]\textbf{)})\equiv((\mathcal{C}[(ccm)]\,k')\,\textbf{(}\textit{flag}\textbf{,}\mathcal{C}[\chi(E)]\textbf{)})
+\]
+
 \begin{align*}
-  &((\mathcal{C}[(\mathrm{ccm})]\,k)\,\textbf{(}\textit{flag}\textbf{,}\mathcal{C}[vs]\textbf{)})\\
-= &((\lambda k.\lambda m.(((\mathbf{snd}\,m)\,k)\,\lambda z.z)\,k)\,\textbf{(}\textit{flag}\textbf{,}\mathcal{C}[vs]\textbf{)})
+  &((\mathcal{C}[(\mathrm{ccm})]\,k)\,\textbf{(}\textit{flag}\textbf{,}\mathcal{C}[\chi(E)]\textbf{)})\\
+= &((\lambda k.\lambda m.(((\mathbf{snd}\,m)\,k)\,\lambda z.z)\,k)\,\textbf{(}\textit{flag}\textbf{,}\mathcal{C}[\chi(E)]\textbf{)})
 \end{align*}
 
 \begin{align*}
-                        &((\lambda k.\lambda m.(((\mathbf{snd}\,m)\,k)\,\lambda z.z)\,k)\,\textbf{(}\textit{flag}\textbf{,}\mathcal{C}[vs]\textbf{)})\\
-\rightarrow_{\lambda_v} &(\lambda m.(((\mathbf{snd}\,m)\,k)\,\lambda z.z)\,\textbf{(}\textit{flag}\textbf{,}\mathcal{C}[vs]\textbf{)})\\
-\rightarrow_{\lambda_v} &(((\mathbf{snd}\,\textbf{(}\textit{flag}\textbf{,}\mathcal{C}[vs]\textbf{)})\,k)\,\lambda z.z)\\
-\rightarrow_{\lambda_v} &((\mathcal{C}[vs]\,k)\,\lambda z.z)\\
+                        &((\lambda k.\lambda m.(((\mathbf{snd}\,m)\,k)\,\lambda z.z)\,k)\,\textbf{(}\textit{flag}\textbf{,}\mathcal{C}[\chi(E)]\textbf{)})\\
+\rightarrow_{\lambda_v} &(\lambda m.(((\mathbf{snd}\,m)\,k)\,\lambda z.z)\,\textbf{(}\textit{flag}\textbf{,}\mathcal{C}[\chi(E)]\textbf{)})\\
+\rightarrow_{\lambda_v} &(((\mathbf{snd}\,\textbf{(}\textit{flag}\textbf{,}\mathcal{C}[\chi(E)]\textbf{)})\,k)\,\lambda z.z)\\
+\rightarrow_{\lambda_v} &((\mathcal{C}[\chi(E)]\,k)\,\lambda z.z)\\
+\end{align*}
+
+\begin{align*}
+  &((\mathcal{C}[\chi(E)]\,k)\,\lambda z.z)\\
+= &((\mathcal{C}[\chi(E)]\,\lambda v.\lambda k.\lambda m.(k\,v))\,\lambda z.z)\\
+= &((\lambda k.\lambda m.(k\,\lambda x.\mathcal{C}[v'])\,\lambda v.\lambda k.\lambda m.(k\,v))\,\lambda z.z)\\
+\end{align*}
+
+\begin{align*}
+                        &((\lambda k.\lambda m.(k\,\lambda x.\mathcal{C}[v'])\,\lambda v.\lambda k.\lambda m.(k\,v))\,\lambda z.z)\\
+\rightarrow_{\lambda_v} &(\lambda m.(\lambda v.\lambda k.\lambda m.(k\,v)\,\lambda x.\mathcal{C}[v'])\,\lambda z.z)\\
+\rightarrow_{\lambda_v} &(\lambda v.\lambda k.\lambda m.(k\,v)\,\lambda x.\mathcal{C}[v'])\\
+\rightarrow_{\lambda_v} &\lambda k.\lambda m.(k\,\lambda x.\mathcal{C}[v'])\\
+\end{align*}
+
+\begin{align*}
+  &\lambda k.\lambda m.(k\,\lambda x.\mathcal{C}[v'])\\
+= &\mathcal{C}[\chi(E)]\\
 \end{align*}
 
 \end{proof}
 
 \begin{proof}[Case $v_0$]
 \begin{align*}
-  &((\mathcal{C}[v_0]\,\lambda v.\lambda k.\lambda m.(k\,v))\,\textbf{(}\textit{flag}\textbf{,}\mathcal{C}[vs]\textbf{)})\\
-= &((\mathcal{C}[\lambda x.e_0]\,\lambda v.\lambda k.\lambda m.(k\,v))\,\textbf{(}\textit{flag}\textbf{,}\mathcal{C}[vs]\textbf{)})\\
-= &((\lambda k.\lambda m.(k\,\lambda x.\mathcal{C}[e_0])\,\lambda v.\lambda k.\lambda m.(k\,v))\,\textbf{(}\textit{flag}\textbf{,}\mathcal{C}[vs]\textbf{)})\\
+  &((\mathcal{C}[v_0]\,\lambda v.\lambda k.\lambda m.(k\,v))\,\textbf{(}\textit{flag}\textbf{,}\mathcal{C}[\chi(E)]\textbf{)})\\
+= &((\mathcal{C}[\lambda x.e_0]\,\lambda v.\lambda k.\lambda m.(k\,v))\,\textbf{(}\textit{flag}\textbf{,}\mathcal{C}[\chi(E)]\textbf{)})\\
+= &((\lambda k.\lambda m.(k\,\lambda x.\mathcal{C}[e_0])\,\lambda v.\lambda k.\lambda m.(k\,v))\,\textbf{(}\textit{flag}\textbf{,}\mathcal{C}[\chi(E)]\textbf{)})\\
 \end{align*}
 
 \begin{align*}
-                        &((\lambda k.\lambda m.(k\,\lambda x.\mathcal{C}[e_0])\,\lambda v.\lambda k.\lambda m.(k\,v))\,\textbf{(}\textit{flag}\textbf{,}\mathcal{C}[vs]\textbf{)})\\
-\rightarrow_{\lambda_v} &(\lambda m.(\lambda v.\lambda k.\lambda m.(k\,v)\,\lambda x.\mathcal{C}[e_0])\,\textbf{(}\textit{flag}\textbf{,}\mathcal{C}[vs]\textbf{)})\\
+                        &((\lambda k.\lambda m.(k\,\lambda x.\mathcal{C}[e_0])\,\lambda v.\lambda k.\lambda m.(k\,v))\,\textbf{(}\textit{flag}\textbf{,}\mathcal{C}[\chi(E)]\textbf{)})\\
+\rightarrow_{\lambda_v} &(\lambda m.(\lambda v.\lambda k.\lambda m.(k\,v)\,\lambda x.\mathcal{C}[e_0])\,\textbf{(}\textit{flag}\textbf{,}\mathcal{C}[\chi(E)]\textbf{)})\\
 \rightarrow_{\lambda_v} &(\lambda v.\lambda k.\lambda m.(k\,v)\,\lambda x.\mathcal{C}[e_0])\\
 \rightarrow_{\lambda_v} &\lambda k.\lambda m.(k\,\lambda x.\mathcal{C}[e_0])\\
 \end{align*}
@@ -1276,13 +1340,13 @@ $((\mathcal{C}[(\mathrm{wcm}\,e_0\,e_1)]\,k)\,\textbf{(}\textbf{false}\textbf{,}
 
 \begin{proof}[Case $x$]
 \begin{align*}
-  &((\mathcal{C}[x]\,\lambda v.\lambda k.\lambda m.(k\,v))\,\textbf{(}\textit{flag}\textbf{,}\mathcal{C}[vs]\textbf{)})\\
-= &((\lambda k.\lambda m.(k\,x)\,\lambda v.\lambda k.\lambda m.(k\,v))\,\textbf{(}\textit{flag}\textbf{,}\mathcal{C}[vs]\textbf{)})\\
+  &((\mathcal{C}[x]\,\lambda v.\lambda k.\lambda m.(k\,v))\,\textbf{(}\textit{flag}\textbf{,}\mathcal{C}[\chi(E)]\textbf{)})\\
+= &((\lambda k.\lambda m.(k\,x)\,\lambda v.\lambda k.\lambda m.(k\,v))\,\textbf{(}\textit{flag}\textbf{,}\mathcal{C}[\chi(E)]\textbf{)})\\
 \end{align*}
 
 \begin{align*}
-                        &((\lambda k.\lambda m.(k\,x)\,\lambda v.\lambda k.\lambda m.(k\,v))\,\textbf{(}\textit{flag}\textbf{,}\mathcal{C}[vs]\textbf{)})\\
-\rightarrow_{\lambda_v} &(\lambda m.(\lambda v.\lambda k.\lambda m.(k\,v)\,x)\,\textbf{(}\textit{flag}\textbf{,}\mathcal{C}[vs]\textbf{)})\\
+                        &((\lambda k.\lambda m.(k\,x)\,\lambda v.\lambda k.\lambda m.(k\,v))\,\textbf{(}\textit{flag}\textbf{,}\mathcal{C}[\chi(E)]\textbf{)})\\
+\rightarrow_{\lambda_v} &(\lambda m.(\lambda v.\lambda k.\lambda m.(k\,v)\,x)\,\textbf{(}\textit{flag}\textbf{,}\mathcal{C}[\chi(E)]\textbf{)})\\
 \rightarrow_{\lambda_v} &(\lambda v.\lambda k.\lambda m.(k\,v)\,x)\\
 \rightarrow_{\lambda_v} &(\lambda v.\lambda k.\lambda m.(k\,v)\,\mathrm{error})\\
 \rightarrow_{\lambda_v} &\mathrm{error}\\
@@ -1296,41 +1360,429 @@ For all contexts $E$,
 
 $((\mathcal{C}[(\mathrm{wcm}\,v_0\,e_1)]\,k)\,\textbf{(}\textbf{true}\textbf{,}\mathcal{C}[\textbf{(}v\textbf{,}vs\textbf{)}]\textbf{)})\equiv((\mathcal{C}[e_1]\,k)\,\textbf{(}\textbf{true}\textbf{,}\mathcal{C}[\textbf{(}v_0\textbf{,}vs\textbf{)}]\textbf{)})$
 
-The above implies $((\mathcal{C}[(\mathrm{wcm}\,v_0\,(\mathrm{wcm}\,v_1\,e_2))]\,k)\,\textbf{(}\textbf{false}\textbf{,}\mathcal{C}[vs]\textbf{)})$
+The above implies $((\mathcal{C}[(\mathrm{wcm}\,v_0\,(\mathrm{wcm}\,v_1\,e_2))]\,k)\,\textbf{(}\textbf{false}\textbf{,}\mathcal{C}[\chi(E)]\textbf{)})$
 
-$((\mathcal{C}[(\mathrm{wcm}\,v_0\,e_1)]\,k)\,\textbf{(}\textbf{false}\textbf{,}\mathcal{C}[vs]\textbf{)})\equiv((\mathcal{C}[e_1]\,k)\,\textbf{(}\textbf{true}\textbf{,}\mathcal{C}[\textbf{(}v_0\textbf{,}vs\textbf{)}]\textbf{)})$
+$((\mathcal{C}[(\mathrm{wcm}\,v_0\,e_1)]\,k)\,\textbf{(}\textbf{false}\textbf{,}\mathcal{C}[\chi(E)]\textbf{)})\equiv((\mathcal{C}[e_1]\,k)\,\textbf{(}\textbf{true}\textbf{,}\mathcal{C}[\textbf{(}v_0\textbf{,}vs\textbf{)}]\textbf{)})$
 
-$((\mathcal{C}[E[e]]\,k)\,\textbf{(}\textbf{false}\textbf{,}\mathcal{C}[vs]\textbf{)})\equiv((\mathcal{C}[e]\,k)\,\textbf{(}\textit{flag}\textbf{,}\mathcal{C}[\chi(E)]\textbf{)})$
+$((\mathcal{C}[E[e]]\,k)\,\textbf{(}\textbf{false}\textbf{,}\mathcal{C}[\chi(E)]\textbf{)})\equiv((\mathcal{C}[e]\,k)\,\textbf{(}\textit{flag}\textbf{,}\mathcal{C}[\chi(E)]\textbf{)})$
 
-by induction
-
-when E=*, it holds
-suppose E=E'[(wcm v1 *)], E'[(* e1)], E'[(v0 *)], E'[(wcm * e1)], E'[*]
-
-assume it holds for E'
-
-E=(E' e1), (v0 E'), (wcm E' e1), (wcm v0 E'), or *
+THIS!!!
 
 
-base case at start: k (false,C[nil])
 
-assume C[e] k (flag,C[chi(E)])
 
-C[(e0 e1)] k (flag,C[chi(E)]) -> C[(* e1)[e0]] k (flag,
+
+
+
+
+
+
+\setspecialsymbol{lambda}{$\lambda$}
+
+
+\begin{schemedisplay}
+(((lambda (k) (lambda (m) ((lambda (k) (k ((lambda (p) (p FALSE)) m)))
+               (lambda (s) ((lambda (k) (k (PAIR FALSE s)))
+                      (lambda (u) (((lambda (k) (lambda (m) (k e)))
+                              (lambda (v) ((lambda (k) (k (((((s (lambda (x) x)) (lambda (z) z))
+                                                 (lambda (x) (lambda (k) (lambda (m) (k (lambda (y) (lambda (k) (lambda (m) (k y)))))))))
+                                                (lambda (v) (lambda (k) (lambda (m) (k v))))) (lambda (z) z))))
+                                     (lambda (t) ((lambda (k) (k (FST m)))
+                                            (lambda (f) ((lambda (k) (k ((f t) s)))
+                                                   (lambda (a) ((lambda (k) (k (lambda (p) ((p TRUE)
+                                                                          (lambda (k) (lambda (m) (k (lambda (z) (lambda (k) (lambda (m) ((lambda (k) (k (m FALSE)))
+                                                                                                            (lambda (s) ((lambda (k) (k (lambda (p) ((p FALSE) s))))
+                                                                                                                   (lambda (n) (((lambda (k) (lambda (m) ((lambda (k) (k (m FALSE)))
+                                                                                                                                        (lambda (s) ((lambda (k) (k (lambda (p) ((p FALSE) s))))
+                                                                                                                                               (lambda (n) (((lambda (k) (lambda (m) (k z)))
+                                                                                                                                                       (lambda (e) (((lambda (k) (lambda (m) (k v)))
+                                                                                                                                                               (lambda (f) (((e f) k) m))) n))) n)))))))
+                                                                                                                           (lambda (e) ((a (lambda (f) (((e f) k) m))) n))) n)))))))))))))))
+                                                          (lambda (m) (((lambda (k) (lambda (m) (k f))) k) m))))))))))) u)))))))
+  (lambda (v) (lambda (k) (lambda (m) (k v)))))
+ (PAIR FALSE C[nil]))
+\end{schemedisplay}
+
+
+βv
+\begin{schemedisplay}
+((lambda (m) ((lambda (k) (k ((lambda (p) (p FALSE)) m)))
+        (lambda (s) ((lambda (k) (k (PAIR FALSE s)))
+               (lambda (u) (((lambda (k) (lambda (m) (k e)))
+                       (lambda (v) ((lambda (k) (k (((((s (lambda (x) x)) (lambda (z) z))
+                                          (lambda (x) (lambda (k) (lambda (m) (k (lambda (y) (lambda (k) (lambda (m) (k y)))))))))
+                                         (lambda (v) (lambda (k) (lambda (m) (k v))))) (lambda (z) z))))
+                              (lambda (t) ((lambda (k) (k (FST m)))
+                                     (lambda (f) ((lambda (k) (k ((f t) s)))
+                                            (lambda (a) ((lambda (k) (k (lambda (p) ((p TRUE)
+                                                                   (lambda (k) (lambda (m) (k (lambda (z) (lambda (k) (lambda (m) ((lambda (k) (k (m FALSE)))
+                                                                                                     (lambda (s) ((lambda (k) (k (lambda (p) ((p FALSE) s))))
+                                                                                                            (lambda (n) (((lambda (k) (lambda (m) ((lambda (k) (k (m FALSE)))
+                                                                                                                                 (lambda (s) ((lambda (k) (k (lambda (p) ((p FALSE) s))))
+                                                                                                                                        (lambda (n) (((lambda (k) (lambda (m) (k z)))
+                                                                                                                                                (lambda (e) (((lambda (k) (lambda (m) (k v)))
+                                                                                                                                                        (lambda (f) (((e f) k) m))) n))) n)))))))
+                                                                                                                    (lambda (e) ((a (lambda (f) (((e f) k) m))) n))) n)))))))))))))))
+                                                   (lambda (m) (((lambda (k) (lambda (m) (k f)))
+                                                           (lambda (v) (lambda (k) (lambda (m) (k v))))) m))))))))))) u))))))
+ (PAIR FALSE C[nil]))
+\end{schemedisplay}
+
+βv
+\begin{schemedisplay}
+((lambda (k) (k ((lambda (p) (p FALSE))
+           (PAIR FALSE C[nil]))))
+ (lambda (s) ((lambda (k) (k (PAIR FALSE s)))
+        (lambda (u) (((lambda (k) (lambda (m) (k e)))
+                (lambda (v) ((lambda (k) (k (((((s (lambda (x) x)) (lambda (z) z))
+                                   (lambda (x) (lambda (k) (lambda (m) (k (lambda (y) (lambda (k) (lambda (m) (k y)))))))))
+                                  (lambda (v) (lambda (k) (lambda (m) (k v))))) (lambda (z) z))))
+                       (lambda (t) ((lambda (k) (k (FST
+                                        (PAIR FALSE C[nil]))))
+                              (lambda (f) ((lambda (k) (k ((f t) s)))
+                                     (lambda (a) ((lambda (k) (k (lambda (p) ((p TRUE)
+                                                            (lambda (k) (lambda (m) (k (lambda (z) (lambda (k) (lambda (m) ((lambda (k) (k (m FALSE)))
+                                                                                              (lambda (s) ((lambda (k) (k (lambda (p) ((p FALSE) s))))
+                                                                                                     (lambda (n) (((lambda (k) (lambda (m) ((lambda (k) (k (m FALSE)))
+                                                                                                                          (lambda (s) ((lambda (k) (k (lambda (p) ((p FALSE) s))))
+                                                                                                                                 (lambda (n) (((lambda (k) (lambda (m) (k z)))
+                                                                                                                                         (lambda (e) (((lambda (k) (lambda (m) (k v)))
+                                                                                                                                                 (lambda (f) (((e f) k) m))) n))) n)))))))
+                                                                                                             (lambda (e) ((a (lambda (f) (((e f) k) m))) n))) n)))))))))))))))
+                                            (lambda (m) (((lambda (k) (lambda (m) (k f)))
+                                                    (lambda (v) (lambda (k) (lambda (m) (k v))))) m))))))))))) u)))))
+\end{schemedisplay}
+
+βv
+\begin{schemedisplay}
+((lambda (s) ((lambda (k) (k (PAIR FALSE s)))
+        (lambda (u) (((lambda (k) (lambda (m) (k e)))
+                (lambda (v) ((lambda (k) (k (((((s (lambda (x) x)) (lambda (z) z))
+                                   (lambda (x) (lambda (k) (lambda (m) (k (lambda (y) (lambda (k) (lambda (m) (k y)))))))))
+                                  (lambda (v) (lambda (k) (lambda (m) (k v))))) (lambda (z) z))))
+                       (lambda (t) ((lambda (k) (k (FST
+                                        (PAIR FALSE C[nil]))))
+                              (lambda (f) ((lambda (k) (k ((f t) s)))
+                                     (lambda (a) ((lambda (k) (k (lambda (p) ((p TRUE)
+                                                            (lambda (k) (lambda (m) (k (lambda (z) (lambda (k) (lambda (m) ((lambda (k) (k (m FALSE)))
+                                                                                              (lambda (s) ((lambda (k) (k (lambda (p) ((p FALSE) s))))
+                                                                                                     (lambda (n) (((lambda (k) (lambda (m) ((lambda (k) (k (m FALSE)))
+                                                                                                                          (lambda (s) ((lambda (k) (k (lambda (p) ((p FALSE) s))))
+                                                                                                                                 (lambda (n) (((lambda (k) (lambda (m) (k z)))
+                                                                                                                                         (lambda (e) (((lambda (k) (lambda (m) (k v)))
+                                                                                                                                                 (lambda (f) (((e f) k) m))) n))) n)))))))
+                                                                                                             (lambda (e) ((a (lambda (f) (((e f) k) m))) n))) n)))))))))))))))
+                                            (lambda (m) (((lambda (k) (lambda (m) (k f)))
+                                                    (lambda (v) (lambda (k) (lambda (m) (k v))))) m))))))))))) u))))
+ ((lambda (p) (p FALSE))
+  (PAIR FALSE C[nil])))
+\end{schemedisplay}
+
+βv
+\begin{schemedisplay}
+((lambda (s) ((lambda (k) (k (PAIR FALSE s)))
+        (lambda (u) (((lambda (k) (lambda (m) (k e)))
+                (lambda (v) ((lambda (k) (k (((((s (lambda (x) x)) (lambda (z) z))
+                                   (lambda (x) (lambda (k) (lambda (m) (k (lambda (y) (lambda (k) (lambda (m) (k y)))))))))
+                                  (lambda (v) (lambda (k) (lambda (m) (k v))))) (lambda (z) z))))
+                       (lambda (t) ((lambda (k) (k (FST
+                                        (PAIR FALSE C[nil]))))
+                              (lambda (f) ((lambda (k) (k ((f t) s)))
+                                     (lambda (a) ((lambda (k) (k (lambda (p) ((p TRUE)
+                                                            (lambda (k) (lambda (m) (k (lambda (z) (lambda (k) (lambda (m) ((lambda (k) (k (m FALSE)))
+                                                                                              (lambda (s) ((lambda (k) (k (lambda (p) ((p FALSE) s))))
+                                                                                                     (lambda (n) (((lambda (k) (lambda (m) ((lambda (k) (k (m FALSE)))
+                                                                                                                          (lambda (s) ((lambda (k) (k (lambda (p) ((p FALSE) s))))
+                                                                                                                                 (lambda (n) (((lambda (k) (lambda (m) (k z)))
+                                                                                                                                         (lambda (e) (((lambda (k) (lambda (m) (k v)))
+                                                                                                                                                 (lambda (f) (((e f) k) m))) n))) n)))))))
+                                                                                                             (lambda (e) ((a (lambda (f) (((e f) k) m))) n))) n)))))))))))))))
+                                            (lambda (m) (((lambda (k) (lambda (m) (k f)))
+                                                    (lambda (v) (lambda (k) (lambda (m) (k v))))) m))))))))))) u))))
+ ((PAIR FALSE C[nil])
+  FALSE))
+\end{schemedisplay}
+
+βv
+\begin{schemedisplay}
+((lambda (s) ((lambda (k) (k (PAIR FALSE s)))
+        (lambda (u) (((lambda (k) (lambda (m) (k e)))
+                (lambda (v) ((lambda (k) (k (((((s (lambda (x) x)) (lambda (z) z))
+                                   (lambda (x) (lambda (k) (lambda (m) (k (lambda (y) (lambda (k) (lambda (m) (k y)))))))))
+                                  (lambda (v) (lambda (k) (lambda (m) (k v))))) (lambda (z) z))))
+                       (lambda (t) ((lambda (k) (k (FST
+                                        (PAIR FALSE C[nil]))))
+                              (lambda (f) ((lambda (k) (k ((f t) s)))
+                                     (lambda (a) ((lambda (k) (k (lambda (p) ((p TRUE)
+                                                            (lambda (k) (lambda (m) (k (lambda (z) (lambda (k) (lambda (m) ((lambda (k) (k (m FALSE)))
+                                                                                              (lambda (s) ((lambda (k) (k (lambda (p) ((p FALSE) s))))
+                                                                                                     (lambda (n) (((lambda (k) (lambda (m) ((lambda (k) (k (m FALSE)))
+                                                                                                                          (lambda (s) ((lambda (k) (k (lambda (p) ((p FALSE) s))))
+                                                                                                                                 (lambda (n) (((lambda (k) (lambda (m) (k z)))
+                                                                                                                                         (lambda (e) (((lambda (k) (lambda (m) (k v)))
+                                                                                                                                                 (lambda (f) (((e f) k) m))) n))) n)))))))
+                                                                                                             (lambda (e) ((a (lambda (f) (((e f) k) m))) n))) n)))))))))))))))
+                                            (lambda (m) (((lambda (k) (lambda (m) (k f)))
+                                                    (lambda (v) (lambda (k) (lambda (m) (k v))))) m))))))))))) u))))
+ ((FALSE
+   FALSE)
+  C[nil]))
+\end{schemedisplay}
+
+βv
+\begin{schemedisplay}
+((lambda (s) ((lambda (k) (k (PAIR FALSE s)))
+        (lambda (u) (((lambda (k) (lambda (m) (k e)))
+                (lambda (v) ((lambda (k) (k (((((s (lambda (x) x)) (lambda (z) z))
+                                   (lambda (x) (lambda (k) (lambda (m) (k (lambda (y) (lambda (k) (lambda (m) (k y)))))))))
+                                  (lambda (v) (lambda (k) (lambda (m) (k v))))) (lambda (z) z))))
+                       (lambda (t) ((lambda (k) (k (FST
+                                        (PAIR FALSE C[nil]))))
+                              (lambda (f) ((lambda (k) (k ((f t) s)))
+                                     (lambda (a) ((lambda (k) (k (lambda (p) ((p TRUE)
+                                                            (lambda (k) (lambda (m) (k (lambda (z) (lambda (k) (lambda (m) ((lambda (k) (k (m FALSE)))
+                                                                                              (lambda (s) ((lambda (k) (k (lambda (p) ((p FALSE) s))))
+                                                                                                     (lambda (n) (((lambda (k) (lambda (m) ((lambda (k) (k (m FALSE)))
+                                                                                                                          (lambda (s) ((lambda (k) (k (lambda (p) ((p FALSE) s))))
+                                                                                                                                 (lambda (n) (((lambda (k) (lambda (m) (k z)))
+                                                                                                                                         (lambda (e) (((lambda (k) (lambda (m) (k v)))
+                                                                                                                                                 (lambda (f) (((e f) k) m))) n))) n)))))))
+                                                                                                             (lambda (e) ((a (lambda (f) (((e f) k) m))) n))) n)))))))))))))))
+                                            (lambda (m) (((lambda (k) (lambda (m) (k f)))
+                                                    (lambda (v) (lambda (k) (lambda (m) (k v))))) m))))))))))) u))))
+ ((lambda (y) y) C[nil]))
+\end{schemedisplay}
+
+βv
+\begin{schemedisplay}
+((lambda (s) ((lambda (k) (k (PAIR FALSE s)))
+        (lambda (u) (((lambda (k) (lambda (m) (k e)))
+                (lambda (v) ((lambda (k) (k (((((s (lambda (x) x)) (lambda (z) z))
+                                   (lambda (x) (lambda (k) (lambda (m) (k (lambda (y) (lambda (k) (lambda (m) (k y)))))))))
+                                  (lambda (v) (lambda (k) (lambda (m) (k v))))) (lambda (z) z))))
+                       (lambda (t) ((lambda (k) (k (FST
+                                        (PAIR FALSE C[nil]))))
+                              (lambda (f) ((lambda (k) (k ((f t) s)))
+                                     (lambda (a) ((lambda (k) (k (lambda (p) ((p TRUE)
+                                                            (lambda (k) (lambda (m) (k (lambda (z) (lambda (k) (lambda (m) ((lambda (k) (k (m FALSE)))
+                                                                                              (lambda (s) ((lambda (k) (k (lambda (p) ((p FALSE) s))))
+                                                                                                     (lambda (n) (((lambda (k) (lambda (m) ((lambda (k) (k (m FALSE)))
+                                                                                                                          (lambda (s) ((lambda (k) (k (lambda (p) ((p FALSE) s))))
+                                                                                                                                 (lambda (n) (((lambda (k) (lambda (m) (k z)))
+                                                                                                                                         (lambda (e) (((lambda (k) (lambda (m) (k v)))
+                                                                                                                                                 (lambda (f) (((e f) k) m))) n))) n)))))))
+                                                                                                             (lambda (e) ((a (lambda (f) (((e f) k) m))) n))) n)))))))))))))))
+                                            (lambda (m) (((lambda (k) (lambda (m) (k f)))
+                                                    (lambda (v) (lambda (k) (lambda (m) (k v))))) m))))))))))) u))))
+ C[nil])
+\end{schemedisplay}
+
+βv
+\begin{schemedisplay}
+((lambda (k) (k (PAIR FALSE C[nil])))
+ (lambda (u) (((lambda (k) (lambda (m) (k e)))
+         (lambda (v) ((lambda (k) (k (((((C[nil] (lambda (x) x)) (lambda (z) z))
+                            (lambda (x) (lambda (k) (lambda (m) (k (lambda (y) (lambda (k) (lambda (m) (k y)))))))))
+                           (lambda (v) (lambda (k) (lambda (m) (k v))))) (lambda (z) z))))
+                (lambda (t) ((lambda (k) (k (FST
+                                 (PAIR FALSE C[nil]))))
+                       (lambda (f) ((lambda (k) (k ((f t) C[nil])))
+                              (lambda (a) ((lambda (k) (k (lambda (p) ((p TRUE)
+                                                     (lambda (k) (lambda (m) (k (lambda (z) (lambda (k) (lambda (m) ((lambda (k) (k (m FALSE)))
+                                                                                       (lambda (s) ((lambda (k) (k (lambda (p) ((p FALSE) s))))
+                                                                                              (lambda (n) (((lambda (k) (lambda (m) ((lambda (k) (k (m FALSE)))
+                                                                                                                   (lambda (s) ((lambda (k) (k (lambda (p) ((p FALSE) s))))
+                                                                                                                          (lambda (n) (((lambda (k) (lambda (m) (k z)))
+                                                                                                                                  (lambda (e) (((lambda (k) (lambda (m) (k v)))
+                                                                                                                                          (lambda (f) (((e f) k) m))) n))) n)))))))
+                                                                                                      (lambda (e) ((a (lambda (f) (((e f) k) m))) n))) n)))))))))))))))
+                                     (lambda (m) (((lambda (k) (lambda (m) (k f)))
+                                             (lambda (v) (lambda (k) (lambda (m) (k v))))) m))))))))))) u)))
+\end{schemedisplay}
+
+βv
+\begin{schemedisplay}
+((lambda (u) (((lambda (k) (lambda (m) (k e)))
+         (lambda (v) ((lambda (k) (k (((((C[nil] (lambda (x) x)) (lambda (z) z))
+                            (lambda (x) (lambda (k) (lambda (m) (k (lambda (y) (lambda (k) (lambda (m) (k y)))))))))
+                           (lambda (v) (lambda (k) (lambda (m) (k v))))) (lambda (z) z))))
+                (lambda (t) ((lambda (k) (k (FST
+                                 (PAIR FALSE C[nil]))))
+                       (lambda (f) ((lambda (k) (k ((f t) C[nil])))
+                              (lambda (a) ((lambda (k) (k (lambda (p) ((p TRUE)
+                                                     (lambda (k) (lambda (m) (k (lambda (z) (lambda (k) (lambda (m) ((lambda (k) (k (m FALSE)))
+                                                                                       (lambda (s) ((lambda (k) (k (lambda (p) ((p FALSE) s))))
+                                                                                              (lambda (n) (((lambda (k) (lambda (m) ((lambda (k) (k (m FALSE)))
+                                                                                                                   (lambda (s) ((lambda (k) (k (lambda (p) ((p FALSE) s))))
+                                                                                                                          (lambda (n) (((lambda (k) (lambda (m) (k z)))
+                                                                                                                                  (lambda (e) (((lambda (k) (lambda (m) (k v)))
+                                                                                                                                          (lambda (f) (((e f) k) m))) n))) n)))))))
+                                                                                                      (lambda (e) ((a (lambda (f) (((e f) k) m))) n))) n)))))))))))))))
+                                     (lambda (m) (((lambda (k) (lambda (m) (k f)))
+                                             (lambda (v) (lambda (k) (lambda (m) (k v))))) m))))))))))) u))
+ (PAIR FALSE C[nil]))
+\end{schemedisplay}
+
+βv
+\begin{schemedisplay}
+(((lambda (k) (lambda (m) (k e)))
+  (lambda (v) ((lambda (k) (k (((((C[nil] (lambda (x) x)) (lambda (z) z))
+                     (lambda (x) (lambda (k) (lambda (m) (k (lambda (y) (lambda (k) (lambda (m) (k y)))))))))
+                    (lambda (v) (lambda (k) (lambda (m) (k v))))) (lambda (z) z))))
+         (lambda (t) ((lambda (k) (k (FST
+                          (PAIR FALSE C[nil]))))
+                (lambda (f) ((lambda (k) (k ((f t) C[nil])))
+                       (lambda (a) ((lambda (k) (k (lambda (p) ((p TRUE)
+                                              (lambda (k) (lambda (m) (k (lambda (z) (lambda (k) (lambda (m) ((lambda (k) (k (m FALSE)))
+                                                                                (lambda (s) ((lambda (k) (k (lambda (p) ((p FALSE) s))))
+                                                                                       (lambda (n) (((lambda (k) (lambda (m) ((lambda (k) (k (m FALSE)))
+                                                                                                            (lambda (s) ((lambda (k) (k (lambda (p) ((p FALSE) s))))
+                                                                                                                   (lambda (n) (((lambda (k) (lambda (m) (k z)))
+                                                                                                                           (lambda (e) (((lambda (k) (lambda (m) (k v)))
+                                                                                                                                   (lambda (f) (((e f) k) m))) n))) n)))))))
+                                                                                               (lambda (e) ((a (lambda (f) (((e f) k) m))) n))) n)))))))))))))))
+                              (lambda (m) (((lambda (k) (lambda (m) (k f)))
+                                      (lambda (v) (lambda (k) (lambda (m) (k v))))) m)))))))))))
+ (PAIR FALSE C[nil]))
+\end{schemedisplay}
+
+βv
+\begin{schemedisplay}
+((lambda (m) ((lambda (v) ((lambda (k) (k (((((C[nil] (lambda (x) x)) (lambda (z) z))
+                           (lambda (x) (lambda (k) (lambda (m) (k (lambda (y) (lambda (k) (lambda (m) (k y)))))))))
+                          (lambda (v) (lambda (k) (lambda (m) (k v))))) (lambda (z) z))))
+               (lambda (t) ((lambda (k) (k (FST
+                                (PAIR FALSE C[nil]))))
+                      (lambda (f) ((lambda (k) (k ((f t) C[nil])))
+                             (lambda (a) ((lambda (k) (k (lambda (p) ((p TRUE)
+                                                    (lambda (k) (lambda (m) (k (lambda (z) (lambda (k) (lambda (m) ((lambda (k) (k (m FALSE)))
+                                                                                      (lambda (s) ((lambda (k) (k (lambda (p) ((p FALSE) s))))
+                                                                                             (lambda (n) (((lambda (k) (lambda (m) ((lambda (k) (k (m FALSE)))
+                                                                                                                  (lambda (s) ((lambda (k) (k (lambda (p) ((p FALSE) s))))
+                                                                                                                         (lambda (n) (((lambda (k) (lambda (m) (k z)))
+                                                                                                                                 (lambda (e) (((lambda (k) (lambda (m) (k v)))
+                                                                                                                                         (lambda (f) (((e f) k) m))) n))) n)))))))
+                                                                                                     (lambda (e) ((a (lambda (f) (((e f) k) m))) n))) n)))))))))))))))
+                                    (lambda (m) (((lambda (k) (lambda (m) (k f)))
+                                            (lambda (v) (lambda (k) (lambda (m) (k v))))) m)))))))))) e))
+ (PAIR FALSE C[nil]))
+\end{schemedisplay}
+
+βv
+\begin{schemedisplay}
+((lambda (v) ((lambda (k) (k (((((C[nil] (lambda (x) x)) (lambda (z) z))
+                    (lambda (x) (lambda (k) (lambda (m) (k (lambda (y) (lambda (k) (lambda (m) (k y)))))))))
+                   (lambda (v) (lambda (k) (lambda (m) (k v))))) (lambda (z) z))))
+        (lambda (t) ((lambda (k) (k (FST
+                         (PAIR FALSE C[nil]))))
+               (lambda (f) ((lambda (k) (k ((f t) C[nil])))
+                      (lambda (a) ((lambda (k) (k (lambda (p) ((p TRUE)
+                                             (lambda (k) (lambda (m) (k (lambda (z) (lambda (k) (lambda (m) ((lambda (k) (k (m FALSE)))
+                                                                               (lambda (s) ((lambda (k) (k (lambda (p) ((p FALSE) s))))
+                                                                                      (lambda (n) (((lambda (k) (lambda (m) ((lambda (k) (k (m FALSE)))
+                                                                                                           (lambda (s) ((lambda (k) (k (lambda (p) ((p FALSE) s))))
+                                                                                                                  (lambda (n) (((lambda (k) (lambda (m) (k z)))
+                                                                                                                          (lambda (e) (((lambda (k) (lambda (m) (k v)))
+                                                                                                                                  (lambda (f) (((e f) k) m))) n))) n)))))))
+                                                                                              (lambda (e) ((a (lambda (f) (((e f) k) m))) n))) n)))))))))))))))
+                             (lambda (m) (((lambda (k) (lambda (m) (k f)))
+                                     (lambda (v) (lambda (k) (lambda (m) (k v))))) m)))))))))) e)
+\end{schemedisplay}
+
+error: unbound identifier
+\begin{schemedisplay}
+((lambda (v) ((lambda (k) (k (((((C[nil] (lambda (x) x)) (lambda (z) z))
+                    (lambda (x) (lambda (k) (lambda (m) (k (lambda (y) (lambda (k) (lambda (m) (k y)))))))))
+                   (lambda (v) (lambda (k) (lambda (m) (k v))))) (lambda (z) z))))
+        (lambda (t) ((lambda (k) (k (FST
+                         (PAIR FALSE C[nil]))))
+               (lambda (f) ((lambda (k) (k ((f t) C[nil])))
+                      (lambda (a) ((lambda (k) (k (lambda (p) ((p TRUE)
+                                             (lambda (k) (lambda (m) (k (lambda (z) (lambda (k) (lambda (m) ((lambda (k) (k (m FALSE)))
+                                                                               (lambda (s) ((lambda (k) (k (lambda (p) ((p FALSE) s))))
+                                                                                      (lambda (n) (((lambda (k) (lambda (m) ((lambda (k) (k (m FALSE)))
+                                                                                                           (lambda (s) ((lambda (k) (k (lambda (p) ((p FALSE) s))))
+                                                                                                                  (lambda (n) (((lambda (k) (lambda (m) (k z)))
+                                                                                                                          (lambda (e) (((lambda (k) (lambda (m) (k v)))
+                                                                                                                                  (lambda (f) (((e f) k) m))) n))) n)))))))
+                                                                                              (lambda (e) ((a (lambda (f) (((e f) k) m))) n))) n)))))))))))))))
+                             (lambda (m) (((lambda (k) (lambda (m) (k f)))
+                                     (lambda (v) (lambda (k) (lambda (m) (k v))))) m)))))))))) error)
+\end{schemedisplay}
+
+error in operand
+\begin{schemedisplay}
+error
+\end{schemedisplay}
+
+
+
+% consider ((C[(e0 e1)] k) (flag,C[chi(E)]))
+% show reductions to
+% ((C[e0] k') (false,C[chi(E)])) \equiv ((C[e0] k') (false,C[chi(E')])) where E'=E(* e1)
+% so that's correct
+% by induction, C[e0] k' (false,C[chi(E)]) ->* \x.C[v0']
+% C[(v0 e1)]
+% show reductions to
+% ((C[e1] k'') (false,C[chi(E)]))
+% etc.
+
+% consider ((C[(wcm e0 e1)] k) (false,C[chi(E)]))
+% show reductions to ((C[e0] k') (false,C[chi(E)])) \equiv ((C[e0] k') (false,C[chi(E')]))
+% by induction, that is correct
+% C[(wcm v0 e1)]
+% show reductions to
+% ((C[e1] k) (true,C[v:chi(E)])) \equiv ((C[e1] k) (true,C[E'])) where E'=E(wcm v0 *)
+
+
+% by induction
+
+% when E=*, it holds
+% suppose E=E'[(wcm v1 *)], E'[(* e1)], E'[(v0 *)], E'[(wcm * e1)], E'[*]
+
+% assume it holds for E'
+
+% E=(E' e1), (v0 E'), (wcm E' e1), (wcm v0 E'), or *
+
+
+% base case at start: k (false,C[nil])
+
+% assume C[e] k (flag,C[chi(E)])
+
+% C[(e0 e1)] k (flag,C[chi(E)]) -> C[(* e1)[e0]] k (flag,
+
+% *[(\x.x (\x.x \x.x))]
+% -> (\x.x *)[(\x.x \x.x)]
+% -> (\x.x *)[\x.x]
+% -> *[(\x.x \x.x)]
+% -> *[\x.x]
+% -> \x.x
+
+% *[(\k.(C[E] \e.(C[F] \f.((e f) k))) \x.x)]
+% -> *[(C[E] \e.(C[F] \f.((e f) \x.x)))]
+% ->* *[(C[F] \f.((C[e] f) \x.x))]
+% ->* *[((C[e] C[f]) \x.x)]
+% -> (* \x.x)[(C[e] C[f])]
+% -> (* \x.x)[C[v]]
+% -> (C[v] \x.x)
+% -> C[v']
+
+% in direct-style, the evaluation context is the continuation. in CPS, the continuation is passed
+% explicitly; the evaluation context is always a hole.
 
 % C[*] = *
-% C[(* e1)] k (flag,C[vs]) = ((C[e1] \f.(((* f) k) (flag,C[vs]))) (false,C[vs]))
-% C[(* e1)] = \k.\m.(\k.(k (snd m)) \s.(\k.(k (false,s)) \n.((C[e1] \f.(((* f) k) (flag,C[vs]))) n))
-% C[(v0 *)] k (flag,C[vs]) = (((v0 *) k) (flag,C[vs]))
+% C[(* e1)] k (flag,C[\chi(E)]) = ((C[e1] \f.(((* f) k) (flag,C[\chi(E)]))) (false,C[\chi(E)]))
+% C[(* e1)] = \k.\m.(\k.(k (snd m)) \s.(\k.(k (false,s)) \n.((C[e1] \f.(((* f) k) (flag,C[\chi(E)]))) n))
+% C[(v0 *)] k (flag,C[\chi(E)]) = (((v0 *) k) (flag,C[\chi(E)]))
 % C[(v0 *)] = \k.\m.(((v0 *) k) m)
 % C[(wcm * e1)] = 
 % C[(wcm v0 *)] = 
 
-   ((C[(e0 e1)] k) (flag,C[vs]))
--> ((C[(* e1)] k) (flag,C[vs]))[((C[e0] k') (false,C[vs]))
+%   ((C[(e0 e1)] k) (flag,C[\chi(E)]))
+%-> ((C[(* e1)] k) (flag,C[\chi(E)]))[((C[e0] k') (false,C[\chi(E)]))
 
-   ((C[(wcm e0 e1)] k) (flag,C[vs]))
--> ((C[(wcm * e1)
+%   ((C[(wcm e0 e1)] k) (flag,C[\chi(E)]))
+%-> ((C[(wcm * e1)
 
 
 \end{theorem}
@@ -1364,7 +1816,7 @@ Test
 % for (e0 e1), show C[(e0 e1)] -> C[(* e1)][C[e0]] ->* C[(* e1)][C[v0]] -> ... -> C[(v0 v1)] ->* C[v3]
 % for (wcm e0 e1):
 % show C[(wcm e0 e1)] -> C[(wcm * e1)][C[e0]] ->* C[(wcm * e1)][C[v0]]
-% show C[(wcm v0 e1)] k (flag,C[vs]) = C[e1] k (true,C[v:vs'])
+% show C[(wcm v0 e1)] k (flag,C[\chi(E)]) = C[e1] k (true,C[v:vs'])
 % show C[(wcm v0 (wcm v1 e2))] -> C[(wcm v1 e2)]
 % for (ccm)
 % show that for all contexts E, snd m=C[chi(E)] so that C[E][C[(ccm)]]=C[(ccm)] k (flag,C[chi(E)]) -> C[chi(E)]
@@ -1382,14 +1834,17 @@ Test
 % snd m = C[nil] = C[chi(E)]
 % case (wcm * e1)[e0]
 
-% C[(wcm v0 (wcm v1 e2))] k (false,C[vs]) = C[(wcm v1 e2)] k (true,C[v0:vs]) = C[e2] k (true,C[v1:vs])
-% C[(wcm e0 e1)] k (flag,C[vs]) -> C[(wcm * e1)] k
+% C[(wcm v0 (wcm v1 e2))] k (false,C[\chi(E)]) = C[(wcm v1 e2)] k (true,C[v0:vs]) = C[e2] k (true,C[v1:vs])
+% C[(wcm e0 e1)] k (flag,C[\chi(E)]) -> C[(wcm * e1)] k
 
 
 % C[E[(ccm)]] k (?,C[nil]?) = C[(ccm)] k (flag,C[chi(E)]) -> \k.\m.(((snd m) k) \z.z) \v.\k.\m.(k v) (flag,C[chi(E)]) -> \m.(((snd m) \v.\k.\m.(k v)) \z.z) -> (((snd (flag,C[chi(E)])) \v.\k.\m.(k v)) \z.z) -> ((C[chi(E)] \v.\k.\m.(k v)) \z.z)
 
 
-
+% if we show that
+% ((C[(e0 e1)] k) (flag,C[chi(E)])) \equiv ((C[e0'[x<-v1]] k) (flag,C[chi(E)]))
+% ((C[(wcm e0 e1)] k) (false,C[chi(E)])) \equiv ((C[e1] k) (true,C[v:chi(E)]))
+% ((C[(wcm e0 e1)] k) (true,C[v':chi(E')])) \equiv ((C[e1] k) (true,C[v0:chi(E)])) 
 
 \bibliographystyle{plainnat}
 \bibliography{dissertation}
