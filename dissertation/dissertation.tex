@@ -235,6 +235,7 @@ My wife is the hottest thing ever.
 \usepackage{amsmath}
 \usepackage{amsthm}
 \usepackage{slatex}
+\let\schemecodehook\small
 
 \begin{document}
 
@@ -639,12 +640,12 @@ transformation of $\lambda x.x$
 \end{align*}
 If we apply this term to the identity function, it reduces as
 \begin{align*}
-            &\lambda k.(k \lambda x.\lambda k.(k\,x))\,\lambda y.y\\
-\rightarrow &\lambda y.y\,\lambda x.\lambda k.(k\,x)\\
-\rightarrow &\lambda x.\lambda k.(k\,x)
+                        &\lambda k.(k \lambda x.\lambda k.(k\,x))\,\lambda y.y\\
+\rightarrow_{\lambda_v} &\lambda y.y\,\lambda x.\lambda k.(k\,x)\\
+\rightarrow_{\lambda_v} &\lambda x.\lambda k.(k\,x)
 \end{align*}
 The result of this reduction, in common with most others, contains residual terms from the
-CPS transform. We will need to account for this particular property of the Fischer's CPS
+CPS transform. We will need to account for this particular property of Fischer's CPS
 transform.
 
 One of the many reasons continuation-passing style is useful is that is allows evaluation
@@ -664,7 +665,7 @@ T[\lambda x.E]=\lambda k.(k\,\lambda x.T[E])
 Here we reason inductively by assuming that the property holds for E. Abstractions are
 irreducible in a call-by-value regime, so the property holds in this case also.
 \[
-T[E\,F]=\lambda k.(T[E]\,(\lambda e.(T[F]\,(\lambda f.((e\,f)\,k))))
+T[E\,F]=\lambda k.(T[E]\,\lambda e.(T[F]\,\lambda f.((e\,f)\,k))))
 \]
 In this case, we observe that the continuation $k$ provided is not directly applied.
 Instead, the operator is evaluated and a continuation is constructed into which its value
@@ -678,7 +679,7 @@ for the arguments, no longer necessary, is subsumed by the evaluation context of
 formed application.
 
 Finally, we observe that every transformed application passes--rather than invokes--the
-provided continuation and that only after reduction occurs. Then continuations can be
+provided continuation and that occurs only after reduction. Then continuations can be
 invoked only as in the cases of variables and abstractions and we can see that they are 
 only applied to fully-reduced terms.
 
@@ -719,8 +720,8 @@ manipulate continuation marks, introduced by Pettyjohn et al.
 
 Figure \ref{language-syntax} presents the syntactic definition of $\lambda_{cm}$.
 Definitions of $E$ and $F$ signify evaluation contexts. The non-terminal $E$ is simply any
-term in the language but for the constraint that evaluation contexts interleave \emph{wcm}
-directives. The definition of $e$ establishes the forms of valid expressions in the
+term in the language but for the constraint that $(\mathrm{wcm}\,v\,F)$ contexts cannot be
+directly nested, to enforce proper tail-call behavior. The definition of $e$ establishes the forms of valid expressions in the
 language: applications, variables, values, \emph{wcm} forms, and \emph{ccm} forms. The
 definition of $v$ denotes that values in the language are $\lambda$-abstractions. (Also,
 notice that \emph{wcm} and \emph{ccm} have one parameter fewer than the forms introduced
@@ -954,19 +955,20 @@ the semantics are indeed preserved, namely the tail-call behavior.
 In continuation-passing style, every term takes an additional argument, the continuation,
 into which the evaluation is passed. Our approach to a semantics-preserving
 transformation, which we call $\mathcal{C}$, takes this a step further. Intuitively, we
-will pass not only a continuation but also a list of the current continuation marks. The
-\emph{wcm} form will add a mark to this list and the \emph{ccm} form will simply return it.
+will pass not only a continuation but also the value of $\chi(E)$, a list of the current 
+continuation marks. As specified by the definition of $\chi$, the \emph{wcm} form will 
+add a mark to this list and the \emph{ccm} form will simply return it.
 
 \subsection{First pass toward $\mathcal{C}$}
 
 Let us denote a first pass toward $\mathcal{C}$ as $\mathcal{C}_{1}$. We define 
 $\mathcal{C}_{1}$ formally as 
 \begin{align*}
-\mathcal{C}_{1}[x]           &= \lambda k.\lambda m.(k\,x)\\
-\mathcal{C}_{1}[\lambda x.E] &= \lambda k.\lambda m.(k\,\lambda x.\mathcal{C}_{1}[E])\\
-\mathcal{C}_{1}[E\,F]        &= \lambda k.\lambda m.((\mathcal{C}_{1}[E]\,(\lambda e.((\mathcal{C}_{1}[F]\,(\lambda n.(((e\,f)\,k)\,m)))\,m)))\,m)\\
-\mathcal{C}_{1}[wcm\,E\,F]   &= \lambda k.\lambda m.((\mathcal{C}_{1}[E]\,(\lambda e.((\mathcal{C}_{1}[F]\,k)\,\lambda p.((p\,e)\,m))))\,m)\\
-\mathcal{C}_{1}[ccm]         &= \lambda k.\lambda m.(k\,m)
+\mathcal{C}_{1}[x]                      &= \lambda k.\lambda m.(k\,x)\\
+\mathcal{C}_{1}[\lambda x.E]            &= \lambda k.\lambda m.(k\,\lambda x.\mathcal{C}_{1}[E])\\
+\mathcal{C}_{1}[(E\,F)]                 &= \lambda k.\lambda m.((\mathcal{C}_{1}[E]\,\lambda e.((\mathcal{C}_{1}[F]\,\lambda f.(((e\,f)\,k)\,m))\,m))\,m)\\
+\mathcal{C}_{1}[(\mathrm{wcm}\,E\,F)]   &= \lambda k.\lambda m.((\mathcal{C}_{1}[E]\,\lambda e.((\mathcal{C}_{1}[F]\,k)\,\textbf{(}e\textbf{,}m\textbf{)}))\,m)\\
+\mathcal{C}_{1}[(\mathrm{ccm})]         &= \lambda k.\lambda m.(k\,m)
 \end{align*}
 
 Despite its gross deficiencies, this definition captures some of the critical aspects of a
@@ -993,14 +995,14 @@ some sense. What sense? Consider the term
 \[
 \lambda x.x
 \]
-in $\lambda_{cm}$. As an abstraction, this term denotes a value and would expect, at very
+in $\lambda_{cm}$. As an abstraction, this term denotes a value and we would expect, at very
 least, it to be transformed into a value in $\lambda_{v}$. However, we need to keep in
 mind that in continuation-passing style, \emph{all} terms are abstractions, and therefore
 values. For, consider the term
 \[
 \lambda x.x\,\lambda y.y
 \]
-also in $\lambda_{cm}$. Fischer's CPS transformation of this is
+in $\lambda_{cm}$. Fischer's CPS transformation of this is
 \begin{align*}
             &\mathcal{F}[\lambda x.x\,\lambda y.y]\\
 = &\lambda k.(\mathcal{F}[\lambda x.x]\,(\lambda e.\mathcal{F}[\lambda y.y]\,(\lambda f.((e\,f)\,k))))\\
@@ -1038,46 +1040,51 @@ order for evaluation to proceed. In fact, terms produced by $\mathcal{C}_{1}$ ar
 abstracted, also requiring an argument encoding the current continuation marks. For now, 
 we will assume that this approach is a fine way to go.
 
-[say something here about...]
+\subsubsection{A principled approach}
 
-It is at this point that we notice that, however we choose to encode it, the empty list 
-should initiate the program. Having established this, we can state some general facts about 
-$\mathcal{C}$:
-
-\begin{enumerate}
-\item Like other CPS transformations, it contaminates values.
-\end{enumerate}
-
-Consider the program \emph{ccm}. In $\lambda_{cm}$, it evaluates to the empty list under 
-some encoding; that is,
+Consider the program $(\mathrm{ccm})$. In $\lambda_{cm}$, it evaluates to the empty list under 
+Church encoding; that is,
 \[
-\mathrm{ccm}\rightarrow_{\lambda_{cm}}empty
+(\mathrm{ccm})\rightarrow_{\lambda_{cm}}\textbf{nil}
 \]
 We also have
 \[
-\mathcal{C}_{1}[\mathrm{ccm}]=\lambda k.\lambda m.(k\,m)
+\mathcal{C}_{1}[(\mathrm{ccm})]=\lambda k.\lambda m.(k\,m)
 \]
-and assuming for now that the identity function is a satisfactory continuation to provide 
-and letting $[]$ represent our encoding of the empty list, we have
+and assuming for now that the identity function is a satisfactory continuation to provide, 
+we have
 \begin{align*}
-            &(\lambda k.\lambda m.(k\,m)\,\lambda z.z)\,[]\\
-\rightarrow_{\lambda_{v}} &\lambda m.(\lambda z.z\,m)\,[]\\
-\rightarrow_{\lambda_{v}} &\lambda z.z\,[]\\
-\rightarrow_{\lambda_{v}} &[]
+                          &((\lambda k.\lambda m.(k\,m)\,\lambda z.z)\,\textbf{nil})\\
+\rightarrow_{\lambda_{v}} &(\lambda m.(\lambda z.z\,m)\,\textbf{nil})\\
+\rightarrow_{\lambda_{v}} &(\lambda z.z\,\textbf{nil})\\
+\rightarrow_{\lambda_{v}} &\textbf{nil}
 \end{align*}
-Here we immediately observe that \emph{empty} and $[]$ should be equivalent in some
-sense, and can concretely provide that sense:
-\[
-E\rightarrow_{\lambda_{cm}}v'\Rightarrow(\mathcal{C}[E]\,\lambda x.x)\,\mathcal{C}_{v}[\mathrm{empty}]\rightarrow_{\lambda_{v}}\mathcal{C}_{v}[v']
-\]
-That is, we expect that a transformed program should yield a value transformed by a
-similar but not necessarily identical $\mathcal{C}$ which we call $\mathcal{C}_{v}$.
-
+This might suggest that we're on the right track.
 
 We now turn our attention to the tail-call behavior of $\mathcal{C}_{1}$. According to the 
 semantics of $\lambda_{cm}$, the program 
-$(\mathrm{wcm}\,a\,(\mathrm{wcm}\,b\,(\mathrm{ccm})))$ evaluates to b:
-$(\mathrm{wcm} a (\lambda x.x (\mathrm{wcm}\,b\,(\mathrm{ccm}))))$. 
+$(\mathrm{wcm}\,v_0\,(\mathrm{wcm}\,v_1\,(\mathrm{ccm})))$ evaluates as
+\begin{align*}
+                          &(\mathrm{wcm}\,v_0\,(\mathrm{wcm}\,v_1\,(\mathrm{ccm})))\\
+\rightarrow_{\lambda_{cm}}&(\mathrm{wcm}\,v_1\,(\mathrm{ccm}))\\
+\rightarrow_{\lambda_{cm}}&(\mathrm{wcm}\,v_1\,[v_1])\\
+\rightarrow_{\lambda_{cm}}&[v_1]
+\end{align*}
+
+However, consider the $\mathcal{C}_1$ transformation of this program
+\begin{align*}
+  &\mathcal{C}_1[(\mathrm{wcm}\,v_0\,(\mathrm{wcm}\,v_1\,(\mathrm{ccm})))]\\
+= &\lambda k.\lambda m.((\mathcal{C}_1[v_0]\,\lambda e.((\mathcal{C}_1[(\mathrm{wcm}\,v_1\,(\mathrm{ccm}))]\,k)\,\textbf{(}e\textbf{,}m\textbf{)}))\,m)\\
+= &\lambda k.\lambda m.((\mathcal{C}_1[v_0]\,\lambda e.((\lambda k.\lambda m.((\mathcal{C}_1[v_1]\,\lambda e.((\mathcal{C}_1[(\mathrm{ccm})]\,k)\,\textbf{(}e\textbf{,}m\textbf{)}))\,m)\,k)\,\textbf{(}e\textbf{,}m\textbf{)}))\,m)\\
+= &\lambda k.\lambda m.((\mathcal{C}_1[v_0]\,\lambda e.((\lambda k.\lambda m.((\mathcal{C}_1[v_1]\,\lambda e.((\lambda k.\lambda m.(k\,m)\,k)\,\textbf{(}e\textbf{,}m\textbf{)}))\,m)\,k)\,\textbf{(}e\textbf{,}m\textbf{)}))\,m)\\
+\end{align*}
+and its corresponding evaluation when provided an appropriate continuation and marks argument
+\begin{align*}
+                        &((\lambda k.\lambda m.((\mathcal{C}_1[v_0]\,\lambda e.((\lambda k.\lambda m.((\mathcal{C}_1[v_1]\,\lambda e.((\lambda k.\lambda m.(k\,m)\,k)\,\textbf{(}e\textbf{,}m\textbf{)}))\,m)\,k)\,\textbf{(}e\textbf{,}m\textbf{)}))\,m)\,\lambda z.z)\,\textbf{nil})\\
+\rightarrow_{\lambda_v} &(\lambda m.((\mathcal{C}_1[v_0]\,\lambda e.((\lambda k.\lambda m.((\mathcal{C}_1[v_1]\,\lambda e.((\lambda k.\lambda m.(k\,m)\,k)\,\textbf{(}e\textbf{,}m\textbf{)}))\,m)\,\lambda z.z)\,\textbf{(}e\textbf{,}m\textbf{)}))\,m)\,\textbf{nil})\\
+\rightarrow_{\lambda_v} &((\mathcal{C}_1[v_0]\,\lambda e.((\lambda k.\lambda m.((\mathcal{C}_1[v_1]\,\lambda e.((\lambda k.\lambda m.(k\,m)\,k)\,\textbf{(}e\textbf{,}m\textbf{)}))\,m)\,\lambda z.z)\,\textbf{(}e\textbf{,}\textbf{nil}\textbf{)}))\,\textbf{nil})\\
+\rightarrow_{\lambda_v} &...\\
+\end{align*}
 
 ---
 
@@ -1241,6 +1248,7 @@ By some lemma, we know that $((C[(e_0\,e_1)] k) (flag,\chi(E)))\rightarrow_{\lam
 
 %snd = \p.(p \x.\y.y)
 
+
 \begin{proof}[Case $(e_0\,e_1)$]
 %\begin{align*}
 Assume $(\bullet\,e_1)[e_0]\rightarrow_{\lambda_{cm}}^{*}(\bullet\,e_1)[v_0]$ and $(v_0\,\bullet)[e_1]\rightarrow_{\lambda_{cm}}^{*}(v_0\,\bullet)[v_1]$
@@ -1378,341 +1386,38 @@ THIS!!!
 
 
 \setspecialsymbol{lambda}{$\lambda$}
+\setspecialsymbol{T}{$\mathcal{T}$}
 
 
 \begin{schemedisplay}
-(((lambda (k) (lambda (m) ((lambda (k) (k ((lambda (p) (p FALSE)) m)))
-               (lambda (s) ((lambda (k) (k (PAIR FALSE s)))
-                      (lambda (u) (((lambda (k) (lambda (m) (k e)))
-                              (lambda (v) ((lambda (k) (k (((((s (lambda (x) x)) (lambda (z) z))
-                                                 (lambda (x) (lambda (k) (lambda (m) (k (lambda (y) (lambda (k) (lambda (m) (k y)))))))))
-                                                (lambda (v) (lambda (k) (lambda (m) (k v))))) (lambda (z) z))))
-                                     (lambda (t) ((lambda (k) (k (FST m)))
-                                            (lambda (f) ((lambda (k) (k ((f t) s)))
-                                                   (lambda (a) ((lambda (k) (k (lambda (p) ((p TRUE)
-                                                                          (lambda (k) (lambda (m) (k (lambda (z) (lambda (k) (lambda (m) ((lambda (k) (k (m FALSE)))
-                                                                                                            (lambda (s) ((lambda (k) (k (lambda (p) ((p FALSE) s))))
-                                                                                                                   (lambda (n) (((lambda (k) (lambda (m) ((lambda (k) (k (m FALSE)))
-                                                                                                                                        (lambda (s) ((lambda (k) (k (lambda (p) ((p FALSE) s))))
-                                                                                                                                               (lambda (n) (((lambda (k) (lambda (m) (k z)))
-                                                                                                                                                       (lambda (e) (((lambda (k) (lambda (m) (k v)))
-                                                                                                                                                               (lambda (f) (((e f) k) m))) n))) n)))))))
-                                                                                                                           (lambda (e) ((a (lambda (f) (((e f) k) m))) n))) n)))))))))))))))
-                                                          (lambda (m) (((lambda (k) (lambda (m) (k f))) k) m))))))))))) u)))))))
-  (lambda (v) (lambda (k) (lambda (m) (k v)))))
- (PAIR FALSE C[nil]))
-\end{schemedisplay}
-
-
-βv
-\begin{schemedisplay}
-((lambda (m) ((lambda (k) (k ((lambda (p) (p FALSE)) m)))
-        (lambda (s) ((lambda (k) (k (PAIR FALSE s)))
-               (lambda (u) (((lambda (k) (lambda (m) (k e)))
-                       (lambda (v) ((lambda (k) (k (((((s (lambda (x) x)) (lambda (z) z))
-                                          (lambda (x) (lambda (k) (lambda (m) (k (lambda (y) (lambda (k) (lambda (m) (k y)))))))))
-                                         (lambda (v) (lambda (k) (lambda (m) (k v))))) (lambda (z) z))))
-                              (lambda (t) ((lambda (k) (k (FST m)))
-                                     (lambda (f) ((lambda (k) (k ((f t) s)))
-                                            (lambda (a) ((lambda (k) (k (lambda (p) ((p TRUE)
-                                                                   (lambda (k) (lambda (m) (k (lambda (z) (lambda (k) (lambda (m) ((lambda (k) (k (m FALSE)))
-                                                                                                     (lambda (s) ((lambda (k) (k (lambda (p) ((p FALSE) s))))
-                                                                                                            (lambda (n) (((lambda (k) (lambda (m) ((lambda (k) (k (m FALSE)))
-                                                                                                                                 (lambda (s) ((lambda (k) (k (lambda (p) ((p FALSE) s))))
-                                                                                                                                        (lambda (n) (((lambda (k) (lambda (m) (k z)))
-                                                                                                                                                (lambda (e) (((lambda (k) (lambda (m) (k v)))
-                                                                                                                                                        (lambda (f) (((e f) k) m))) n))) n)))))))
-                                                                                                                    (lambda (e) ((a (lambda (f) (((e f) k) m))) n))) n)))))))))))))))
-                                                   (lambda (m) (((lambda (k) (lambda (m) (k f)))
-                                                           (lambda (v) (lambda (k) (lambda (m) (k v))))) m))))))))))) u))))))
- (PAIR FALSE C[nil]))
-\end{schemedisplay}
-
-βv
-\begin{schemedisplay}
-((lambda (k) (k ((lambda (p) (p FALSE))
-           (PAIR FALSE C[nil]))))
- (lambda (s) ((lambda (k) (k (PAIR FALSE s)))
-        (lambda (u) (((lambda (k) (lambda (m) (k e)))
-                (lambda (v) ((lambda (k) (k (((((s (lambda (x) x)) (lambda (z) z))
-                                   (lambda (x) (lambda (k) (lambda (m) (k (lambda (y) (lambda (k) (lambda (m) (k y)))))))))
-                                  (lambda (v) (lambda (k) (lambda (m) (k v))))) (lambda (z) z))))
-                       (lambda (t) ((lambda (k) (k (FST
-                                        (PAIR FALSE C[nil]))))
-                              (lambda (f) ((lambda (k) (k ((f t) s)))
-                                     (lambda (a) ((lambda (k) (k (lambda (p) ((p TRUE)
-                                                            (lambda (k) (lambda (m) (k (lambda (z) (lambda (k) (lambda (m) ((lambda (k) (k (m FALSE)))
-                                                                                              (lambda (s) ((lambda (k) (k (lambda (p) ((p FALSE) s))))
-                                                                                                     (lambda (n) (((lambda (k) (lambda (m) ((lambda (k) (k (m FALSE)))
-                                                                                                                          (lambda (s) ((lambda (k) (k (lambda (p) ((p FALSE) s))))
-                                                                                                                                 (lambda (n) (((lambda (k) (lambda (m) (k z)))
-                                                                                                                                         (lambda (e) (((lambda (k) (lambda (m) (k v)))
-                                                                                                                                                 (lambda (f) (((e f) k) m))) n))) n)))))))
-                                                                                                             (lambda (e) ((a (lambda (f) (((e f) k) m))) n))) n)))))))))))))))
-                                            (lambda (m) (((lambda (k) (lambda (m) (k f)))
-                                                    (lambda (v) (lambda (k) (lambda (m) (k v))))) m))))))))))) u)))))
-\end{schemedisplay}
-
-βv
-\begin{schemedisplay}
-((lambda (s) ((lambda (k) (k (PAIR FALSE s)))
-        (lambda (u) (((lambda (k) (lambda (m) (k e)))
-                (lambda (v) ((lambda (k) (k (((((s (lambda (x) x)) (lambda (z) z))
-                                   (lambda (x) (lambda (k) (lambda (m) (k (lambda (y) (lambda (k) (lambda (m) (k y)))))))))
-                                  (lambda (v) (lambda (k) (lambda (m) (k v))))) (lambda (z) z))))
-                       (lambda (t) ((lambda (k) (k (FST
-                                        (PAIR FALSE C[nil]))))
-                              (lambda (f) ((lambda (k) (k ((f t) s)))
-                                     (lambda (a) ((lambda (k) (k (lambda (p) ((p TRUE)
-                                                            (lambda (k) (lambda (m) (k (lambda (z) (lambda (k) (lambda (m) ((lambda (k) (k (m FALSE)))
-                                                                                              (lambda (s) ((lambda (k) (k (lambda (p) ((p FALSE) s))))
-                                                                                                     (lambda (n) (((lambda (k) (lambda (m) ((lambda (k) (k (m FALSE)))
-                                                                                                                          (lambda (s) ((lambda (k) (k (lambda (p) ((p FALSE) s))))
-                                                                                                                                 (lambda (n) (((lambda (k) (lambda (m) (k z)))
-                                                                                                                                         (lambda (e) (((lambda (k) (lambda (m) (k v)))
-                                                                                                                                                 (lambda (f) (((e f) k) m))) n))) n)))))))
-                                                                                                             (lambda (e) ((a (lambda (f) (((e f) k) m))) n))) n)))))))))))))))
-                                            (lambda (m) (((lambda (k) (lambda (m) (k f)))
-                                                    (lambda (v) (lambda (k) (lambda (m) (k v))))) m))))))))))) u))))
- ((lambda (p) (p FALSE))
-  (PAIR FALSE C[nil])))
-\end{schemedisplay}
-
-βv
-\begin{schemedisplay}
-((lambda (s) ((lambda (k) (k (PAIR FALSE s)))
-        (lambda (u) (((lambda (k) (lambda (m) (k e)))
-                (lambda (v) ((lambda (k) (k (((((s (lambda (x) x)) (lambda (z) z))
-                                   (lambda (x) (lambda (k) (lambda (m) (k (lambda (y) (lambda (k) (lambda (m) (k y)))))))))
-                                  (lambda (v) (lambda (k) (lambda (m) (k v))))) (lambda (z) z))))
-                       (lambda (t) ((lambda (k) (k (FST
-                                        (PAIR FALSE C[nil]))))
-                              (lambda (f) ((lambda (k) (k ((f t) s)))
-                                     (lambda (a) ((lambda (k) (k (lambda (p) ((p TRUE)
-                                                            (lambda (k) (lambda (m) (k (lambda (z) (lambda (k) (lambda (m) ((lambda (k) (k (m FALSE)))
-                                                                                              (lambda (s) ((lambda (k) (k (lambda (p) ((p FALSE) s))))
-                                                                                                     (lambda (n) (((lambda (k) (lambda (m) ((lambda (k) (k (m FALSE)))
-                                                                                                                          (lambda (s) ((lambda (k) (k (lambda (p) ((p FALSE) s))))
-                                                                                                                                 (lambda (n) (((lambda (k) (lambda (m) (k z)))
-                                                                                                                                         (lambda (e) (((lambda (k) (lambda (m) (k v)))
-                                                                                                                                                 (lambda (f) (((e f) k) m))) n))) n)))))))
-                                                                                                             (lambda (e) ((a (lambda (f) (((e f) k) m))) n))) n)))))))))))))))
-                                            (lambda (m) (((lambda (k) (lambda (m) (k f)))
-                                                    (lambda (v) (lambda (k) (lambda (m) (k v))))) m))))))))))) u))))
- ((PAIR FALSE C[nil])
-  FALSE))
-\end{schemedisplay}
-
-βv
-\begin{schemedisplay}
-((lambda (s) ((lambda (k) (k (PAIR FALSE s)))
-        (lambda (u) (((lambda (k) (lambda (m) (k e)))
-                (lambda (v) ((lambda (k) (k (((((s (lambda (x) x)) (lambda (z) z))
-                                   (lambda (x) (lambda (k) (lambda (m) (k (lambda (y) (lambda (k) (lambda (m) (k y)))))))))
-                                  (lambda (v) (lambda (k) (lambda (m) (k v))))) (lambda (z) z))))
-                       (lambda (t) ((lambda (k) (k (FST
-                                        (PAIR FALSE C[nil]))))
-                              (lambda (f) ((lambda (k) (k ((f t) s)))
-                                     (lambda (a) ((lambda (k) (k (lambda (p) ((p TRUE)
-                                                            (lambda (k) (lambda (m) (k (lambda (z) (lambda (k) (lambda (m) ((lambda (k) (k (m FALSE)))
-                                                                                              (lambda (s) ((lambda (k) (k (lambda (p) ((p FALSE) s))))
-                                                                                                     (lambda (n) (((lambda (k) (lambda (m) ((lambda (k) (k (m FALSE)))
-                                                                                                                          (lambda (s) ((lambda (k) (k (lambda (p) ((p FALSE) s))))
-                                                                                                                                 (lambda (n) (((lambda (k) (lambda (m) (k z)))
-                                                                                                                                         (lambda (e) (((lambda (k) (lambda (m) (k v)))
-                                                                                                                                                 (lambda (f) (((e f) k) m))) n))) n)))))))
-                                                                                                             (lambda (e) ((a (lambda (f) (((e f) k) m))) n))) n)))))))))))))))
-                                            (lambda (m) (((lambda (k) (lambda (m) (k f)))
-                                                    (lambda (v) (lambda (k) (lambda (m) (k v))))) m))))))))))) u))))
- ((FALSE
-   FALSE)
-  C[nil]))
-\end{schemedisplay}
-
-βv
-\begin{schemedisplay}
-((lambda (s) ((lambda (k) (k (PAIR FALSE s)))
-        (lambda (u) (((lambda (k) (lambda (m) (k e)))
-                (lambda (v) ((lambda (k) (k (((((s (lambda (x) x)) (lambda (z) z))
-                                   (lambda (x) (lambda (k) (lambda (m) (k (lambda (y) (lambda (k) (lambda (m) (k y)))))))))
-                                  (lambda (v) (lambda (k) (lambda (m) (k v))))) (lambda (z) z))))
-                       (lambda (t) ((lambda (k) (k (FST
-                                        (PAIR FALSE C[nil]))))
-                              (lambda (f) ((lambda (k) (k ((f t) s)))
-                                     (lambda (a) ((lambda (k) (k (lambda (p) ((p TRUE)
-                                                            (lambda (k) (lambda (m) (k (lambda (z) (lambda (k) (lambda (m) ((lambda (k) (k (m FALSE)))
-                                                                                              (lambda (s) ((lambda (k) (k (lambda (p) ((p FALSE) s))))
-                                                                                                     (lambda (n) (((lambda (k) (lambda (m) ((lambda (k) (k (m FALSE)))
-                                                                                                                          (lambda (s) ((lambda (k) (k (lambda (p) ((p FALSE) s))))
-                                                                                                                                 (lambda (n) (((lambda (k) (lambda (m) (k z)))
-                                                                                                                                         (lambda (e) (((lambda (k) (lambda (m) (k v)))
-                                                                                                                                                 (lambda (f) (((e f) k) m))) n))) n)))))))
-                                                                                                             (lambda (e) ((a (lambda (f) (((e f) k) m))) n))) n)))))))))))))))
-                                            (lambda (m) (((lambda (k) (lambda (m) (k f)))
-                                                    (lambda (v) (lambda (k) (lambda (m) (k v))))) m))))))))))) u))))
- ((lambda (y) y) C[nil]))
-\end{schemedisplay}
-
-βv
-\begin{schemedisplay}
-((lambda (s) ((lambda (k) (k (PAIR FALSE s)))
-        (lambda (u) (((lambda (k) (lambda (m) (k e)))
-                (lambda (v) ((lambda (k) (k (((((s (lambda (x) x)) (lambda (z) z))
-                                   (lambda (x) (lambda (k) (lambda (m) (k (lambda (y) (lambda (k) (lambda (m) (k y)))))))))
-                                  (lambda (v) (lambda (k) (lambda (m) (k v))))) (lambda (z) z))))
-                       (lambda (t) ((lambda (k) (k (FST
-                                        (PAIR FALSE C[nil]))))
-                              (lambda (f) ((lambda (k) (k ((f t) s)))
-                                     (lambda (a) ((lambda (k) (k (lambda (p) ((p TRUE)
-                                                            (lambda (k) (lambda (m) (k (lambda (z) (lambda (k) (lambda (m) ((lambda (k) (k (m FALSE)))
-                                                                                              (lambda (s) ((lambda (k) (k (lambda (p) ((p FALSE) s))))
-                                                                                                     (lambda (n) (((lambda (k) (lambda (m) ((lambda (k) (k (m FALSE)))
-                                                                                                                          (lambda (s) ((lambda (k) (k (lambda (p) ((p FALSE) s))))
-                                                                                                                                 (lambda (n) (((lambda (k) (lambda (m) (k z)))
-                                                                                                                                         (lambda (e) (((lambda (k) (lambda (m) (k v)))
-                                                                                                                                                 (lambda (f) (((e f) k) m))) n))) n)))))))
-                                                                                                             (lambda (e) ((a (lambda (f) (((e f) k) m))) n))) n)))))))))))))))
-                                            (lambda (m) (((lambda (k) (lambda (m) (k f)))
-                                                    (lambda (v) (lambda (k) (lambda (m) (k v))))) m))))))))))) u))))
- C[nil])
-\end{schemedisplay}
-
-βv
-\begin{schemedisplay}
-((lambda (k) (k (PAIR FALSE C[nil])))
- (lambda (u) (((lambda (k) (lambda (m) (k e)))
-         (lambda (v) ((lambda (k) (k (((((C[nil] (lambda (x) x)) (lambda (z) z))
-                            (lambda (x) (lambda (k) (lambda (m) (k (lambda (y) (lambda (k) (lambda (m) (k y)))))))))
-                           (lambda (v) (lambda (k) (lambda (m) (k v))))) (lambda (z) z))))
-                (lambda (t) ((lambda (k) (k (FST
-                                 (PAIR FALSE C[nil]))))
-                       (lambda (f) ((lambda (k) (k ((f t) C[nil])))
-                              (lambda (a) ((lambda (k) (k (lambda (p) ((p TRUE)
-                                                     (lambda (k) (lambda (m) (k (lambda (z) (lambda (k) (lambda (m) ((lambda (k) (k (m FALSE)))
-                                                                                       (lambda (s) ((lambda (k) (k (lambda (p) ((p FALSE) s))))
-                                                                                              (lambda (n) (((lambda (k) (lambda (m) ((lambda (k) (k (m FALSE)))
-                                                                                                                   (lambda (s) ((lambda (k) (k (lambda (p) ((p FALSE) s))))
-                                                                                                                          (lambda (n) (((lambda (k) (lambda (m) (k z)))
-                                                                                                                                  (lambda (e) (((lambda (k) (lambda (m) (k v)))
-                                                                                                                                          (lambda (f) (((e f) k) m))) n))) n)))))))
-                                                                                                      (lambda (e) ((a (lambda (f) (((e f) k) m))) n))) n)))))))))))))))
-                                     (lambda (m) (((lambda (k) (lambda (m) (k f)))
-                                             (lambda (v) (lambda (k) (lambda (m) (k v))))) m))))))))))) u)))
-\end{schemedisplay}
-
-βv
-\begin{schemedisplay}
-((lambda (u) (((lambda (k) (lambda (m) (k e)))
-         (lambda (v) ((lambda (k) (k (((((C[nil] (lambda (x) x)) (lambda (z) z))
-                            (lambda (x) (lambda (k) (lambda (m) (k (lambda (y) (lambda (k) (lambda (m) (k y)))))))))
-                           (lambda (v) (lambda (k) (lambda (m) (k v))))) (lambda (z) z))))
-                (lambda (t) ((lambda (k) (k (FST
-                                 (PAIR FALSE C[nil]))))
-                       (lambda (f) ((lambda (k) (k ((f t) C[nil])))
-                              (lambda (a) ((lambda (k) (k (lambda (p) ((p TRUE)
-                                                     (lambda (k) (lambda (m) (k (lambda (z) (lambda (k) (lambda (m) ((lambda (k) (k (m FALSE)))
-                                                                                       (lambda (s) ((lambda (k) (k (lambda (p) ((p FALSE) s))))
-                                                                                              (lambda (n) (((lambda (k) (lambda (m) ((lambda (k) (k (m FALSE)))
-                                                                                                                   (lambda (s) ((lambda (k) (k (lambda (p) ((p FALSE) s))))
-                                                                                                                          (lambda (n) (((lambda (k) (lambda (m) (k z)))
-                                                                                                                                  (lambda (e) (((lambda (k) (lambda (m) (k v)))
-                                                                                                                                          (lambda (f) (((e f) k) m))) n))) n)))))))
-                                                                                                      (lambda (e) ((a (lambda (f) (((e f) k) m))) n))) n)))))))))))))))
-                                     (lambda (m) (((lambda (k) (lambda (m) (k f)))
-                                             (lambda (v) (lambda (k) (lambda (m) (k v))))) m))))))))))) u))
- (PAIR FALSE C[nil]))
-\end{schemedisplay}
-
-βv
-\begin{schemedisplay}
-(((lambda (k) (lambda (m) (k e)))
-  (lambda (v) ((lambda (k) (k (((((C[nil] (lambda (x) x)) (lambda (z) z))
-                     (lambda (x) (lambda (k) (lambda (m) (k (lambda (y) (lambda (k) (lambda (m) (k y)))))))))
-                    (lambda (v) (lambda (k) (lambda (m) (k v))))) (lambda (z) z))))
-         (lambda (t) ((lambda (k) (k (FST
-                          (PAIR FALSE C[nil]))))
-                (lambda (f) ((lambda (k) (k ((f t) C[nil])))
-                       (lambda (a) ((lambda (k) (k (lambda (p) ((p TRUE)
-                                              (lambda (k) (lambda (m) (k (lambda (z) (lambda (k) (lambda (m) ((lambda (k) (k (m FALSE)))
-                                                                                (lambda (s) ((lambda (k) (k (lambda (p) ((p FALSE) s))))
-                                                                                       (lambda (n) (((lambda (k) (lambda (m) ((lambda (k) (k (m FALSE)))
-                                                                                                            (lambda (s) ((lambda (k) (k (lambda (p) ((p FALSE) s))))
-                                                                                                                   (lambda (n) (((lambda (k) (lambda (m) (k z)))
-                                                                                                                           (lambda (e) (((lambda (k) (lambda (m) (k v)))
-                                                                                                                                   (lambda (f) (((e f) k) m))) n))) n)))))))
-                                                                                               (lambda (e) ((a (lambda (f) (((e f) k) m))) n))) n)))))))))))))))
-                              (lambda (m) (((lambda (k) (lambda (m) (k f)))
-                                      (lambda (v) (lambda (k) (lambda (m) (k v))))) m)))))))))))
- (PAIR FALSE C[nil]))
-\end{schemedisplay}
-
-βv
-\begin{schemedisplay}
-((lambda (m) ((lambda (v) ((lambda (k) (k (((((C[nil] (lambda (x) x)) (lambda (z) z))
-                           (lambda (x) (lambda (k) (lambda (m) (k (lambda (y) (lambda (k) (lambda (m) (k y)))))))))
-                          (lambda (v) (lambda (k) (lambda (m) (k v))))) (lambda (z) z))))
-               (lambda (t) ((lambda (k) (k (FST
-                                (PAIR FALSE C[nil]))))
-                      (lambda (f) ((lambda (k) (k ((f t) C[nil])))
-                             (lambda (a) ((lambda (k) (k (lambda (p) ((p TRUE)
-                                                    (lambda (k) (lambda (m) (k (lambda (z) (lambda (k) (lambda (m) ((lambda (k) (k (m FALSE)))
-                                                                                      (lambda (s) ((lambda (k) (k (lambda (p) ((p FALSE) s))))
-                                                                                             (lambda (n) (((lambda (k) (lambda (m) ((lambda (k) (k (m FALSE)))
-                                                                                                                  (lambda (s) ((lambda (k) (k (lambda (p) ((p FALSE) s))))
-                                                                                                                         (lambda (n) (((lambda (k) (lambda (m) (k z)))
-                                                                                                                                 (lambda (e) (((lambda (k) (lambda (m) (k v)))
-                                                                                                                                         (lambda (f) (((e f) k) m))) n))) n)))))))
-                                                                                                     (lambda (e) ((a (lambda (f) (((e f) k) m))) n))) n)))))))))))))))
-                                    (lambda (m) (((lambda (k) (lambda (m) (k f)))
-                                            (lambda (v) (lambda (k) (lambda (m) (k v))))) m)))))))))) e))
- (PAIR FALSE C[nil]))
-\end{schemedisplay}
-
-βv
-\begin{schemedisplay}
-((lambda (v) ((lambda (k) (k (((((C[nil] (lambda (x) x)) (lambda (z) z))
-                    (lambda (x) (lambda (k) (lambda (m) (k (lambda (y) (lambda (k) (lambda (m) (k y)))))))))
-                   (lambda (v) (lambda (k) (lambda (m) (k v))))) (lambda (z) z))))
-        (lambda (t) ((lambda (k) (k (FST
-                         (PAIR FALSE C[nil]))))
-               (lambda (f) ((lambda (k) (k ((f t) C[nil])))
-                      (lambda (a) ((lambda (k) (k (lambda (p) ((p TRUE)
-                                             (lambda (k) (lambda (m) (k (lambda (z) (lambda (k) (lambda (m) ((lambda (k) (k (m FALSE)))
-                                                                               (lambda (s) ((lambda (k) (k (lambda (p) ((p FALSE) s))))
-                                                                                      (lambda (n) (((lambda (k) (lambda (m) ((lambda (k) (k (m FALSE)))
-                                                                                                           (lambda (s) ((lambda (k) (k (lambda (p) ((p FALSE) s))))
-                                                                                                                  (lambda (n) (((lambda (k) (lambda (m) (k z)))
-                                                                                                                          (lambda (e) (((lambda (k) (lambda (m) (k v)))
-                                                                                                                                  (lambda (f) (((e f) k) m))) n))) n)))))))
-                                                                                              (lambda (e) ((a (lambda (f) (((e f) k) m))) n))) n)))))))))))))))
-                             (lambda (m) (((lambda (k) (lambda (m) (k f)))
-                                     (lambda (v) (lambda (k) (lambda (m) (k v))))) m)))))))))) e)
-\end{schemedisplay}
-
-error: unbound identifier
-\begin{schemedisplay}
-((lambda (v) ((lambda (k) (k (((((C[nil] (lambda (x) x)) (lambda (z) z))
-                    (lambda (x) (lambda (k) (lambda (m) (k (lambda (y) (lambda (k) (lambda (m) (k y)))))))))
-                   (lambda (v) (lambda (k) (lambda (m) (k v))))) (lambda (z) z))))
-        (lambda (t) ((lambda (k) (k (FST
-                         (PAIR FALSE C[nil]))))
-               (lambda (f) ((lambda (k) (k ((f t) C[nil])))
-                      (lambda (a) ((lambda (k) (k (lambda (p) ((p TRUE)
-                                             (lambda (k) (lambda (m) (k (lambda (z) (lambda (k) (lambda (m) ((lambda (k) (k (m FALSE)))
-                                                                               (lambda (s) ((lambda (k) (k (lambda (p) ((p FALSE) s))))
-                                                                                      (lambda (n) (((lambda (k) (lambda (m) ((lambda (k) (k (m FALSE)))
-                                                                                                           (lambda (s) ((lambda (k) (k (lambda (p) ((p FALSE) s))))
-                                                                                                                  (lambda (n) (((lambda (k) (lambda (m) (k z)))
-                                                                                                                          (lambda (e) (((lambda (k) (lambda (m) (k v)))
-                                                                                                                                  (lambda (f) (((e f) k) m))) n))) n)))))))
-                                                                                              (lambda (e) ((a (lambda (f) (((e f) k) m))) n))) n)))))))))))))))
-                             (lambda (m) (((lambda (k) (lambda (m) (k f)))
-                                     (lambda (v) (lambda (k) (lambda (m) (k v))))) m)))))))))) error)
-\end{schemedisplay}
-
-error in operand
-\begin{schemedisplay}
-error
+(lambda (k)
+  (lambda (m) ((lambda (k) (k (SND m)))
+          (lambda (s)
+            ((lambda (k) (k (CONS FALSE s)))
+             (lambda (u)
+               ((Ce_0
+                 (lambda (v)
+                   ((lambda (k) 
+                      (k (((((s (lambda (x) x)) (lambda (z) z)) 
+                            (lambda (x) C[(lambda (y) y)])) (lambda (v) C[v])) (lambda (z) z))))
+                    (lambda (t)
+                      ((lambda (k)
+                         (k (FST m)))
+                       (lambda (f)
+                         ((lambda (k)
+                            (k ((f t) s)))
+                          (lambda (a) 
+                            ((lambda (k)
+                               (k (CONS
+                                   TRUE
+                                   (lambda (k)
+                                     (lambda (m) 
+                                       (k (lambda (z) 
+                                            T[(T[(Cz (lambda (k) 
+                                                         (lambda (m)
+                                                           (k v))))] a)])))))))
+                             (lambda (m) ((Ce_1 k) m)))))))))))
+                u)))))))
 \end{schemedisplay}
 
 
