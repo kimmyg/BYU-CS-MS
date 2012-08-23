@@ -795,8 +795,8 @@ program which defines a toy language. In contrast to a Redex tutorial, we will n
 ourselves with the syntax and structure of roads not taken and will instead briefly
 explain each component of the program.
 
-\setkeyword{define-language variable-not-otherwise-mentioned number}
-\setconstant{toy undefined hole}
+\setkeyword{define-language variable-not-otherwise-mentioned number reduction-relation in-hole substitute term define-metafunction reduces-to-one-value? value? redex-match length apply-reduction-relation* first redex-check}
+\setconstant{toy toy-rr undefined hole}
 \begin{schemedisplay}
 (define-language toy
   (x variable-not-otherwise-mentioned)
@@ -806,22 +806,20 @@ explain each component of the program.
 \end{schemedisplay}
 
 This expression defines the abstract syntactic structure of a language named \emph{toy}.
-There are four categories of structures: \scheme'x', \scheme'v', \scheme'e', and \scheme'E'. The category \scheme'x' is
-defined to contain any token not otherwise mentioned in the definition. The category \scheme'v'
-is defined to contain numbers and the token \scheme{undefined}. The category \scheme'e' is defined
-to contain the expression forms of the language, of which there are four: addition
-expressions, \scheme{with} expressions, lone variables, and lone values. The last category,
-\scheme'E', does not define abstract syntax but instead reduction contexts. The first reduction
-context is a \scheme{hole} (a special token in Redex) which will be filled in with the
-result of the expression that previously resided in its place. The next two are addition
-contexts, the first representing the evaluation of the first argument and the second
-representing the evaluation of the second; the composition of these contexts imposes an
-order on the evaluation of the arguments. The final context, a \scheme{with} context,
-specifies a variable, a value, and an expression within which that variable is bound to
-that value.
+There are four categories of structures: \scheme'x', \scheme'v', \scheme'e', and 
+\scheme'E'. The category \scheme'x' is defined to contain any token not otherwise 
+mentioned in the definition. The category \scheme'v' is defined to contain numbers and 
+the token \scheme{undefined}. The category \scheme'e' is defined to contain the expression 
+forms of the language, of which there are four: addition expressions, \scheme{with} 
+expressions, lone variables, and lone values. The last category, \scheme'E', does not 
+define abstract syntax but instead reduction contexts. The first reduction context is a 
+\scheme{hole} (a special token in Redex) which will be filled in with the result of the 
+expression that previously resided in its place. The next two are addition contexts, the 
+first representing the evaluation of the first argument and the second representing the 
+evaluation of the second; the composition of these contexts imposes an order on the 
+evaluation of the arguments. The final context, a \scheme{with} context, specifies a 
+variable, a value, and an expression within which that variable is bound to that value.
 
-\setkeyword{reduction-relation in-hole substitute term}
-\setconstant{toy-rr}
 \begin{schemedisplay}
 (define toy-rr
   (reduction-relation toy
@@ -848,7 +846,6 @@ according to the defined rules. These define: the addition of two numbers; the
 substitution of a \scheme{with} expression; a lone variable; the addition of an undefined
 value on the left; and the addition of an undefined value on the right.
 
-\setkeyword{define-metafunction}
 \begin{schemedisplay}
 (define-metafunction toy
   substitute : x v e -> e
@@ -866,10 +863,10 @@ value on the left; and the addition of an undefined value on the right.
    v_2])
 \end{schemedisplay}
 
-The definition of the \emph{with} reduction rule relies on the \emph{substitute}
+The definition of the \scheme{with} reduction rule relies on the \scheme{substitute}
 metafunction. (Metafunctions assist in defining the language, and therefore exist outside
 of that language; hence, they are not functions of the language but metafunctions.) The
-\emph{substitute} metafunction recursively substitutes a variable in an expression with a 
+\scheme{substitute} metafunction recursively substitutes a variable in an expression with a 
 value. The substitution is only propagated as long as a binding with the same name is not 
 encountered. At that point, the substitution is performed in the value expression of the 
 binding, but not the body. This allows for expressions like
@@ -880,7 +877,6 @@ binding, but not the body. This allows for expressions like
 \end{schemedisplay}
 to behave as we expect (returning \scheme'5').
 
-\setkeyword{reduces-to-one-value? value? redex-match length apply-reduction-relation* first}
 Now that the syntactic forms and reduction rules of the language are defined, we can use 
 the randomized testing built into Redex to investigate properties of the language. We 
 start by defining the helper function \scheme{reduces-to-one-value?} (which has its own 
@@ -899,7 +895,6 @@ the reduction rules don't actually reduce terms, the relation may produce a redu
 indefinitely. The function \scheme{apply-reduction-relation*} is in a sense strict in the
 reduction relation and will likewise run indefinitely if this is the case.
 
-\setkeyword{redex-check}
 After the language and some properties have been established, the randomized testing, 
 initiated by
 \begin{schemedisplay}
@@ -918,34 +913,34 @@ for proof. We express the property of reducing to one value with the following t
 
 \newtheorem*{toythm}{Toy Language One-Value Theorem}
 \begin{toythm}
-For all terms $e$ of the toy language, $e$ reduces to exactly one value.\footnote{We do 
-not use the term ``value'' loosely here; the toy language definition specifies what 
+For all terms \scheme'e' of the toy language, \scheme'e' reduces to exactly one value.\footnote{We do 
+not use the term \emph{value} loosely here; the toy language definition specifies what 
 constitute values, and we appeal to this.}
 \end{toythm}
-We proceed by induction on the structure of terms $e$ of the toy language. First, we 
+We proceed by induction on the structure of terms \scheme'e' of the toy language. First, we 
 consider the base cases.
-\begin{proof}[Case $v$]
-A term $e$ of the form $v$ is exactly one value and cannot be reduced, so the statement 
-holds.
+\begin{proof}[Case \scheme'v']
+A term \scheme'e' of the form \scheme'v' is exactly one value and cannot be reduced, 
+so the statement holds.
 \end{proof}
-\begin{proof}[Case $x$]
-A term $e$ of the form $x$, a variable, reduces to \emph{undefined}, a value term, so the 
-statement holds.
+\begin{proof}[Case \scheme'x']
+A term \scheme'e' of the form \scheme'x', a variable, reduces to \scheme{undefined}, 
+a value term, so the statement holds.
 \end{proof}
-\begin{proof}[Case $(with\,(x\,e_{1})\,e_{2})$]
-By induction, we assume that $e_{1}$ reduces to exactly one value. Then the ``with''-rule
-can only be applied once, resulting in a single term $e_{2}$ in $e$ which, by our
+\begin{proof}[Case \scheme|(with (x e_1) e_2)|]
+By induction, we assume that \scheme{e_1} reduces to exactly one value. Then the ``with''-rule
+can only be applied once, resulting in a single term \scheme{e_2} in \scheme'e' which, by our
 inductive hypothesis, reduces to only one value.
 \end{proof}
-\begin{proof}[Case $(+\,e_{1}\,e_{2})$]
-By induction, we assume both $e_{1}$ and $e_{2}$ reduce to a single value. We consider two
-subcases: If $e_{1}$ reduces to \emph{undefined}, the ``undefined in first position''-rule
-is applied, and the whole term reduces to \emph{undefined}. If $e_{1}$ reduces to a
-number, we consider two further subcases: If $e_{2}$ reduces to a number, the ``+''-rule
-is applied, and the entire expression reduces to the sum of the two numbers obtained. If
-$e_{2}$ reduces to \emph{undefined}, the ``undefined in second position''-rule is applied,
-and the entire term reduces to \emph{undefined}. Thus, in all subcases, the whole term 
-reduces to exactly one value.
+\begin{proof}[Case \scheme|(+ e_1 e_2)|]
+By induction, we assume both \scheme{e_1} and \scheme{e_2} reduce to a single value. We 
+consider two subcases: If \scheme{e_1} reduces to \scheme{undefined}, the ``undefined in 
+first position''-rule is applied, and the whole term reduces to \scheme{undefined}. If 
+\scheme{e_1} reduces to a number, we consider two further subcases: If \scheme{e_2} 
+reduces to a number, the ``+''-rule is applied, and the entire expression reduces to the 
+sum of the two numbers obtained. If \scheme{e_2} reduces to \scheme{undefined}, the 
+``undefined in second position''-rule is applied, and the entire term reduces to 
+\scheme{undefined}. Thus, in all subcases, the whole term reduces to exactly one value.
 \end{proof}
 
 This property is fairly trivial and its proof is similarly trivial, but it is a shadow of 
@@ -1554,8 +1549,41 @@ Test
 \setspecialsymbol{PAIR}{$\textbf{pair}$}
 
 \setspecialsymbol{k0}{$k_0$}
+\setconstant{error}
 
 \begin{singlespace}
+\begin{schemedisplay}
+(((lambda (k) (lambda (m) (k x))) k0) (PAIR flag CchiE))
+\end{schemedisplay}
+
+\begin{schemedisplay}
+((lambda (m) (k0 x)) (PAIR flag CchiE))
+\end{schemedisplay}
+
+\begin{schemedisplay}
+(k0 x)
+\end{schemedisplay}
+
+\begin{schemedisplay}
+error
+\end{schemedisplay}
+
+\begin{schemedisplay}
+((Cv_0 k0) (PAIR flag CchiE))
+\end{schemedisplay}
+
+\begin{schemedisplay}
+(((lambda (k) (lambda (m) (k (lambda (x) Ce_0p)))) k0) (PAIR flag CchiE))
+\end{schemedisplay}
+
+\begin{schemedisplay}
+((lambda (m) (k0 (lambda (x) Ce_0p))) (PAIR flag CchiE))
+\end{schemedisplay}
+
+\begin{schemedisplay}
+(k0 (lambda (x) Ce_0p))
+\end{schemedisplay}
+
 \begin{schemedisplay}
 (((lambda (k)
     (lambda (m)
@@ -1661,6 +1689,18 @@ Test
 \end{schemedisplay}
 
 \begin{schemedisplay}
+((lambda (e)
+   ((Ce_1
+     (lambda (f)
+       (((e f) k0) (PAIR flag CchiE))))
+    (PAIR FALSE CchiE))) error)
+\end{schemedisplay}
+
+\begin{schemedisplay}
+error
+\end{schemedisplay}
+
+\begin{schemedisplay}
 ((Ce_1
   (lambda (f)
     ((((lambda (x) Ce_0p) f) k0) (PAIR flag CchiE))))
@@ -1668,10 +1708,19 @@ Test
 \end{schemedisplay}
 
 \begin{schemedisplay}
+((lambda (f)
+   ((((lambda (x) Ce_0p) f) k0) (PAIR flag CchiE))) error)
+\end{schemedisplay}
+
+\begin{schemedisplay}
+error
+\end{schemedisplay}
+
+\begin{schemedisplay}
 ((((lambda (x) Ce_0p) (lambda (y) Ce_1p)) k0) (PAIR flag CchiE))
 \end{schemedisplay}
 
-wcm 
+
 \begin{schemedisplay}
 (((lambda (k)
     (lambda (m) ((lambda (k) (k (SND m)))
@@ -1870,6 +1919,34 @@ wcm
 \end{schemedisplay}
 
 \begin{schemedisplay}
+((lambda (v)
+   ((lambda (k) 
+      (k (((((CchiE (lambda (x) x)) (lambda (z) z)) 
+            (lambda (x) C[(lambda (y) y)])) (lambda (v) C[v])) (lambda (z) z))))
+    (lambda (t)
+      ((lambda (k)
+         (k (FST (PAIR FALSE CchiE))))
+       (lambda (f)
+         ((lambda (k)
+            (k ((f t) CchiE)))
+          (lambda (a) 
+            ((lambda (k)
+               (k (PAIR
+                   TRUE
+                   (lambda (k)
+                     (lambda (m) 
+                       (k (lambda (z) 
+                            T[(T[(Cz (lambda (k) 
+                                       (lambda (m)
+                                         (k v))))] a)])))))))
+             (lambda (m) ((Ce_1 k0) m)))))))))) error)
+\end{schemedisplay}
+
+\begin{schemedisplay}
+error
+\end{schemedisplay}
+
+\begin{schemedisplay}
 ((lambda (k) 
    (k (((((CchiE (lambda (x) x)) (lambda (z) z)) 
          (lambda (x) C[(lambda (y) y)])) (lambda (v) C[v])) (lambda (z) z))))
@@ -1888,7 +1965,7 @@ wcm
                     (k (lambda (z) 
                          T[(T[(Cz (lambda (k) 
                                     (lambda (m)
-                                      (k (lambda (x) Ce_0p)))))] a)])))))))
+                                      (k (lambda (x) Ce_0')))))] a)])))))))
           (lambda (m) ((Ce_1 k0) m)))))))))
 \end{schemedisplay}
 
@@ -2099,6 +2176,14 @@ wcm
 \end{schemedisplay}
 
 \begin{schemedisplay}
+(k0 error)
+\end{schemedisplay}
+
+\begin{schemedisplay}
+error
+\end{schemedisplay}
+
+\begin{schemedisplay}
 (((lambda (k)
     (lambda (m) ((lambda (k) (k (SND m)))
                  (lambda (s)
@@ -2296,6 +2381,34 @@ wcm
 \end{schemedisplay}
 
 \begin{schemedisplay}
+((lambda (v)
+   ((lambda (k) 
+      (k (((((CchiE (lambda (x) x)) (lambda (z) z)) 
+            (lambda (x) C[(lambda (y) y)])) (lambda (v) C[v])) (lambda (z) z))))
+    (lambda (t)
+      ((lambda (k)
+         (k (FST (PAIR TRUE CchiE))))
+       (lambda (f)
+         ((lambda (k)
+            (k ((f t) CchiE)))
+          (lambda (a) 
+            ((lambda (k)
+               (k (PAIR
+                   TRUE
+                   (lambda (k)
+                     (lambda (m) 
+                       (k (lambda (z) 
+                            T[(T[(Cz (lambda (k) 
+                                       (lambda (m)
+                                         (k v))))] a)])))))))
+             (lambda (m) ((Ce_1 k0) m)))))))))) error)
+\end{schemedisplay}
+
+\begin{schemedisplay}
+error
+\end{schemedisplay}
+
+\begin{schemedisplay}
 ((lambda (k) 
    (k (((((CchiE (lambda (x) x)) (lambda (z) z)) 
          (lambda (x) C[(lambda (y) y)])) (lambda (v) C[v])) (lambda (z) z))))
@@ -2314,7 +2427,7 @@ wcm
                     (k (lambda (z) 
                          T[(T[(Cz (lambda (k) 
                                     (lambda (m)
-                                      (k (lambda (x) Ce_0p)))))] a)])))))))
+                                      (k (lambda (x) Ce_0')))))] a)])))))))
           (lambda (m) ((Ce_1 k0) m)))))))))
 \end{schemedisplay}
 
@@ -2522,6 +2635,14 @@ wcm
 
 \begin{schemedisplay}
 ((Ce_1 k0) (PAIR TRUE C[(PAIR v_0 (SND chiE))]))
+\end{schemedisplay}
+
+\begin{schemedisplay}
+(k0 error)
+\end{schemedisplay}
+
+\begin{schemedisplay}
+error
 \end{schemedisplay}
 \end{singlespace}
 
