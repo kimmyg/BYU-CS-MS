@@ -293,8 +293,8 @@ verified to preserve the meaning of the source language.
 There are certain tools that are indispensable to some programmers that concern the
 behavior of their programs: debuggers, profilers, steppers, etc. Without these tools,
 these programmers cannot justify the adoption of a language, however compelling it might
-otherwise be. Traditionally, these tools are developed at the same level as the 
-language, privy to incidental implementation detail, precisely because that detail 
+otherwise be. Traditionally, these tools are developed at the same level the 
+language is, privy to incidental implementation detail, precisely because that detail 
 enables these tools to function. This is problematic for at least two reasons. First, 
 it couples the implementation of the tool with the implementation of the language, which
 increases the cost to port to other platforms. If users become dependent upon these tools,
@@ -310,7 +310,7 @@ invariants. Continuation marks are a language-level feature that provide the inf
 necessary for these tools to function. Furthermore, languages which require stack
 inspection to enforce security policies (\emph{Java}, \emph{C\#}) or support aspect
 oriented programming (\emph{aspectj}) can be defined in terms of a simpler language with
-continuation marks.
+continuation marks \cite{clements2004tail}.
 
 Continuation marks originated in PLT Scheme (now Racket \cite{plt-tr1}) as a stack 
 inspection mechanism. In fact, the \emph{Java} and \emph{C\#} languages rely on a similar 
@@ -476,7 +476,7 @@ CPS representation is ideal for understanding tail-call behavior as it is explic
 the continuation is preserved by the tail call.
 
 The purpose of CPS does not lie solely in pedagogy, however. The reification of and
-consequent ability to directly manipulate the continuation is a powerful ability,
+consequent ability to directly manipulate the continuation is powerful,
 analogous in power to the ability to \emph{capture} a continuation which some languages
 provide. In Scheme, this is accomplished with \scheme{call/cc}, short for ``call with
 current continuation''. This call takes one argument which itself is a function of one
@@ -555,37 +555,39 @@ $M$ and $N$ are $\lambda$-calculus terms.
 
 Variables in the $\lambda$-calculus are either free or bound. In the term consisting of
 the lone variable $x$, $x$ is free, meaning that its value is determined solely by its
-environment. If we abstract $x$ to create $\lambda x.x$, $x$ is no longer free but bound.
+environment. If we abstract $x$ to create $\lambda x.x$, we bind it.
 Bound variables play a special part in the role of the $\lambda$-calculus as a computation
-substrate. Terms with no free variables can be called closed, combinators, or programs.
+substrate. Terms with no free variables can be called closed terms, combinators, or programs.
 
 To a first approximation, abstractions are functions. For instance, the identity function
 can be expressed as $\lambda x.x$ where $x$ is \emph{any} variable. Thus, there are an
 infinite number of ways to express the identity function: $\lambda x.x$, $\lambda y.y$,
-$\lambda z.z$, etc. These terms are not syntactically equivalent, but they are the same
+$\lambda z.z$, etc. These terms are not syntactically equivalent, but they denote the same
 function. This fact gives rise to the notion of $\alpha$-equivalence which captures the
 idea that arbitrary, consistent renaming does not change the essence of a term. One
 subtlety here (which we will also encounter later) is \emph{variable capture} which can
 occur when the new name of a variable is already present in the term. For instance, in the
 term $\lambda x.\lambda y.x$, if each $x$ is renamed to $y$, we obtain the term $\lambda
-y.\lambda y.y$, a different term. For this reason, we need to take special care when we
-rename variables (which we will need to do regularly).
+y.\lambda y.y$, a fundamentally different term. For this reason, we need to take special 
+care when we rename variables (which we will need to do regularly).
 
 One of the ways abstractions approximate functions is that we can apply them to arguments.
 This is signified simply by juxtaposition of function (or operator) and argument (or
 operand). In the correct context, an application of the form $M\,N$ can be \emph{reduced}
-in which the operator $M$ is applied to the operand $N$. For instace, the term $\lambda
-x.x\,y$ reduces to $y$. We must take care when reducing a term such as $\lambda x.\lambda
-y.x\,y$. If we reduce naively, we obtain $\lambda y.y$ which does not reflect the intended
-meaning of the reduction--the argument $y$ has been captured by the abstraction and is no
-longer independent of that abstraction. In order to avoid this, we can rename capturing
-abstractions in $M$ to be outside the set of free variables of $N$. In $\lambda x.\lambda
-y.x\,y$, we rename $y$ to $z$ in $\lambda x.\lambda y.x$ and obtain $\lambda x.\lambda
-z.x$. The subsequent reduction of $\lambda x.\lambda z.x\,y$ to $\lambda z.y$ correctly
-reflects the intended meaning of the original term.
+in which the operator $M$ is applied to the operand $N$. For $M$ of the form $\lambda x.M'$, 
+this entails the substitution of every free occurrence of $x$ in $M'$ with $N$. The notation 
+we adopt for this is $M'[x\leftarrow N]$. For instace, the term $\lambda x.x\,y$ signifies 
+$x[x\leftarrow y]$ and so reduces to $y$. We must take care when reducing a term such as 
+$\lambda x.\lambda y.x\,y$. If we reduce naively, we obtain $\lambda y.y$ which does not 
+reflect the intended meaning of the reduction--the argument $y$ has been captured by the 
+abstraction, an act which disregards the original meaning of the application. In order to 
+avoid this, we can rename capturing abstractions in $M$ to be outside the set of free 
+variables of $N$. In $\lambda x.\lambda y.x\,y$, we rename $y$ to $z$ in $\lambda x.\lambda 
+y.x$ obtaining $\lambda x.\lambda z.x$. The subsequent reduction of $\lambda x.\lambda 
+z.x\,y$ to $\lambda z.y$ correctly reflects the intended meaning of the original term.
 
 In the $\lambda$-calculus, evaluation occurs during reduction, and reduction is merely
-application. There is, however, yet more subtlety of which we must be aware, namely, in
+application. There is, however, yet more subtlety of which we must be aware: namely, in
 which contexts we allow applications to be reduced. In the call-by-name
 $\lambda$-calculus, reduction beneath abstraction is legal. Under this regime, both
 $\lambda y.y\,x$ and $\lambda x.(\lambda y.y\,x)$ are reducible. In the call-by-value
@@ -693,33 +695,6 @@ Finally, we observe that every transformed application passes--rather than invok
 provided continuation and that occurs only after reduction. Then continuations can be
 invoked only as in the cases of variables and abstractions and we can see that they are 
 only applied to fully-reduced terms.
-
-%Suppose we want to embed direct-style terms in CPS terms. We are interested in what cases we can induce reduction.
-
-%As an example which will become useful later, suppose we want to deal with a Church encoding of lists directly.
-
-%Recall that we can represent \emph{nil} as [the Church encoding of] \emph{false} and \emph{cons a b} as $\lambda p.((p a) b)$.
-
-%Like [the transformation] T, C has a similar property which we quickly verify:
-
-%\begin{align*}
-%C[x]           &= \lambda k.\lambda m.(k x)\\
-%C[\lambda x.E] &= \lambda k.\lambda m.(k \lambda x.C[E])\\
-%C[E F]         &= \lambda k.\lambda m.((C[E] (\lambda e.((C[F] (\lambda f.(((e f) k) m))) g[m]))) g[m])\\
-%C[wcm E F]     &= \lambda k.\lambda m.((C[E] (\lambda e.((C[F] k) h[e,m]))) g[m])\\
-%C[ccm]         &= \lambda k.\lambda m.(k i[m])\\
-%\end{align*}
-
-%where g[m]=cons false (snd m)
-%and h[e,m]=cons true (if fst m then rest (snd m) else snd m)
-%and i[m]=snd m
-
-%We use the definitions $g$, $h$, and $i$ to emphasize that these facilities enjoy privileged status in the transformation definition and are invisible to the program.
-
-%-uses
-%-lambda calculus
-%-reference CPS due to Fischer/Plotkin
-%-properties
 
 \chapter{$\lambda_{cm}$}
 
@@ -1148,55 +1123,21 @@ and then to the marks argument
 
 We certainly could reduce this by steps and see it work, but that would give us no intuition as to \emph{why} it works. Recall that our transform, in CPS spirit, augments each call site with two additional parameters, the second being an encoding of the tail position of the context and the continuation marks. The transform of $ccm$ discards the tail-position encoding and applies the supplied continuation to the encoding of the continuation marks. However, as each call site also requires an argument encoding the marks, a dummy variable is passed. This is sound as the marks parameter does not bind any variable in the body, so the dummy variable is promptly ignored. In this process, the double abstraction surrounding the list has been stripped away and should be restored. This is accomplished by the passed continuation which does exactly that. Since the result of the reduction is known to be irreducible--that is, either a variable or an abstraction--and since irreducible terms are wrapped in the same way, we can wrap the value manually, yielding a transformed value as if directly.
 
-Programs in $\lambda_{cm}$ can observe the context in which they are evaluated. Programs in $\lambda_v$, however, cannot. The intuition behind the transform is to 
+Programs in $\lambda_{cm}$ can observe the context in which they are evaluated. Programs in $\lambda_v$, however, cannot. The intuition behind the transform is to explicitly provide to the resultant $\lambda_v$ program any information about the context that could be observed by the original $\lambda_{cm}$ program.
 
-%---
-%ok
+\setspecialsymbol{TRUE}{$\textbf{true}$}
+\setspecialsymbol{FALSE}{$\textbf{false}$}
+\setspecialsymbol{PAIR}{$\textbf{pair}$}
+\setspecialsymbol{FST}{$\textbf{fst}$}
+\setspecialsymbol{SND}{$\textbf{snd}$}
+\setspecialsymbol{NIL}{$\textbf{nil}$}
 
-%terms are nested in this language
-%in other words, terms are built up from primitives or smaller terms
-%then proof that the transform works amounts to:
+\setspecialsymbol{e_0}{$e_0$}
+\setspecialsymbol{v_0}{$v_0$}
+\setspecialsymbol{e_1}{$e_1$}
+\setspecialsymbol{v_1}{$v_1$}
 
-%if the term is x and the marks argument (with flag) is y and the continuation k
-%then the result is ...
-
-%example:
-
-%term is ccm, marks argument is (false,[]) and continuation is
- 
-\begin{align*}
-C[x]                  &= \lambda k.\lambda m.(k\,x)\\
-C[\lambda x.E]        &= \lambda k.\lambda m.(k\,\lambda x.C[E])\\
-C[E\,F]               &= \lambda k.\lambda m.(\lambda k_{1}.(k_{1}\,(m\,\lambda x.\lambda y.y))\,\lambda m'.(\lambda k_{2}.(k_{2}\,\lambda p.((p\,\lambda x.\lambda y.y)\,m'))\,\lambda m''.((C[E]\,\lambda e.((C[F]\,\lambda f.(((e\,f)\,k)\,m))\,m''))\,m'')\\
-C[\mathrm{wcm}\,E\,F] &= \lambda k.\lambda m.(\lambda k_{1}.(k_{1}\,(m\,\lambda x.\lambda y.y))\,\lambda m'.(\lambda \\
-C[\mathrm{ccm}]       &= \lambda k.\lambda m.(((m\,\lambda x.\lambda y.y)\,k)\,x
-\end{align*}
-
-{{{
-\renewcommand{\baselinestretch}{0.5}
-\begin{verbatim}
-\k.\m.(\k.(k (m \x.\y.y))
-       \s.(\k.(k \p.((p \x.\y.y) s))
-           \u.((C[e1]
-                \v.(\k.(k (((((s \x.x) \z.z)
-                             \x.\k.\m.(k \y.\k.\m.(k y)))
-                            \v.\k.\m.(k v)) \z.z))
-                    \t.(\k.(k (m \x.\y.x))
-                        \f.(\k.(k ((f t) s))
-                            \a.(\k.(k \p.((p \x.\y.x)
-                                          \k.\m.(k \p.\k.\m.(\k.(k (m \x.\y.y))
-                                                             \s.(\k.(k \p.((p \x.\y.y) s))
-                                                                 \n.((\k.\m.(\k.(k (m \x.\y.y))
-                                                                             \s.(\k.(k \p.((p \x.\y.y) s))
-                                                                                 \n.((\k.\m.(k p)
-                                                                                      \e.((\k.\m.(k v)
-                                                                                           \f.(((e f) k) m)) n)) n)))
-                                                                      \e.((a \f.(((e f) k) m)) n)) n))))))
-                                \m.((C[e2] k) m)))))) u)))
-\end{verbatim}
-}}}
-
-Define $\textbf{true}=\lambda x.\lambda y.x$, $\textbf{false}=\lambda x.\lambda y.y$, $\textbf{nil}=\lambda x.\lambda y.y$, and $\textbf{(}\lceil x\rceil\textbf{,}\lceil y\rceil\textbf{)}=\lambda p.((p\,\lceil x\rceil),\lceil y\rceil)$.
+Define \scheme{TRUE}=\scheme|(lambda (x) (lambda (y) x))|, \scheme{FALSE}=\scheme|(lambda (x) (lambda (y) y))|, \scheme|(PAIR a b)|=\scheme|(lambda (z) ((z a) b))|, \scheme{FST}=\scheme|(lambda (p) (p TRUE))|, \scheme{SND}=\scheme|(lambda (p) (p FALSE))|, and \scheme{NIL}=\scheme{FALSE}.
 
 Let
 \[
@@ -1208,21 +1149,10 @@ v     &\text{if $p\rightarrow_{cm}^{*}v$}\\
 and
 \[
 \mathrm{eval}_{v}(p)=\begin{cases}
-v     &\text{if $((p\,\lambda v.\lambda k.\lambda m.(k\,v))\,\lambda p.((p\,\textbf{false})\,C[\textbf{nil}]))\rightarrow_{v}^{*}v$}\\
-\perp &\text{if $((p\,\lambda v.\lambda k.\lambda m.(k\,v))\,\lambda p.((p\,\textbf{false})\,C[\textbf{nil}]))\rightarrow_{v}^{*}\cdots$}
+v     &\text{if $((p\,(\lambda\,(v)\,(\lambda\,(k)\,(\lambda\,(m)\,(k\,v)))))\,(\textbf{pair}\,\textbf{false}\,\mathcal{C}[\textbf{nil}]))\rightarrow_{v}^{*}v$}\\
+\perp &\text{if $((p\,(\lambda\,(v)\,(\lambda\,(k)\,(\lambda\,(m)\,(k\,v)))))\,(\textbf{pair}\,\textbf{false}\,\mathcal{C}[\textbf{nil}]))\rightarrow_{v}^{*}\cdots$}
 \end{cases}
 \]
-
-% C[eval_cm[p]]=eval_v[C[p]]
-
-% suppose we know ((C[E[e]] k) (false,C[nil])) ->* C[v] <= ((C[e] k) (flag,C[chi(E)])) -> C[v]
-% ((C[(wcm e0 e1)] k) (false,chi(E)))\equiv ((C[e1] k) (true,
-
-% composeability doesn't rely on evaluation
-
-% C[E][C[e]] = C[E[e]]
-% we want to be able to say
-% C[(wcm e0 e1)] = C[(wcm * e1)][C[e0]]
 
 \newtheorem{theorem}{Theorem}
 \newtheorem{case}{Case}
@@ -1232,303 +1162,11 @@ v     &\text{if $((p\,\lambda v.\lambda k.\lambda m.(k\,v))\,\lambda p.((p\,\tex
 For all programs $p\in\lambda_{cm}$, $\mathcal{C}[\mathrm{eval}_{cm}(p)]=\mathrm{eval}_{v}(\mathcal{C}[p])$.
 \end{maintheorem}
 \begin{proof}
-A program $p$ must take the form $(e_0\,e_1)$, $(\mathrm{wcm}\,e_0\,e_1)$, $(\mathrm{ccm})$, $v_0$, or $x$. We will consider each case.
+A program \scheme'p' must take the form \scheme|(e_0 e_1)|, \scheme|(wcm e_0 e_1)|, \scheme|(ccm)|, \scheme{v_0}, or \scheme'x'. We will consider each case.
 
 By some lemma, we know that $((C[(e_0\,e_1)] k) (flag,\chi(E)))\rightarrow_{\lambda_{v}}^{*}((C[v]\,k)\,(flag,\chi(E)))$ iff $E[(e_0\,e_1)]\rightarrow_{\lambda_{cm}}^{*}v$
-
-%C[(wcm e0 e1)] k (true,chi(E))
-% by structural induction, we know C[e0] k' (false,chi(E')) (where E'=E(wcm * e1) and chi(E')=chi(E))
-% ->* C[v0] k' (false,chi(E'))?
-
-%C[(wcm v0 *)][C[e1]] (true,chi(E))\equiv
-
-
-%C[(wcm e0 e1)] k (flag,chi(E)) yields
-%C[e0] k' (false,chi(E')) where E'=E(wcm * e1) and then
-%C[e1] k (true,chi(E'')) where E''=E^(wcm v1 *) and E^ is correct wrt tail behavior
-
-%C[(e0 e1)] k (flag,chi(E)) yields
-%C[e0] k' (false,chi(E')) where E'=E(* e1)
-%C[e1] k'' (false,chi(E'')) where E''=E(v0 *)
-
-% C[(ccm)] k (flag,C[chi(E)])
-% -> C[(chi(E)] k \z.z
-
-%in program proof
-%
-
-%snd = \p.(p \x.\y.y)
-
-
-\begin{proof}[Case $(e_0\,e_1)$]
-%\begin{align*}
-Assume $(\bullet\,e_1)[e_0]\rightarrow_{\lambda_{cm}}^{*}(\bullet\,e_1)[v_0]$ and $(v_0\,\bullet)[e_1]\rightarrow_{\lambda_{cm}}^{*}(v_0\,\bullet)[v_1]$
-\[
-\mathrm{eval}_{cm}((e_0\,e_1))=(v_0\,v_1)=(\lambda x.e_0'\,v_1)=e_0'[x\leftarrow v_1]\\
-\]
-%\end{align*}
-\begin{align*}
-= &((\mathcal{C}[(e_0\,e_1)]\,k)\,\textbf{(}\textit{flag}\textbf{,}\mathcal{C}[\chi(E)]\textbf{)})\\
-= &((\lambda k.\lambda m.(\lambda k.(k\,(\textbf{snd}\,m))\,\lambda s.(\lambda k.(k\,\textbf{(}\textbf{false}\textbf{,}s\textbf{)})\,\lambda n.((\mathcal{C}[e_0]\,\lambda e.((\mathcal{C}[e_1]\,\lambda f.(((e\,f)\,k)\,m))\,n))\,n)))\,k)\,\textbf{(}\textit{flag}\textbf{,}\mathcal{C}[\chi(E)]\textbf{)})
-\end{align*}
-
-\begin{align*}
-                        &((\lambda k.\lambda m.(\lambda k.(k\,(\textbf{snd}\,m))\,\lambda s.(\lambda k.(k\,\textbf{(}\textbf{false}\textbf{,}s\textbf{)})\,\lambda n.((\mathcal{C}[e_0]\,\lambda e.((\mathcal{C}[e_1]\,\lambda f.(((e\,f)\,k)\,m)\,n)\,n))\,k)\,\textbf{(}\textit{flag}\textbf{,}\mathcal{C}[\chi(E)]\textbf{)})\\
-\rightarrow_{\lambda_v} &(\lambda m.(\lambda k.(k\,(\textbf{snd}\,m))\,\lambda s.(\lambda k.(k\,\textbf{(}\textbf{false}\textbf{,}s\textbf{)})\,\lambda n.((\mathcal{C}[e_0]\,\lambda e.((\mathcal{C}[e_1]\,\lambda f.(((e\,f)\,k)\,m)\,n)\,n))\,\textbf{(}\textit{flag}\textbf{,}\mathcal{C}[\chi(E)]\textbf{)})\\
-\rightarrow_{\lambda_v} &(\lambda k.(k\,(\textbf{snd}\,\textbf{(}\textit{flag}\textbf{,}\mathcal{C}[\chi(E)]\textbf{)}))\,\lambda s.(\lambda k.(k\,\textbf{(}\textbf{false}\textbf{,}s\textbf{)})\,\lambda n.((\mathcal{C}[e_0]\,\lambda e.((\mathcal{C}[e_1]\,\lambda f.(((e\,f)\,k)\,\textbf{(}\textit{flag}\textbf{,}\mathcal{C}[\chi(E)]\textbf{)})\,n)\,n))\\
-\rightarrow_{\lambda_v} &(\lambda s.(\lambda k.(k\,\textbf{(}\textbf{false}\textbf{,}s\textbf{)})\,\lambda n.((\mathcal{C}[e_0]\,\lambda e.((\mathcal{C}[e_1]\,\lambda f.(((e\,f)\,k)\,\textbf{(}\textit{flag}\textbf{,}\mathcal{C}[\chi(E)]\textbf{)})\,n)\,n)\,(\textbf{snd}\,\textbf{(}\textit{flag}\textbf{,}\mathcal{C}[\chi(E)]\textbf{)})))\\
-\rightarrow_{\lambda_v} &(\lambda s.(\lambda k.(k\,\textbf{(}\textbf{false}\textbf{,}s\textbf{)})\,\lambda n.((\mathcal{C}[e_0]\,\lambda e.((\mathcal{C}[e_1]\,\lambda f.(((e\,f)\,k)\,\textbf{(}\textit{flag}\textbf{,}\mathcal{C}[\chi(E)]\textbf{)})\,n)\,n)\,\mathcal{C}[\chi(E)]))\\
-\rightarrow_{\lambda_v} &(\lambda k.(k\,\textbf{(}\textbf{false}\textbf{,}\mathcal{C}[\chi(E)]\textbf{)})\,\lambda n.((\mathcal{C}[e_0]\,\lambda e.((\mathcal{C}[e_1]\,\lambda f.(((e\,f)\,k)\,\textbf{(}\textit{flag}\textbf{,}\mathcal{C}[\chi(E)]\textbf{)})\,n)\,n))\\
-\rightarrow_{\lambda_v} &(\lambda n.((\mathcal{C}[e_0]\,\lambda e.((\mathcal{C}[e_1]\,\lambda f.(((e\,f)\,k)\,\textbf{(}\textit{flag}\textbf{,}\mathcal{C}[\chi(E)]\textbf{)}))\,n)\,n)\,\textbf{(}\textbf{false}\textbf{,}\mathcal{C}[\chi(E)]\textbf{)})\\
-\rightarrow_{\lambda_v} &((\mathcal{C}[e_0]\,\lambda e.((\mathcal{C}[e_1]\,\lambda f.(((e\,f)\,k)\,\textbf{(}\textit{flag}\textbf{,}\mathcal{C}[\chi(E)]\textbf{)})\,\textbf{(}\textbf{false}\textbf{,}\mathcal{C}[\chi(E)]\textbf{)})\,\textbf{(}\textbf{false}\textbf{,}\mathcal{C}[\chi(E)]\textbf{)})\\
-\rightarrow_{\lambda_v} &((\mathcal{C}[e_0]\,\lambda e.((\mathcal{C}[e_1]\,\lambda f.(((e\,f)\,k)\,\textbf{(}\textit{flag}\textbf{,}\mathcal{C}[\chi(E)]\textbf{)})\,\textbf{(}\textbf{false}\textbf{,}\mathcal{C}[\chi(E)]\textbf{)})\,\textbf{(}\textbf{false}\textbf{,}\mathcal{C}[\chi(E)]\textbf{)})\\
-\rightarrow_{\lambda_v}^{*} &((\mathcal{C}[e_1]\,\lambda f.(((\lambda x.\mathcal{C}[e_0']\,f)\,k)\,\textbf{(}\textit{flag}\textbf{,}\mathcal{C}[\chi(E)]\textbf{)})\,\textbf{(}\textbf{false}\textbf{,}\mathcal{C}[\chi(E)]\textbf{)})\\
-\rightarrow_{\lambda_v}^{*} &(((\lambda x.\mathcal{C}[e_0']\,\lambda y.\mathcal{C}[e_1'])\,k)\,\textbf{(}\textit{flag}\textbf{,}\mathcal{C}[\chi(E)]\textbf{)})\\
-\rightarrow_{\lambda_v}^{*} &(((\mathcal{C}[e_0'][x\leftarrow\lambda y.\mathcal{C}[e_1']]\,k)\,\textbf{(}\textit{flag}\textbf{,}\mathcal{C}[\chi(E)]\textbf{)})\\
-\rightarrow_{\lambda_v}^{*}? &(((\mathcal{C}[e_0'[x\leftarrow v_1]]\,k)\,\textbf{(}\textit{flag}\textbf{,}\mathcal{C}[\chi(E)]\textbf{)})\\
-\end{align*}
 \end{proof}
 
-\begin{proof}[Case $(\mathrm{wcm}\,e_0\,e_1)$]
-
-Test
-
-$((\mathcal{C}[(\mathrm{wcm}\,e_0\,e_1)]\,k)\,\textbf{(}\textbf{true}\textbf{,}\mathcal{C}[\textbf{(}v\textbf{,}vs\textbf{)}]\textbf{)})$
-
-$((\mathcal{C}[(\mathrm{wcm}\,e_0\,e_1)]\,k)\,\textbf{(}\textbf{false}\textbf{,}\mathcal{C}[\chi(E)]\textbf{)})$
-\end{proof}
-
-\begin{proof}[Case $(\mathrm{ccm})$]
-
-\[
-((\mathcal{C}[E[(ccm)]]\,k)\,\textbf{(}\textbf{false}\textbf{,}\mathcal{C}[\textbf{nil}]\textbf{)})\equiv((\mathcal{C}[(ccm)]\,k')\,\textbf{(}\textit{flag}\textbf{,}\mathcal{C}[\chi(E)]\textbf{)})
-\]
-
-\begin{align*}
-  &((\mathcal{C}[(\mathrm{ccm})]\,k)\,\textbf{(}\textit{flag}\textbf{,}\mathcal{C}[\chi(E)]\textbf{)})\\
-= &((\lambda k.\lambda m.(((\mathbf{snd}\,m)\,k)\,\lambda z.z)\,k)\,\textbf{(}\textit{flag}\textbf{,}\mathcal{C}[\chi(E)]\textbf{)})
-\end{align*}
-
-\begin{align*}
-                        &((\lambda k.\lambda m.(((\mathbf{snd}\,m)\,k)\,\lambda z.z)\,k)\,\textbf{(}\textit{flag}\textbf{,}\mathcal{C}[\chi(E)]\textbf{)})\\
-\rightarrow_{\lambda_v} &(\lambda m.(((\mathbf{snd}\,m)\,k)\,\lambda z.z)\,\textbf{(}\textit{flag}\textbf{,}\mathcal{C}[\chi(E)]\textbf{)})\\
-\rightarrow_{\lambda_v} &(((\mathbf{snd}\,\textbf{(}\textit{flag}\textbf{,}\mathcal{C}[\chi(E)]\textbf{)})\,k)\,\lambda z.z)\\
-\rightarrow_{\lambda_v} &((\mathcal{C}[\chi(E)]\,k)\,\lambda z.z)\\
-\end{align*}
-
-\begin{align*}
-  &((\mathcal{C}[\chi(E)]\,k)\,\lambda z.z)\\
-= &((\mathcal{C}[\chi(E)]\,\lambda v.\lambda k.\lambda m.(k\,v))\,\lambda z.z)\\
-= &((\lambda k.\lambda m.(k\,\lambda x.\mathcal{C}[v'])\,\lambda v.\lambda k.\lambda m.(k\,v))\,\lambda z.z)\\
-\end{align*}
-
-\begin{align*}
-                        &((\lambda k.\lambda m.(k\,\lambda x.\mathcal{C}[v'])\,\lambda v.\lambda k.\lambda m.(k\,v))\,\lambda z.z)\\
-\rightarrow_{\lambda_v} &(\lambda m.(\lambda v.\lambda k.\lambda m.(k\,v)\,\lambda x.\mathcal{C}[v'])\,\lambda z.z)\\
-\rightarrow_{\lambda_v} &(\lambda v.\lambda k.\lambda m.(k\,v)\,\lambda x.\mathcal{C}[v'])\\
-\rightarrow_{\lambda_v} &\lambda k.\lambda m.(k\,\lambda x.\mathcal{C}[v'])\\
-\end{align*}
-
-\begin{align*}
-  &\lambda k.\lambda m.(k\,\lambda x.\mathcal{C}[v'])\\
-= &\mathcal{C}[\chi(E)]\\
-\end{align*}
-
-\end{proof}
-
-\begin{proof}[Case $v_0$]
-\begin{align*}
-  &((\mathcal{C}[v_0]\,\lambda v.\lambda k.\lambda m.(k\,v))\,\textbf{(}\textit{flag}\textbf{,}\mathcal{C}[\chi(E)]\textbf{)})\\
-= &((\mathcal{C}[\lambda x.e_0]\,\lambda v.\lambda k.\lambda m.(k\,v))\,\textbf{(}\textit{flag}\textbf{,}\mathcal{C}[\chi(E)]\textbf{)})\\
-= &((\lambda k.\lambda m.(k\,\lambda x.\mathcal{C}[e_0])\,\lambda v.\lambda k.\lambda m.(k\,v))\,\textbf{(}\textit{flag}\textbf{,}\mathcal{C}[\chi(E)]\textbf{)})\\
-\end{align*}
-
-\begin{align*}
-                        &((\lambda k.\lambda m.(k\,\lambda x.\mathcal{C}[e_0])\,\lambda v.\lambda k.\lambda m.(k\,v))\,\textbf{(}\textit{flag}\textbf{,}\mathcal{C}[\chi(E)]\textbf{)})\\
-\rightarrow_{\lambda_v} &(\lambda m.(\lambda v.\lambda k.\lambda m.(k\,v)\,\lambda x.\mathcal{C}[e_0])\,\textbf{(}\textit{flag}\textbf{,}\mathcal{C}[\chi(E)]\textbf{)})\\
-\rightarrow_{\lambda_v} &(\lambda v.\lambda k.\lambda m.(k\,v)\,\lambda x.\mathcal{C}[e_0])\\
-\rightarrow_{\lambda_v} &\lambda k.\lambda m.(k\,\lambda x.\mathcal{C}[e_0])\\
-\end{align*}
-
-\begin{align*}
-  &\lambda k.\lambda m.(k\,\lambda x.\mathcal{C}[e_0])\\
-= &\mathcal{C}[\lambda x.e_0]\\
-= &\mathcal{C}[v_0]\\
-\end{align*}
-\end{proof}
-
-\begin{proof}[Case $x$]
-\begin{align*}
-  &((\mathcal{C}[x]\,\lambda v.\lambda k.\lambda m.(k\,v))\,\textbf{(}\textit{flag}\textbf{,}\mathcal{C}[\chi(E)]\textbf{)})\\
-= &((\lambda k.\lambda m.(k\,x)\,\lambda v.\lambda k.\lambda m.(k\,v))\,\textbf{(}\textit{flag}\textbf{,}\mathcal{C}[\chi(E)]\textbf{)})\\
-\end{align*}
-
-\begin{align*}
-                        &((\lambda k.\lambda m.(k\,x)\,\lambda v.\lambda k.\lambda m.(k\,v))\,\textbf{(}\textit{flag}\textbf{,}\mathcal{C}[\chi(E)]\textbf{)})\\
-\rightarrow_{\lambda_v} &(\lambda m.(\lambda v.\lambda k.\lambda m.(k\,v)\,x)\,\textbf{(}\textit{flag}\textbf{,}\mathcal{C}[\chi(E)]\textbf{)})\\
-\rightarrow_{\lambda_v} &(\lambda v.\lambda k.\lambda m.(k\,v)\,x)\\
-\rightarrow_{\lambda_v} &(\lambda v.\lambda k.\lambda m.(k\,v)\,\mathrm{error})\\
-\rightarrow_{\lambda_v} &\mathrm{error}\\
-\end{align*}
-\end{proof}
-
-\end{proof}
-
-\begin{theorem}
-For all contexts $E$,
-\end{theorem}
-$((\mathcal{C}[(\mathrm{wcm}\,v_0\,e_1)]\,k)\,\textbf{(}\textbf{true}\textbf{,}\mathcal{C}[\textbf{(}v\textbf{,}vs\textbf{)}]\textbf{)})\equiv((\mathcal{C}[e_1]\,k)\,\textbf{(}\textbf{true}\textbf{,}\mathcal{C}[\textbf{(}v_0\textbf{,}vs\textbf{)}]\textbf{)})$
-
-The above implies $((\mathcal{C}[(\mathrm{wcm}\,v_0\,(\mathrm{wcm}\,v_1\,e_2))]\,k)\,\textbf{(}\textbf{false}\textbf{,}\mathcal{C}[\chi(E)]\textbf{)})$
-
-$((\mathcal{C}[(\mathrm{wcm}\,v_0\,e_1)]\,k)\,\textbf{(}\textbf{false}\textbf{,}\mathcal{C}[\chi(E)]\textbf{)})\equiv((\mathcal{C}[e_1]\,k)\,\textbf{(}\textbf{true}\textbf{,}\mathcal{C}[\textbf{(}v_0\textbf{,}vs\textbf{)}]\textbf{)})$
-
-$((\mathcal{C}[E[e]]\,k)\,\textbf{(}\textbf{false}\textbf{,}\mathcal{C}[\chi(E)]\textbf{)})\equiv((\mathcal{C}[e]\,k)\,\textbf{(}\textit{flag}\textbf{,}\mathcal{C}[\chi(E)]\textbf{)})$
-
-THIS!!!
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-% consider ((C[(e0 e1)] k) (flag,C[chi(E)]))
-% show reductions to
-% ((C[e0] k') (false,C[chi(E)])) \equiv ((C[e0] k') (false,C[chi(E')])) where E'=E(* e1)
-% so that's correct
-% by induction, C[e0] k' (false,C[chi(E)]) ->* \x.C[v0']
-% C[(v0 e1)]
-% show reductions to
-% ((C[e1] k'') (false,C[chi(E)]))
-% etc.
-
-% consider ((C[(wcm e0 e1)] k) (false,C[chi(E)]))
-% show reductions to ((C[e0] k') (false,C[chi(E)])) \equiv ((C[e0] k') (false,C[chi(E')]))
-% by induction, that is correct
-% C[(wcm v0 e1)]
-% show reductions to
-% ((C[e1] k) (true,C[v:chi(E)])) \equiv ((C[e1] k) (true,C[E'])) where E'=E(wcm v0 *)
-
-
-% by induction
-
-% when E=*, it holds
-% suppose E=E'[(wcm v1 *)], E'[(* e1)], E'[(v0 *)], E'[(wcm * e1)], E'[*]
-
-% assume it holds for E'
-
-% E=(E' e1), (v0 E'), (wcm E' e1), (wcm v0 E'), or *
-
-
-% base case at start: k (false,C[nil])
-
-% assume C[e] k (flag,C[chi(E)])
-
-% C[(e0 e1)] k (flag,C[chi(E)]) -> C[(* e1)[e0]] k (flag,
-
-% *[(\x.x (\x.x \x.x))]
-% -> (\x.x *)[(\x.x \x.x)]
-% -> (\x.x *)[\x.x]
-% -> *[(\x.x \x.x)]
-% -> *[\x.x]
-% -> \x.x
-
-% *[(\k.(C[E] \e.(C[F] \f.((e f) k))) \x.x)]
-% -> *[(C[E] \e.(C[F] \f.((e f) \x.x)))]
-% ->* *[(C[F] \f.((C[e] f) \x.x))]
-% ->* *[((C[e] C[f]) \x.x)]
-% -> (* \x.x)[(C[e] C[f])]
-% -> (* \x.x)[C[v]]
-% -> (C[v] \x.x)
-% -> C[v']
-
-% in direct-style, the evaluation context is the continuation. in CPS, the continuation is passed
-% explicitly; the evaluation context is always a hole.
-
-% C[*] = *
-% C[(* e1)] k (flag,C[\chi(E)]) = ((C[e1] \f.(((* f) k) (flag,C[\chi(E)]))) (false,C[\chi(E)]))
-% C[(* e1)] = \k.\m.(\k.(k (snd m)) \s.(\k.(k (false,s)) \n.((C[e1] \f.(((* f) k) (flag,C[\chi(E)]))) n))
-% C[(v0 *)] k (flag,C[\chi(E)]) = (((v0 *) k) (flag,C[\chi(E)]))
-% C[(v0 *)] = \k.\m.(((v0 *) k) m)
-% C[(wcm * e1)] = 
-% C[(wcm v0 *)] = 
-
-%   ((C[(e0 e1)] k) (flag,C[\chi(E)]))
-%-> ((C[(* e1)] k) (flag,C[\chi(E)]))[((C[e0] k') (false,C[\chi(E)]))
-
-%   ((C[(wcm e0 e1)] k) (flag,C[\chi(E)]))
-%-> ((C[(wcm * e1)
-
-\begin{theorem}
-Test
-\begin{align*}
-            &((\mathcal{C}[(\mathrm{wcm}\,v_0\,e_1)]\,k)\,\lambda p.((p\,\mathbf{false})\,\mathcal{C}[\mathit{ms}]))\rightarrow_{\lambda_{v}}^{*}\mathcal{C}[v_1]\\
-\Rightarrow &((\mathcal{C}[e_1]\,k)\,\lambda p.((p\,\mathbf{true})\,\mathcal{C}[\lambda p.((p\,v_0)\,\mathit{ms})])\rightarrow_{\lambda_{v}}^{*}\mathcal{C}[v_1]
-\end{align*}
-\begin{align*}
-            &((\mathcal{C}[(\mathrm{wcm}\,v_0\,e_1)]\,k)\,\lambda p.((p\,\mathbf{true})\,\mathcal{C}[\lambda p.((p\,m)\,\mathit{ms})]))\rightarrow_{\lambda_{v}}^{*}\mathcal{C}[v_1]\\
-\Rightarrow &((\mathcal{C}[e_1]\,k)\,\lambda p.((p\,\mathbf{true})\,\mathcal{C}[\lambda p.((p\,v_0)\,\mathit{ms})])\rightarrow_{\lambda_{v}}^{*}\mathcal{C}[v_1]
-\end{align*}
-\end{theorem}
-
-\[
-((\mathcal{C}[(\mathrm{wcm}\,e_0\,e_1)]\,k)\,\lambda p.((p\,\mathrm{flag})\,\mathcal{C}[\mathrm{ms}])
-\]
-
-\[
-((\mathcal{C}[(\mathrm{wcm}\,e_0\,e_1)]\,k)\,\lambda p.((p\,\mathrm{flag})\,\mathcal{C}[\mathrm{vs}])\rightarrow_{v}^{*}((\mathcal{C}[(\mathrm{wcm}\,v_0\,e_1)]\,k)\,\lambda p.((p\,\mathrm{flag})\,\mathcal{C}[\mathrm{vs}])
-\]
-(inductive hypothesis asserts that $((\mathcal{C}[e_0]\,k')\,\lambda p.((p\,\lambda x.\lambda y.y)\,\mathcal{C}[\mathrm{vs}])$ will be correct)
-\[
-((\mathcal{C}[(\mathrm{wcm}\,v_0\,e_1)]\,k)\,\lambda p.((p\,\lambda x.\lambda y.y)\,\mathcal{C}[\mathrm{vs}])\equiv((\mathcal{C}[e_1]\,k)\,\lambda p.((p\,\lambda x.\lambda y.x)\,\mathcal{C}[v_0 : \mathrm{vs}])
-\]
-
-
-% for all p, C[p] \v.\k.\m.(k v) (false,nil) = C[v] (for p ->* v)
-% p is of form (e0 e1), (wcm e0 e1), (ccm), \x.e0, x, or error
-% for (e0 e1), show C[(e0 e1)] -> C[(* e1)][C[e0]] ->* C[(* e1)][C[v0]] -> ... -> C[(v0 v1)] ->* C[v3]
-% for (wcm e0 e1):
-% show C[(wcm e0 e1)] -> C[(wcm * e1)][C[e0]] ->* C[(wcm * e1)][C[v0]]
-% show C[(wcm v0 e1)] k (flag,C[\chi(E)]) = C[e1] k (true,C[v:vs'])
-% show C[(wcm v0 (wcm v1 e2))] -> C[(wcm v1 e2)]
-% for (ccm)
-% show that for all contexts E, snd m=C[chi(E)] so that C[E][C[(ccm)]]=C[(ccm)] k (flag,C[chi(E)]) -> C[chi(E)]
-% for \x.e0, it's a value so it holds
-% for x, x -> error, C[x] \v.\k.\m.(k v) (false,nil)
-% = \k.\m.(k x) \v.\k.\m.(k v) (false,nil)
-% -> \m.(\v.\k.\m.(k v) x) (false,nil)
-% -> \v.\k.\m.(k v) x
-% -> \v.\k.\m.(k v) error
-% -> error
-% where x is any variable; this is what we mean by 'show'
-
-% for all contexts E, snd m = C[chi(E)]
-% case *[any?]
-% snd m = C[nil] = C[chi(E)]
-% case (wcm * e1)[e0]
-
-% C[(wcm v0 (wcm v1 e2))] k (false,C[\chi(E)]) = C[(wcm v1 e2)] k (true,C[v0:vs]) = C[e2] k (true,C[v1:vs])
-% C[(wcm e0 e1)] k (flag,C[\chi(E)]) -> C[(wcm * e1)] k
-
-
-% C[E[(ccm)]] k (?,C[nil]?) = C[(ccm)] k (flag,C[chi(E)]) -> \k.\m.(((snd m) k) \z.z) \v.\k.\m.(k v) (flag,C[chi(E)]) -> \m.(((snd m) \v.\k.\m.(k v)) \z.z) -> (((snd (flag,C[chi(E)])) \v.\k.\m.(k v)) \z.z) -> ((C[chi(E)] \v.\k.\m.(k v)) \z.z)
-
-
-% if we show that
-% ((C[(e0 e1)] k) (flag,C[chi(E)])) \equiv ((C[e0'[x<-v1]] k) (flag,C[chi(E)]))
-% ((C[(wcm e0 e1)] k) (false,C[chi(E)])) \equiv ((C[e1] k) (true,C[v:chi(E)]))
-% ((C[(wcm e0 e1)] k) (true,C[v':chi(E')])) \equiv ((C[e1] k) (true,C[v0:chi(E)])) 
 
 
 \setspecialsymbol{T}{$\mathcal{A}$}
@@ -1542,11 +1180,7 @@ Test
 \setspecialsymbol{Cz}{$\mathcal{C}[z]$}
 \setspecialsymbol{chiE}{$\chi(E)$}
 \setspecialsymbol{CchiE}{$\mathcal{C}[\chi(E)]$}
-\setspecialsymbol{FST}{$\textbf{fst}$}
-\setspecialsymbol{SND}{$\textbf{snd}$}
-\setspecialsymbol{TRUE}{$\textbf{true}$}
-\setspecialsymbol{FALSE}{$\textbf{false}$}
-\setspecialsymbol{PAIR}{$\textbf{pair}$}
+
 
 \setspecialsymbol{k0}{$k_0$}
 \setconstant{error}
