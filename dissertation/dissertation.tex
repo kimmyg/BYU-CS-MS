@@ -696,72 +696,7 @@ provided continuation and that occurs only after reduction. Then continuations c
 invoked only as in the cases of variables and abstractions and we can see that they are 
 only applied to fully-reduced terms.
 
-\chapter{$\lambda_{cm}$}
-
-We consider an extension of the call-by-value $\lambda$-calculus with facilities to
-manipulate continuation marks, introduced by Pettyjohn et al.
-\cite{pettyjohn2005continuations}, which we term $\lambda_{cm}$.
-
-\section{Definition of $\lambda_{cm}$}
-
-Figure \ref{language-syntax} presents the syntactic definition of $\lambda_{cm}$.
-Definitions of $E$ and $F$ signify evaluation contexts. The non-terminal $E$ is simply any
-term in the language but for the constraint that $(\mathrm{wcm}\,v\,F)$ contexts cannot be
-directly nested, to enforce proper tail-call behavior. The definition of $e$ establishes the forms of valid expressions in the
-language: applications, variables, values, \emph{wcm} forms, and \emph{ccm} forms. The
-definition of $v$ denotes that values in the language are $\lambda$-abstractions. (Also,
-notice that \emph{wcm} and \emph{ccm} have one parameter fewer than the forms introduced
-earlier. This is because $\lambda_{cm}$ expresses unkeyed marks. While it can be shown
-that a language with keyed marks can be expressed in terms of a language with unkeyed
-marks, such as $\lambda_{cm}$, this is not our concern.)
-
-\begin{figure}
-\begin{align*}
-E = &(\mathrm{wcm}\,v\,F) & e = &(e\,e)\\
-    &F                    &     &x\\
-F = &[]                   &     &v\\
-    &(E\,e)               &     &(\mathrm{wcm}\,e\,e)\\
-    &(v\,E)               &     &(\mathrm{ccm})\\
-    &(\mathrm{wcm}\,E\,e) & v = & \lambda x. e
-\end{align*}
-\caption{$\lambda_{cm}$ syntax}
-\label{language-syntax}
-\end{figure}
-
-Figure \ref{language-semantics} presents the semantics of $\lambda_{cm}$. The definitions
-therein establish the proper interpretation of various expressions. The first follows the
-typical definition of application. The second defines the tail behavior of the \emph{wcm}
-form. The third expresses that the \emph{wcm} form takes on the value of its body.
-Finally, the fourth defines the value of the \emph{ccm} form in terms of the $\chi$
-metafunction which definition is given in figure \ref{chi-metafunction}. The $\chi$
-metafunction is defined over syntactic forms of the language, so its definition
-corresponds closely to the definition of $\lambda_{cm}$ found in figure
-\ref{language-syntax}.
-
-\begin{figure}
-\begin{align*}
-E[(\lambda x.e)\,v]                         &\rightarrow E[e[x\leftarrow v]]\\
-E[(\mathrm{wcm}\,v\,(\mathrm{wcm}\,v'\,e))] &\rightarrow E[(\mathrm{wcm}\,v'\,e)]\\
-E[(\mathrm{wcm}\,v\,v')]                    &\rightarrow E[v']\\
-E[(\mathrm{ccm})]                           &\rightarrow E[\chi(E)]
-\end{align*}
-\caption{$\lambda_{cm}$ evaluation rules}
-\label{language-semantics}
-\end{figure}
-
-\begin{figure}
-\begin{align*}
-\chi([])                   &= \mathrm{empty}\\
-\chi((E\,e))               &= \chi(E)\\
-\chi((v\,E))               &= \chi(E)\\
-\chi((\mathrm{wcm}\,E\,e)) &= \chi(E)\\
-\chi((\mathrm{wcm}\,v\,E)) &= v : \chi(E)
-\end{align*}
-\caption{Definition of $\chi$ metafunction}
-\label{chi-metafunction}
-\end{figure}
-
-\section{A Redex interpreter for $\lambda_{cm}$}
+\chapter{Redex}
 
 Redex \cite{findler2010redex} is a domain-specific language for exploring language
 semantics. It lives very close to the semantics notation we have used in this discussion.
@@ -781,18 +716,18 @@ explain each component of the program.
 \end{schemedisplay}
 
 This expression defines the abstract syntactic structure of a language named \emph{toy}.
-There are four categories of structures: \scheme'x', \scheme'v', \scheme'e', and 
-\scheme'E'. The category \scheme'x' is defined to contain any token not otherwise 
-mentioned in the definition. The category \scheme'v' is defined to contain numbers and 
-the token \scheme{undefined}. The category \scheme'e' is defined to contain the expression 
-forms of the language, of which there are four: addition expressions, \scheme{with} 
-expressions, lone variables, and lone values. The last category, \scheme'E', does not 
-define abstract syntax but instead reduction contexts. The first reduction context is a 
-\scheme{hole} (a special token in Redex) which will be filled in with the result of the 
-expression that previously resided in its place. The next two are addition contexts, the 
-first representing the evaluation of the first argument and the second representing the 
-evaluation of the second; the composition of these contexts imposes an order on the 
-evaluation of the arguments. The final context, a \scheme{with} context, specifies a 
+There are four categories of structures: \scheme'x', \scheme'v', \scheme'e', and
+\scheme'E'. The category \scheme'x' is defined to contain any token not otherwise
+mentioned in the definition. The category \scheme'v' is defined to contain numbers and the
+token \scheme{undefined}. The category \scheme'e' is defined to contain the expression
+forms of the language, of which there are four: addition expressions, \scheme{with}
+expressions, lone variables, and lone values. The last category, \scheme'E', does not
+define abstract syntax but instead reduction contexts. The first reduction context is a
+\scheme{hole} (a special token in Redex) which will be filled in with the result of the
+expression that previously resided in its place. The next two are addition contexts, the
+first representing the evaluation of the first argument and the second representing the
+evaluation of the second; the composition of these contexts imposes an order on the
+evaluation of the arguments. The final context, a \scheme{with} context, specifies a
 variable, a value, and an expression within which that variable is bound to that value.
 
 \begin{schemedisplay}
@@ -888,12 +823,12 @@ for proof. We express the property of reducing to one value with the following t
 
 \newtheorem*{toythm}{Toy Language One-Value Theorem}
 \begin{toythm}
-For all terms \scheme'e' of the toy language, \scheme'e' reduces to exactly one value.\footnote{We do 
-not use the term \emph{value} loosely here; the toy language definition specifies what 
-constitute values, and we appeal to this.}
+For all terms \scheme'e' of the toy language, \scheme'e' reduces to exactly one
+value.\footnote{We do not use the term \emph{value} loosely here; the toy language
+definition specifies what constitute values, and we appeal to this.}
 \end{toythm}
-We proceed by induction on the structure of terms \scheme'e' of the toy language. First, we 
-consider the base cases.
+We proceed by induction on the structure of terms \scheme'e' of the toy language. First,
+we consider the base cases.
 \begin{proof}[Case \scheme'v']
 A term \scheme'e' of the form \scheme'v' is exactly one value and cannot be reduced, 
 so the statement holds.
@@ -903,23 +838,178 @@ A term \scheme'e' of the form \scheme'x', a variable, reduces to \scheme{undefin
 a value term, so the statement holds.
 \end{proof}
 \begin{proof}[Case \scheme|(with (x e_1) e_2)|]
-By induction, we assume that \scheme{e_1} reduces to exactly one value. Then the ``with''-rule
-can only be applied once, resulting in a single term \scheme{e_2} in \scheme'e' which, by our
-inductive hypothesis, reduces to only one value.
+By induction, we assume that \scheme{e_1} reduces to exactly one value. Then the
+``with''-rule can only be applied once, resulting in a single term \scheme{e_2} in
+\scheme'e' which, by our inductive hypothesis, reduces to only one value.
 \end{proof}
 \begin{proof}[Case \scheme|(+ e_1 e_2)|]
-By induction, we assume both \scheme{e_1} and \scheme{e_2} reduce to a single value. We 
-consider two subcases: If \scheme{e_1} reduces to \scheme{undefined}, the ``undefined in 
-first position''-rule is applied, and the whole term reduces to \scheme{undefined}. If 
-\scheme{e_1} reduces to a number, we consider two further subcases: If \scheme{e_2} 
-reduces to a number, the ``+''-rule is applied, and the entire expression reduces to the 
-sum of the two numbers obtained. If \scheme{e_2} reduces to \scheme{undefined}, the 
-``undefined in second position''-rule is applied, and the entire term reduces to 
+By induction, we assume both \scheme{e_1} and \scheme{e_2} reduce to a single value. We
+consider two subcases: If \scheme{e_1} reduces to \scheme{undefined}, the ``undefined in
+first position''-rule is applied, and the whole term reduces to \scheme{undefined}. If
+\scheme{e_1} reduces to a number, we consider two further subcases: If \scheme{e_2}
+reduces to a number, the ``+''-rule is applied, and the entire expression reduces to the
+sum of the two numbers obtained. If \scheme{e_2} reduces to \scheme{undefined}, the
+``undefined in second position''-rule is applied, and the entire term reduces to
 \scheme{undefined}. Thus, in all subcases, the whole term reduces to exactly one value.
 \end{proof}
 
 This property is fairly trivial and its proof is similarly trivial, but it is a shadow of 
-the approach we will ultimately take to verify our transform preserves meaning.
+the approach we will ultimately take to verify certain transformation properties.
+
+\chapter{$\lambda_{cm}$}
+
+We consider an extension of the call-by-value $\lambda$-calculus with facilities to
+manipulate continuation marks, introduced by Pettyjohn et al.
+\cite{pettyjohn2005continuations}, which we term $\lambda_{cm}$.
+
+\section{Definition of $\lambda_{cm}$}
+
+Figure \ref{language-syntax} presents the syntactic definition of $\lambda_{cm}$.
+Definitions of $E$ and $F$ signify evaluation contexts. The non-terminal $E$ is simply any
+term in the language but for the constraint that $(\mathrm{wcm}\,v\,F)$ contexts cannot be
+directly nested, to enforce proper tail-call behavior. The definition of $e$ establishes
+the forms of valid expressions in the language: applications, variables, values,
+\emph{wcm} forms, and \emph{ccm} forms. The definition of $v$ denotes that values in the
+language are $\lambda$-abstractions. (Also, notice that \emph{wcm} and \emph{ccm} have one
+parameter fewer than the forms introduced earlier. This is because $\lambda_{cm}$
+expresses unkeyed marks. While it can be shown that a language with keyed marks can be
+expressed in terms of a language with unkeyed marks, such as $\lambda_{cm}$, this is not
+our concern.)
+
+\begin{figure}
+\begin{align*}
+E = &(\mathrm{wcm}\,v\,F) & e = &(e\,e)\\
+    &F                    &     &x\\
+F = &[]                   &     &v\\
+    &(E\,e)               &     &(\mathrm{wcm}\,e\,e)\\
+    &(v\,E)               &     &(\mathrm{ccm})\\
+    &(\mathrm{wcm}\,E\,e) & v = & \lambda x. e
+\end{align*}
+\caption{$\lambda_{cm}$ syntax}
+\label{language-syntax}
+\end{figure}
+
+Figure \ref{language-semantics} presents the semantics of $\lambda_{cm}$. The definitions
+therein establish the proper interpretation of various expressions. The first follows the
+typical definition of application. The second defines the tail behavior of the \emph{wcm}
+form. The third expresses that the \emph{wcm} form takes on the value of its body.
+Finally, the fourth defines the value of the \emph{ccm} form in terms of the $\chi$
+metafunction which definition is given in figure \ref{chi-metafunction}. The $\chi$
+metafunction is defined over syntactic forms of the language, so its definition
+corresponds closely to the definition of $\lambda_{cm}$ found in figure
+\ref{language-syntax}.
+
+\begin{figure}
+\begin{align*}
+E[(\lambda x.e)\,v]                         &\rightarrow E[e[x\leftarrow v]]\\
+E[(\mathrm{wcm}\,v\,(\mathrm{wcm}\,v'\,e))] &\rightarrow E[(\mathrm{wcm}\,v'\,e)]\\
+E[(\mathrm{wcm}\,v\,v')]                    &\rightarrow E[v']\\
+E[(\mathrm{ccm})]                           &\rightarrow E[\chi(E)]
+\end{align*}
+\caption{$\lambda_{cm}$ evaluation rules}
+\label{language-semantics}
+\end{figure}
+
+\begin{figure}
+\begin{align*}
+\chi([])                   &= \mathrm{empty}\\
+\chi((E\,e))               &= \chi(E)\\
+\chi((v\,E))               &= \chi(E)\\
+\chi((\mathrm{wcm}\,E\,e)) &= \chi(E)\\
+\chi((\mathrm{wcm}\,v\,E)) &= v : \chi(E)
+\end{align*}
+\caption{Definition of $\chi$ metafunction}
+\label{chi-metafunction}
+\end{figure}
+
+\section{A Redex interpreter for $\lambda_{cm}$}
+
+\setspecialsymbol{lambda}{$\lambda$}
+\setspecialsymbol{lambdacm}{$\lambda$cm}
+\setspecialsymbol{lambdacm-rr}{$\lambda$cm-rr}
+\setconstant{error}
+\setkeyword{subst}
+\begin{schemedisplay}
+(define-language lambdacm
+  (e (e e) (wcm e e) (ccm) x v error)
+  (x variable-not-otherwise-mentioned)
+  (v (lambda (x) e) number)
+  (E (wcm v F) F)
+  (F (E e) (v E) (wcm E e) hole))
+
+(define lambdacm-rr
+  (reduction-relation
+   lambdacm
+   (--> (in-hole E ((lambda (x) e) v))
+        (in-hole E (subst x v e))
+        "βv")
+   (--> (in-hole E (error e))
+        (in-hole E error)
+        "error in operator")
+   (--> (in-hole E (v error))
+        (in-hole E error)
+        "error in operand")
+   (--> (in-hole E (number v))
+        (in-hole E error)
+        "number in operator position")
+   (--> (in-hole E (wcm v_1 v_2))
+        (in-hole E v_2)
+        "wcm")
+   (--> (in-hole E (wcm v_1 (wcm v_2 e)))
+        (in-hole E (wcm v_2 e))
+        "tail")
+   (--> (in-hole E (wcm error e))
+        (in-hole E error)
+        "error in wcm mark expression")
+   (--> (in-hole E (wcm v error))
+        (in-hole E error)
+        "error in wcm body expression")
+   (--> (in-hole E (ccm))
+        (in-hole E (chi E (lambda (x) (lambda (y) y))))
+        "chi")
+   (--> (in-hole E x)
+        (in-hole E error)
+        "error: unbound identifier")))
+
+(define-metafunction lambdacm
+  chi : E v -> v
+  [(chi hole v_ms)      v_ms]
+  [(chi (E e) v_ms)     (chi E v_ms)]
+  [(chi (v E) v_ms)     (chi E v_ms)]
+  [(chi (wcm E e) v_ms) (chi E v_ms)]
+  [(chi (wcm v E) v_ms) (chi E (lambda (p) ((p v) v_ms)))])
+
+(define-metafunction lambdacm
+  subst : x v e -> e
+  ;; 1. substitute in application
+  [(subst x_1 v_1 (e_1 e_2))
+   ((subst x_1 v_1 e_1) (subst x_1 v_1 e_2))]
+  ;; 2. substitute in wcm form
+  [(subst x_1 v_1 (wcm e_1 e_2))
+   (wcm (subst x_1 v_1 e_1) (subst x_1 v_1 e_2))]
+  ;; 3. substitute in ccm form
+  [(subst x_1 v_1 (ccm))
+   (ccm)]
+  ;; 4a. substitute in variable (same)
+  [(subst x_1 v_1 x_1)
+   v_1]
+  ;; 4b. substitute in variable (different)
+  [(subst x_1 v_1 x_2)
+   x_2]
+  ;; 5a. substitute in abstraction (bound)
+  [(subst x_1 v_1 (lambda (x_1) e_1))
+   (lambda (x_1) e_1)]
+  ;; 5b. substitute in abstraction (free)
+  [(subst x_1 v_1 (lambda (x_2) e_1))
+   (lambda (x_2) (subst x_1 v_1 e_1))]
+  ;; 5c. substitute in number
+  [(subst x_1 v_1 number_1)
+   number_1]
+  ;; 6. substitute in error
+  [(subst x_1 v_1 error)
+   error])
+\end{schemedisplay}
+
 
 \section{Language translation}
 
@@ -1123,7 +1213,10 @@ and then to the marks argument
 
 We certainly could reduce this by steps and see it work, but that would give us no intuition as to \emph{why} it works. Recall that our transform, in CPS spirit, augments each call site with two additional parameters, the second being an encoding of the tail position of the context and the continuation marks. The transform of $ccm$ discards the tail-position encoding and applies the supplied continuation to the encoding of the continuation marks. However, as each call site also requires an argument encoding the marks, a dummy variable is passed. This is sound as the marks parameter does not bind any variable in the body, so the dummy variable is promptly ignored. In this process, the double abstraction surrounding the list has been stripped away and should be restored. This is accomplished by the passed continuation which does exactly that. Since the result of the reduction is known to be irreducible--that is, either a variable or an abstraction--and since irreducible terms are wrapped in the same way, we can wrap the value manually, yielding a transformed value as if directly.
 
-Programs in $\lambda_{cm}$ can observe the context in which they are evaluated. Programs in $\lambda_v$, however, cannot. The intuition behind the transform is to explicitly provide to the resultant $\lambda_v$ program any information about the context that could be observed by the original $\lambda_{cm}$ program.
+Programs in $\lambda_{cm}$ can observe the context in which they are evaluated. Programs
+in $\lambda_v$, however, cannot. The intuition behind the transform is to explicitly
+provide to the resultant $\lambda_v$ program any information about the context that could
+be observed by the original $\lambda_{cm}$ program.
 
 \setspecialsymbol{TRUE}{$\textbf{true}$}
 \setspecialsymbol{FALSE}{$\textbf{false}$}
@@ -1137,7 +1230,10 @@ Programs in $\lambda_{cm}$ can observe the context in which they are evaluated. 
 \setspecialsymbol{e_1}{$e_1$}
 \setspecialsymbol{v_1}{$v_1$}
 
-Define \scheme{TRUE}=\scheme|(lambda (x) (lambda (y) x))|, \scheme{FALSE}=\scheme|(lambda (x) (lambda (y) y))|, \scheme|(PAIR a b)|=\scheme|(lambda (z) ((z a) b))|, \scheme{FST}=\scheme|(lambda (p) (p TRUE))|, \scheme{SND}=\scheme|(lambda (p) (p FALSE))|, and \scheme{NIL}=\scheme{FALSE}.
+Define \scheme{TRUE}=\scheme|(lambda (x) (lambda (y) x))|, \scheme{FALSE}=\scheme|(lambda
+(x) (lambda (y) y))|, \scheme{PAIR}=\scheme|(lambda a (lambda b (lambda (z) ((z a) b))))|,
+\scheme{FST}=\scheme|(lambda (p) (p TRUE))|, \scheme{SND}=\scheme|(lambda (p) (p FALSE))|,
+and \scheme{NIL}=\scheme{FALSE}.
 
 Let
 \[
@@ -1154,68 +1250,73 @@ v     &\text{if $((p\,(\lambda\,(v)\,(\lambda\,(k)\,(\lambda\,(m)\,(k\,v)))))\,(
 \end{cases}
 \]
 
-\newtheorem{theorem}{Theorem}
-\newtheorem{case}{Case}
-
-\newtheorem*{maintheorem}{Correctness of $\mathcal{C}$}
-\begin{maintheorem}
-For all programs $p\in\lambda_{cm}$, $\mathcal{C}[\mathrm{eval}_{cm}(p)]=\mathrm{eval}_{v}(\mathcal{C}[p])$.
-\end{maintheorem}
-\begin{proof}
-A program \scheme'p' must take the form \scheme|(e_0 e_1)|, \scheme|(wcm e_0 e_1)|, \scheme|(ccm)|, \scheme{v_0}, or \scheme'x'. We will consider each case.
-
-By some lemma, we know that $((C[(e_0\,e_1)] k) (flag,\chi(E)))\rightarrow_{\lambda_{v}}^{*}((C[v]\,k)\,(flag,\chi(E)))$ iff $E[(e_0\,e_1)]\rightarrow_{\lambda_{cm}}^{*}v$
-\end{proof}
-
-
-
 \setspecialsymbol{T}{$\mathcal{A}$}
 \setspecialsymbol{C}{$\mathcal{C}$}
 \setspecialsymbol{Ce_0}{$\mathcal{C}[e_0]$}
 \setspecialsymbol{Ce_0p}{$\mathcal{C}[e'_0]$}
 \setspecialsymbol{v_0}{$v_0$}
 \setspecialsymbol{Cv_0}{$\mathcal{C}[v_0]$}
+\setspecialsymbol{Cv_0p}{$\mathcal{C}[v'_0]$}
 \setspecialsymbol{Ce_1}{$\mathcal{C}[e_1]$}
 \setspecialsymbol{Ce_1p}{$\mathcal{C}[e'_1]$}
+\setspecialsymbol{Ce_0p_x_Ce_1p}{$\mathcal{C}[e'_0][x\leftarrow(\lambda\,(y)\,\mathcal{C}[e'_1])]$}
 \setspecialsymbol{Cz}{$\mathcal{C}[z]$}
 \setspecialsymbol{chiE}{$\chi(E)$}
 \setspecialsymbol{CchiE}{$\mathcal{C}[\chi(E)]$}
 
+\newtheorem{lemma}{Lemma}
+\newtheorem{theorem}{Theorem}
+\newtheorem{case}{Case}
+
+The following lemma is too soft.
+\begin{lemma}
+The tail-position flag is correct.
+\end{lemma}
+
+\begin{proof}
+Appeal to specific reductions.
+\end{proof}
+
+\begin{lemma}
+chi(E) is correct.
+\end{lemma}
+
+
+
+\newtheorem*{maintheorem}{Correctness of $\mathcal{C}$}
+\begin{maintheorem}
+For all programs $p\in\lambda_{cm}$, $\mathcal{C}[\mathrm{eval}_{cm}(p)]=\mathrm{eval}_{v}(\mathcal{C}[p])$.
+\end{maintheorem}
+A program \scheme'p' must take the form \scheme|(e_0 e_1)|, \scheme|(wcm e_0 e_1)|, \scheme|(ccm)|, \scheme{v_0}, or \scheme'x'. We will consider each case.
+
+\begin{proof}[Case \scheme|(e_0 e_1)|]
+
+By some lemma, we know that $((C[(e_0\,e_1)] k) (flag,\chi(E)))\rightarrow_{\lambda_{v}}^{*}((C[v]\,k)\,(flag,\chi(E)))$ iff $E[(e_0\,e_1)]\rightarrow_{\lambda_{cm}}^{*}v$
+\end{proof}
+
+\begin{proof}[Case \scheme|(ccm)|]
+
+\scheme|(k0 (lambda (x) Cv_0p))|
+
+\scheme|((lambda (v) (lambda (k) (lambda (m) (k v)))) (lambda (x) Cv_0p))|
+
+\scheme|(lambda (k) (lambda (m) (k (lambda (x) Cv_0p))))|
+
+\scheme|Cv_0|
+\end{proof}
+
+prove tail position flag gives correct behavior
+prove tail position flag is correct
+prove chi(E) is correct by appeal to steps and applications
+prove C[(wcm e0 e1)] k (flag,C[chi(E)] equiv C[e1] k (true,C[chi(E')]) where E[(wcm v0 e1)]=E'[e1]
 
 \setspecialsymbol{k0}{$k_0$}
 \setconstant{error}
 
 \begin{singlespace}
+application
 \begin{schemedisplay}
-(((lambda (k) (lambda (m) (k x))) k0) (PAIR flag CchiE))
-\end{schemedisplay}
-
-\begin{schemedisplay}
-((lambda (m) (k0 x)) (PAIR flag CchiE))
-\end{schemedisplay}
-
-\begin{schemedisplay}
-(k0 x)
-\end{schemedisplay}
-
-\begin{schemedisplay}
-error
-\end{schemedisplay}
-
-\begin{schemedisplay}
-((Cv_0 k0) (PAIR flag CchiE))
-\end{schemedisplay}
-
-\begin{schemedisplay}
-(((lambda (k) (lambda (m) (k (lambda (x) Ce_0p)))) k0) (PAIR flag CchiE))
-\end{schemedisplay}
-
-\begin{schemedisplay}
-((lambda (m) (k0 (lambda (x) Ce_0p))) (PAIR flag CchiE))
-\end{schemedisplay}
-
-\begin{schemedisplay}
-(k0 (lambda (x) Ce_0p))
+((C[(e_0 e_1)] k0) ((PAIR flag) CchiE))
 \end{schemedisplay}
 
 \begin{schemedisplay}
@@ -1225,14 +1326,14 @@ error
          (k (SND m)))
        (lambda (s)
          ((lambda (k)
-            (k (PAIR FALSE s)))
+            (k ((PAIR FALSE) s)))
           (lambda (n)
             ((Ce_0
               (lambda (e)
                 ((Ce_1
                   (lambda (f)
                     (((e f) k) m))) n))) n)))))))
-  k0) (PAIR flag CchiE))
+  k0) ((PAIR flag) CchiE))
 \end{schemedisplay}
 
 \begin{schemedisplay}
@@ -1241,65 +1342,65 @@ error
       (k (SND m)))
     (lambda (s)
       ((lambda (k)
-         (k (PAIR FALSE s)))
+         (k ((PAIR FALSE) s)))
        (lambda (n)
          ((Ce_0
            (lambda (e)
              ((Ce_1
                (lambda (f)
                  (((e f) k0) m))) n))) n))))))
- (PAIR flag CchiE))
+ ((PAIR flag) CchiE))
 \end{schemedisplay}
 
 \begin{schemedisplay}
 ((lambda (k)
-   (k (SND (PAIR flag CchiE))))
+   (k (SND ((PAIR flag) CchiE))))
  (lambda (s)
    ((lambda (k)
-      (k (PAIR FALSE s)))
+      (k ((PAIR FALSE) s)))
     (lambda (n)
       ((Ce_0
         (lambda (e)
           ((Ce_1
             (lambda (f)
-              (((e f) k0) (PAIR flag CchiE)))) n))) n)))))
+              (((e f) k0) ((PAIR flag) CchiE)))) n))) n)))))
 \end{schemedisplay}
 
 \begin{schemedisplay}
 ((lambda (s)
    ((lambda (k)
-      (k (PAIR FALSE s)))
+      (k ((PAIR FALSE) s)))
     (lambda (n)
       ((Ce_0
         (lambda (e)
           ((Ce_1
             (lambda (f)
-              (((e f) k0) (PAIR flag CchiE)))) n))) n))))
- (SND (PAIR flag CchiE)))
+              (((e f) k0) ((PAIR flag) CchiE)))) n))) n))))
+ (SND ((PAIR flag) CchiE)))
 \end{schemedisplay}
 
 \begin{schemedisplay}
 ((lambda (s)
    ((lambda (k)
-      (k (PAIR FALSE s)))
+      (k ((PAIR FALSE) s)))
     (lambda (n)
       ((Ce_0
         (lambda (e)
           ((Ce_1
             (lambda (f)
-              (((e f) k0) (PAIR flag CchiE)))) n))) n))))
+              (((e f) k0) ((PAIR flag) CchiE)))) n))) n))))
  CchiE)
 \end{schemedisplay}
 
 \begin{schemedisplay}
 ((lambda (k)
-   (k (PAIR FALSE CchiE)))
+   (k ((PAIR FALSE) CchiE)))
  (lambda (n)
    ((Ce_0
      (lambda (e)
        ((Ce_1
          (lambda (f)
-           (((e f) k0) (PAIR flag CchiE)))) n))) n)))
+           (((e f) k0) ((PAIR flag) CchiE)))) n))) n)))
 \end{schemedisplay}
 
 \begin{schemedisplay}
@@ -1308,8 +1409,8 @@ error
      (lambda (e)
        ((Ce_1
          (lambda (f)
-           (((e f) k0) (PAIR flag CchiE)))) n))) n))
- (PAIR FALSE CchiE))
+           (((e f) k0) ((PAIR flag) CchiE)))) n))) n))
+ ((PAIR FALSE) CchiE))
 \end{schemedisplay}
 
 \begin{schemedisplay}
@@ -1317,17 +1418,18 @@ error
   (lambda (e)
     ((Ce_1
       (lambda (f)
-        (((e f) k0) (PAIR flag CchiE))))
-     (PAIR FALSE CchiE))))
- (PAIR FALSE CchiE))
+        (((e f) k0) ((PAIR flag) CchiE))))
+     ((PAIR FALSE) CchiE))))
+ ((PAIR FALSE) CchiE))
 \end{schemedisplay}
 
+application operator error
 \begin{schemedisplay}
 ((lambda (e)
    ((Ce_1
      (lambda (f)
-       (((e f) k0) (PAIR flag CchiE))))
-    (PAIR FALSE CchiE))) error)
+       (((e f) k0) ((PAIR flag) CchiE))))
+    ((PAIR FALSE) CchiE))) error)
 \end{schemedisplay}
 
 \begin{schemedisplay}
@@ -1337,13 +1439,14 @@ error
 \begin{schemedisplay}
 ((Ce_1
   (lambda (f)
-    ((((lambda (x) Ce_0p) f) k0) (PAIR flag CchiE))))
- (PAIR FALSE CchiE))
+    ((((lambda (x) Ce_0p) f) k0) ((PAIR flag) CchiE))))
+ ((PAIR FALSE) CchiE))
 \end{schemedisplay}
 
+application operand error
 \begin{schemedisplay}
 ((lambda (f)
-   ((((lambda (x) Ce_0p) f) k0) (PAIR flag CchiE))) error)
+   ((((lambda (x) Ce_0p) f) k0) ((PAIR flag) CchiE))) error)
 \end{schemedisplay}
 
 \begin{schemedisplay}
@@ -1351,15 +1454,23 @@ error
 \end{schemedisplay}
 
 \begin{schemedisplay}
-((((lambda (x) Ce_0p) (lambda (y) Ce_1p)) k0) (PAIR flag CchiE))
+((((lambda (x) Ce_0p) (lambda (y) Ce_1p)) k0) ((PAIR flag) CchiE))
 \end{schemedisplay}
 
+\begin{schemedisplay}
+((Ce_0p_x_Ce_1p k0) ((PAIR flag) CchiE))
+\end{schemedisplay}
+
+wcm not in tail position
+\begin{schemedisplay}
+((C[(wcm e_0 e_1] k0) ((PAIR FALSE) CchiE))
+\end{schemedisplay}
 
 \begin{schemedisplay}
 (((lambda (k)
     (lambda (m) ((lambda (k) (k (SND m)))
                  (lambda (s)
-                   ((lambda (k) (k (PAIR FALSE s)))
+                   ((lambda (k) (k ((PAIR FALSE) s)))
                     (lambda (u)
                       ((Ce_0
                         (lambda (v)
@@ -1383,13 +1494,13 @@ error
                                                               (lambda (m)
                                                                 (k v))))] a)])))))))
                                     (lambda (m) ((Ce_1 k) m)))))))))))
-                       u))))))) k0) (PAIR FALSE CchiE))
+                       u))))))) k0) ((PAIR FALSE) CchiE))
 \end{schemedisplay}
 
 \begin{schemedisplay}
 ((lambda (m) ((lambda (k) (k (SND m)))
               (lambda (s)
-                ((lambda (k) (k (PAIR FALSE s)))
+                ((lambda (k) (k ((PAIR FALSE) s)))
                  (lambda (u)
                    ((Ce_0
                      (lambda (v)
@@ -1413,12 +1524,12 @@ error
                                                            (lambda (m)
                                                              (k v))))] a)])))))))
                                  (lambda (m) ((Ce_1 k0) m)))))))))))
-                    u)))))) (PAIR FALSE CchiE))
+                    u)))))) ((PAIR FALSE) CchiE))
 \end{schemedisplay}
 
 \begin{schemedisplay}
 ((lambda (s)
-   ((lambda (k) (k (PAIR FALSE s)))
+   ((lambda (k) (k ((PAIR FALSE) s)))
     (lambda (u)
       ((Ce_0
         (lambda (v)
@@ -1427,7 +1538,7 @@ error
                    (lambda (x) C[(lambda (y) y)])) (lambda (v) C[v])) (lambda (z) z))))
            (lambda (t)
              ((lambda (k)
-                (k (FST (PAIR FALSE CchiE))))
+                (k (FST ((PAIR FALSE) CchiE))))
               (lambda (f)
                 ((lambda (k)
                    (k ((f t) s)))
@@ -1442,12 +1553,12 @@ error
                                               (lambda (m)
                                                 (k v))))] a)])))))))
                     (lambda (m) ((Ce_1 k0) m)))))))))))
-       u)))) (SND (PAIR FALSE CchiE)))
+       u)))) (SND ((PAIR FALSE) CchiE)))
 \end{schemedisplay}
 
 \begin{schemedisplay}
 ((lambda (s)
-   ((lambda (k) (k (PAIR FALSE s)))
+   ((lambda (k) (k ((PAIR FALSE) s)))
     (lambda (u)
       ((Ce_0
         (lambda (v)
@@ -1456,7 +1567,7 @@ error
                    (lambda (x) C[(lambda (y) y)])) (lambda (v) C[v])) (lambda (z) z))))
            (lambda (t)
              ((lambda (k)
-                (k (FST (PAIR FALSE CchiE))))
+                (k (FST ((PAIR FALSE) CchiE))))
               (lambda (f)
                 ((lambda (k)
                    (k ((f t) s)))
@@ -1475,7 +1586,7 @@ error
 \end{schemedisplay}
 
 \begin{schemedisplay}
-((lambda (k) (k (PAIR FALSE CchiE)))
+((lambda (k) (k ((PAIR FALSE) CchiE)))
  (lambda (u)
    ((Ce_0
      (lambda (v)
@@ -1484,7 +1595,7 @@ error
                 (lambda (x) C[(lambda (y) y)])) (lambda (v) C[v])) (lambda (z) z))))
         (lambda (t)
           ((lambda (k)
-             (k (FST (PAIR FALSE CchiE))))
+             (k (FST ((PAIR FALSE) CchiE))))
            (lambda (f)
              ((lambda (k)
                 (k ((f t) CchiE)))
@@ -1510,7 +1621,7 @@ error
                 (lambda (x) C[(lambda (y) y)])) (lambda (v) C[v])) (lambda (z) z))))
         (lambda (t)
           ((lambda (k)
-             (k (FST (PAIR FALSE CchiE))))
+             (k (FST ((PAIR FALSE) CchiE))))
            (lambda (f)
              ((lambda (k)
                 (k ((f t) CchiE)))
@@ -1524,7 +1635,7 @@ error
                                 T[(T[(Cz (lambda (k) 
                                            (lambda (m)
                                              (k v))))] a)])))))))
-                 (lambda (m) ((Ce_1 k0) m))))))))))) u)) (PAIR FALSE CchiE))
+                 (lambda (m) ((Ce_1 k0) m))))))))))) u)) ((PAIR FALSE) CchiE))
 \end{schemedisplay}
 
 \begin{schemedisplay}
@@ -1535,7 +1646,7 @@ error
              (lambda (x) C[(lambda (y) y)])) (lambda (v) C[v])) (lambda (z) z))))
      (lambda (t)
        ((lambda (k)
-          (k (FST (PAIR FALSE CchiE))))
+          (k (FST ((PAIR FALSE) CchiE))))
         (lambda (f)
           ((lambda (k)
              (k ((f t) CchiE)))
@@ -1549,9 +1660,10 @@ error
                              T[(T[(Cz (lambda (k) 
                                         (lambda (m)
                                           (k v))))] a)])))))))
-              (lambda (m) ((Ce_1 k0) m))))))))))) (PAIR FALSE CchiE))
+              (lambda (m) ((Ce_1 k0) m))))))))))) ((PAIR FALSE) CchiE))
 \end{schemedisplay}
 
+wcm not in tail position mark error
 \begin{schemedisplay}
 ((lambda (v)
    ((lambda (k) 
@@ -1559,7 +1671,7 @@ error
             (lambda (x) C[(lambda (y) y)])) (lambda (v) C[v])) (lambda (z) z))))
     (lambda (t)
       ((lambda (k)
-         (k (FST (PAIR FALSE CchiE))))
+         (k (FST ((PAIR FALSE) CchiE))))
        (lambda (f)
          ((lambda (k)
             (k ((f t) CchiE)))
@@ -1586,7 +1698,7 @@ error
          (lambda (x) C[(lambda (y) y)])) (lambda (v) C[v])) (lambda (z) z))))
  (lambda (t)
    ((lambda (k)
-      (k (FST (PAIR FALSE CchiE))))
+      (k (FST ((PAIR FALSE) CchiE))))
     (lambda (f)
       ((lambda (k)
          (k ((f t) CchiE)))
@@ -1609,7 +1721,7 @@ error
          (lambda (x) C[(lambda (y) y)])) (lambda (v) C[v])) (lambda (z) z))))
  (lambda (t)
    ((lambda (k)
-      (k (FST (PAIR FALSE CchiE))))
+      (k (FST ((PAIR FALSE) CchiE))))
     (lambda (f)
       ((lambda (k)
          (k ((f t) CchiE)))
@@ -1630,7 +1742,7 @@ error
          (lambda (x) C[(lambda (y) y)])) (lambda (v) C[v])) (lambda (z) z))))
  (lambda (t)
    ((lambda (k)
-      (k (FST (PAIR FALSE CchiE))))
+      (k (FST ((PAIR FALSE) CchiE))))
     (lambda (f)
       ((lambda (k)
          (k ((f t) CchiE)))
@@ -1648,7 +1760,7 @@ error
 \begin{schemedisplay}
 ((lambda (t)
    ((lambda (k)
-      (k (FST (PAIR FALSE CchiE))))
+      (k (FST ((PAIR FALSE) CchiE))))
     (lambda (f)
       ((lambda (k)
          (k ((f t) CchiE)))
@@ -1668,7 +1780,7 @@ error
 \begin{schemedisplay}
 ((lambda (t)
    ((lambda (k)
-      (k (FST (PAIR FALSE CchiE))))
+      (k (FST ((PAIR FALSE) CchiE))))
     (lambda (f)
       ((lambda (k)
          (k ((f t) CchiE)))
@@ -1686,7 +1798,7 @@ error
 
 \begin{schemedisplay}
 ((lambda (k)
-   (k (FST (PAIR FALSE CchiE))))
+   (k (FST ((PAIR FALSE) CchiE))))
  (lambda (f)
    ((lambda (k)
       (k ((f C[(SND chiE)]) CchiE)))
@@ -1714,7 +1826,7 @@ error
                  (k (lambda (z) 
                       T[(C[(z v_0)] a)])))))))
        (lambda (m) ((Ce_1 k0) m))))))
- (FST (PAIR FALSE CchiE)))
+ (FST ((PAIR FALSE) CchiE)))
 \end{schemedisplay}
 
 \begin{schemedisplay}
@@ -1802,13 +1914,14 @@ error
 
 \begin{schemedisplay}
 ((lambda (m) ((Ce_1 k0) m))
- (PAIR TRUE C[(PAIR v_0 chiE)]))
+ ((PAIR TRUE) C[(PAIR v_0 chiE)]))
 \end{schemedisplay}
 
 \begin{schemedisplay}
-((Ce_1 k0) (PAIR TRUE C[(PAIR v_0 chiE)]))
+((Ce_1 k0) ((PAIR TRUE) C[(PAIR v_0 chiE)]))
 \end{schemedisplay}
 
+wcm not in tail position body error
 \begin{schemedisplay}
 (k0 error)
 \end{schemedisplay}
@@ -1817,11 +1930,16 @@ error
 error
 \end{schemedisplay}
 
+wcm in tail position
+\begin{schemedisplay}
+((C[(wcm e_0 e_1] k0) ((PAIR TRUE) CchiE))
+\end{schemedisplay}
+
 \begin{schemedisplay}
 (((lambda (k)
     (lambda (m) ((lambda (k) (k (SND m)))
                  (lambda (s)
-                   ((lambda (k) (k (PAIR FALSE s)))
+                   ((lambda (k) (k ((PAIR FALSE) s)))
                     (lambda (u)
                       ((Ce_0
                         (lambda (v)
@@ -1845,13 +1963,13 @@ error
                                                               (lambda (m)
                                                                 (k v))))] a)])))))))
                                     (lambda (m) ((Ce_1 k) m)))))))))))
-                       u))))))) k0) (PAIR TRUE CchiE))
+                       u))))))) k0) ((PAIR TRUE) CchiE))
 \end{schemedisplay}
 
 \begin{schemedisplay}
 ((lambda (m) ((lambda (k) (k (SND m)))
               (lambda (s)
-                ((lambda (k) (k (PAIR FALSE s)))
+                ((lambda (k) (k ((PAIR FALSE) s)))
                  (lambda (u)
                    ((Ce_0
                      (lambda (v)
@@ -1875,12 +1993,12 @@ error
                                                            (lambda (m)
                                                              (k v))))] a)])))))))
                                  (lambda (m) ((Ce_1 k0) m)))))))))))
-                    u)))))) (PAIR TRUE CchiE))
+                    u)))))) ((PAIR TRUE) CchiE))
 \end{schemedisplay}
 
 \begin{schemedisplay}
 ((lambda (s)
-   ((lambda (k) (k (PAIR FALSE s)))
+   ((lambda (k) (k ((PAIR FALSE) s)))
     (lambda (u)
       ((Ce_0
         (lambda (v)
@@ -1889,7 +2007,7 @@ error
                    (lambda (x) C[(lambda (y) y)])) (lambda (v) C[v])) (lambda (z) z))))
            (lambda (t)
              ((lambda (k)
-                (k (FST (PAIR TRUE CchiE))))
+                (k (FST ((PAIR TRUE) CchiE))))
               (lambda (f)
                 ((lambda (k)
                    (k ((f t) s)))
@@ -1904,12 +2022,12 @@ error
                                               (lambda (m)
                                                 (k v))))] a)])))))))
                     (lambda (m) ((Ce_1 k0) m)))))))))))
-       u)))) (SND (PAIR TRUE CchiE)))
+       u)))) (SND ((PAIR TRUE) CchiE)))
 \end{schemedisplay}
 
 \begin{schemedisplay}
 ((lambda (s)
-   ((lambda (k) (k (PAIR FALSE s)))
+   ((lambda (k) (k ((PAIR FALSE) s)))
     (lambda (u)
       ((Ce_0
         (lambda (v)
@@ -1918,7 +2036,7 @@ error
                    (lambda (x) C[(lambda (y) y)])) (lambda (v) C[v])) (lambda (z) z))))
            (lambda (t)
              ((lambda (k)
-                (k (FST (PAIR TRUE CchiE))))
+                (k (FST ((PAIR TRUE) CchiE))))
               (lambda (f)
                 ((lambda (k)
                    (k ((f t) s)))
@@ -1937,7 +2055,7 @@ error
 \end{schemedisplay}
 
 \begin{schemedisplay}
-((lambda (k) (k (PAIR FALSE CchiE)))
+((lambda (k) (k ((PAIR FALSE) CchiE)))
  (lambda (u)
    ((Ce_0
      (lambda (v)
@@ -1946,7 +2064,7 @@ error
                 (lambda (x) C[(lambda (y) y)])) (lambda (v) C[v])) (lambda (z) z))))
         (lambda (t)
           ((lambda (k)
-             (k (FST (PAIR TRUE CchiE))))
+             (k (FST ((PAIR TRUE) CchiE))))
            (lambda (f)
              ((lambda (k)
                 (k ((f t) CchiE)))
@@ -1972,7 +2090,7 @@ error
                 (lambda (x) C[(lambda (y) y)])) (lambda (v) C[v])) (lambda (z) z))))
         (lambda (t)
           ((lambda (k)
-             (k (FST (PAIR TRUE CchiE))))
+             (k (FST ((PAIR TRUE) CchiE))))
            (lambda (f)
              ((lambda (k)
                 (k ((f t) CchiE)))
@@ -1986,7 +2104,7 @@ error
                                 T[(T[(Cz (lambda (k) 
                                            (lambda (m)
                                              (k v))))] a)])))))))
-                 (lambda (m) ((Ce_1 k0) m))))))))))) u)) (PAIR FALSE CchiE))
+                 (lambda (m) ((Ce_1 k0) m))))))))))) u)) ((PAIR FALSE) CchiE))
 \end{schemedisplay}
 
 \begin{schemedisplay}
@@ -1997,7 +2115,7 @@ error
              (lambda (x) C[(lambda (y) y)])) (lambda (v) C[v])) (lambda (z) z))))
      (lambda (t)
        ((lambda (k)
-          (k (FST (PAIR TRUE CchiE))))
+          (k (FST ((PAIR TRUE) CchiE))))
         (lambda (f)
           ((lambda (k)
              (k ((f t) CchiE)))
@@ -2011,9 +2129,10 @@ error
                              T[(T[(Cz (lambda (k) 
                                         (lambda (m)
                                           (k v))))] a)])))))))
-              (lambda (m) ((Ce_1 k0) m))))))))))) (PAIR FALSE CchiE))
+              (lambda (m) ((Ce_1 k0) m))))))))))) ((PAIR FALSE) CchiE))
 \end{schemedisplay}
 
+wcm in tail position mark error
 \begin{schemedisplay}
 ((lambda (v)
    ((lambda (k) 
@@ -2021,7 +2140,7 @@ error
             (lambda (x) C[(lambda (y) y)])) (lambda (v) C[v])) (lambda (z) z))))
     (lambda (t)
       ((lambda (k)
-         (k (FST (PAIR TRUE CchiE))))
+         (k (FST ((PAIR TRUE) CchiE))))
        (lambda (f)
          ((lambda (k)
             (k ((f t) CchiE)))
@@ -2048,7 +2167,7 @@ error
          (lambda (x) C[(lambda (y) y)])) (lambda (v) C[v])) (lambda (z) z))))
  (lambda (t)
    ((lambda (k)
-      (k (FST (PAIR TRUE CchiE))))
+      (k (FST ((PAIR TRUE) CchiE))))
     (lambda (f)
       ((lambda (k)
          (k ((f t) CchiE)))
@@ -2071,7 +2190,7 @@ error
          (lambda (x) C[(lambda (y) y)])) (lambda (v) C[v])) (lambda (z) z))))
  (lambda (t)
    ((lambda (k)
-      (k (FST (PAIR TRUE CchiE))))
+      (k (FST ((PAIR TRUE) CchiE))))
     (lambda (f)
       ((lambda (k)
          (k ((f t) CchiE)))
@@ -2092,7 +2211,7 @@ error
          (lambda (x) C[(lambda (y) y)])) (lambda (v) C[v])) (lambda (z) z))))
  (lambda (t)
    ((lambda (k)
-      (k (FST (PAIR TRUE CchiE))))
+      (k (FST ((PAIR TRUE) CchiE))))
     (lambda (f)
       ((lambda (k)
          (k ((f t) CchiE)))
@@ -2110,7 +2229,7 @@ error
 \begin{schemedisplay}
 ((lambda (t)
    ((lambda (k)
-      (k (FST (PAIR TRUE CchiE))))
+      (k (FST ((PAIR TRUE) CchiE))))
     (lambda (f)
       ((lambda (k)
          (k ((f t) CchiE)))
@@ -2130,7 +2249,7 @@ error
 \begin{schemedisplay}
 ((lambda (t)
    ((lambda (k)
-      (k (FST (PAIR TRUE CchiE))))
+      (k (FST ((PAIR TRUE) CchiE))))
     (lambda (f)
       ((lambda (k)
          (k ((f t) CchiE)))
@@ -2148,7 +2267,7 @@ error
 
 \begin{schemedisplay}
 ((lambda (k)
-   (k (FST (PAIR TRUE CchiE))))
+   (k (FST ((PAIR TRUE) CchiE))))
  (lambda (f)
    ((lambda (k)
       (k ((f C[(SND chiE)]) CchiE)))
@@ -2176,7 +2295,7 @@ error
                  (k (lambda (z) 
                       T[(C[(z v_0)] a)])))))))
        (lambda (m) ((Ce_1 k0) m))))))
- (FST (PAIR TRUE CchiE)))
+ (FST ((PAIR TRUE) CchiE)))
 \end{schemedisplay}
 
 \begin{schemedisplay}
@@ -2264,13 +2383,14 @@ error
 
 \begin{schemedisplay}
 ((lambda (m) ((Ce_1 k0) m))
- (PAIR TRUE C[(PAIR v_0 (SND chiE))]))
+ ((PAIR TRUE) C[(PAIR v_0 (SND chiE))]))
 \end{schemedisplay}
 
 \begin{schemedisplay}
-((Ce_1 k0) (PAIR TRUE C[(PAIR v_0 (SND chiE))]))
+((Ce_1 k0) ((PAIR TRUE) C[(PAIR v_0 (SND chiE))]))
 \end{schemedisplay}
 
+wcm in tail position body error
 \begin{schemedisplay}
 (k0 error)
 \end{schemedisplay}
@@ -2278,11 +2398,80 @@ error
 \begin{schemedisplay}
 error
 \end{schemedisplay}
+
+ccm
+\begin{schemedisplay}
+((C[(ccm)] k0) ((PAIR flag) CchiE))
+\end{schemedisplay}
+
+\begin{schemedisplay}
+(((lambda (k) (lambda (m) (((SND m) k) (lambda (z) z)))) k0) ((PAIR flag) CchiE))
+\end{schemedisplay}
+
+\begin{schemedisplay}
+((lambda (m) (((SND m) k0) (lambda (z) z))) ((PAIR flag) CchiE))
+\end{schemedisplay}
+
+\begin{schemedisplay}
+(((SND ((PAIR flag) CchiE)) k0) (lambda (z) z))
+\end{schemedisplay}
+
+\begin{schemedisplay}
+((CchiE k0) (lambda (z) z))
+\end{schemedisplay}
+
+\begin{schemedisplay}
+(((lambda (k) (lambda (m) (k (lambda (x) Ce_0p)))) k0) (lambda (z) z))
+\end{schemedisplay}
+
+\begin{schemedisplay}
+((lambda (m) (k0 (lambda (x) Ce_0p))) (lambda (z) z))
+\end{schemedisplay}
+
+\begin{schemedisplay}
+(k0 (lambda (x) Ce_0p))
+\end{schemedisplay}
+
+variable
+\begin{schemedisplay}
+((C[x] k0) ((PAIR flag) CchiE))
+\end{schemedisplay}
+
+\begin{schemedisplay}
+(((lambda (k) (lambda (m) (k x))) k0) ((PAIR flag) CchiE))
+\end{schemedisplay}
+
+\begin{schemedisplay}
+((lambda (m) (k0 x)) ((PAIR flag) CchiE))
+\end{schemedisplay}
+
+\begin{schemedisplay}
+(k0 x)
+\end{schemedisplay}
+
+\begin{schemedisplay}
+error
+\end{schemedisplay}
+
+value
+\begin{schemedisplay}
+((Cv_0 k0) ((PAIR flag) CchiE))
+\end{schemedisplay}
+
+\begin{schemedisplay}
+(((lambda (k) (lambda (m) (k (lambda (x) Ce_0p)))) k0) ((PAIR flag) CchiE))
+\end{schemedisplay}
+
+\begin{schemedisplay}
+((lambda (m) (k0 (lambda (x) Ce_0p))) ((PAIR flag) CchiE))
+\end{schemedisplay}
+
+\begin{schemedisplay}
+(k0 (lambda (x) Ce_0p))
+\end{schemedisplay}
 \end{singlespace}
 
 \bibliographystyle{plainnat}
 \bibliography{dissertation}
 
 \end{document}
-
-% vim: lbr
