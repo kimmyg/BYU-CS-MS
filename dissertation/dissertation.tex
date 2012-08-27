@@ -1043,7 +1043,7 @@ $\mathcal{C}_{1}$ formally as
 \mathcal{C}_{1}[x]                      &= \lambda k.\lambda m.(k\,x)\\
 \mathcal{C}_{1}[\lambda x.E]            &= \lambda k.\lambda m.(k\,\lambda x.\mathcal{C}_{1}[E])\\
 \mathcal{C}_{1}[(E\,F)]                 &= \lambda k.\lambda m.((\mathcal{C}_{1}[E]\,\lambda e.((\mathcal{C}_{1}[F]\,\lambda f.(((e\,f)\,k)\,m))\,m))\,m)\\
-\mathcal{C}_{1}[(\mathrm{wcm}\,E\,F)]   &= \lambda k.\lambda m.((\mathcal{C}_{1}[E]\,\lambda e.((\mathcal{C}_{1}[F]\,k)\,\textbf{(}e\textbf{,}m\textbf{)}))\,m)\\
+\mathcal{C}_{1}[(\mathrm{wcm}\,E\,F)]   &= \lambda k.\lambda m.((\mathcal{C}_{1}[E]\,\lambda e.((\mathcal{C}_{1}[F]\,k)\,\mathbf{(}e\mathbf{,}m\mathbf{)}))\,m)\\
 \mathcal{C}_{1}[(\mathrm{ccm})]         &= \lambda k.\lambda m.(k\,m)
 \end{align*}
 
@@ -1121,7 +1121,7 @@ we will assume that this approach is a fine way to go.
 Consider the program $(\mathrm{ccm})$. In $\lambda_{cm}$, it evaluates to the empty list under 
 Church encoding; that is,
 \[
-(\mathrm{ccm})\rightarrow_{\lambda_{cm}}\textbf{nil}
+(\mathrm{ccm})\rightarrow_{\lambda_{cm}}\mathbf{nil}
 \]
 We also have
 \[
@@ -1130,10 +1130,10 @@ We also have
 and assuming for now that the identity function is a satisfactory continuation to provide, 
 we have
 \begin{align*}
-                          &((\lambda k.\lambda m.(k\,m)\,\lambda z.z)\,\textbf{nil})\\
-\rightarrow_{\lambda_{v}} &(\lambda m.(\lambda z.z\,m)\,\textbf{nil})\\
-\rightarrow_{\lambda_{v}} &(\lambda z.z\,\textbf{nil})\\
-\rightarrow_{\lambda_{v}} &\textbf{nil}
+                          &((\lambda k.\lambda m.(k\,m)\,\lambda z.z)\,\mathbf{nil})\\
+\rightarrow_{\lambda_{v}} &(\lambda m.(\lambda z.z\,m)\,\mathbf{nil})\\
+\rightarrow_{\lambda_{v}} &(\lambda z.z\,\mathbf{nil})\\
+\rightarrow_{\lambda_{v}} &\mathbf{nil}
 \end{align*}
 This might suggest that we're on the right track.
 
@@ -1150,15 +1150,15 @@ $(\mathrm{wcm}\,v_0\,(\mathrm{wcm}\,v_1\,(\mathrm{ccm})))$ evaluates as
 However, consider the $\mathcal{C}_1$ transformation of this program
 \begin{align*}
   &\mathcal{C}_1[(\mathrm{wcm}\,v_0\,(\mathrm{wcm}\,v_1\,(\mathrm{ccm})))]\\
-= &\lambda k.\lambda m.((\mathcal{C}_1[v_0]\,\lambda e.((\mathcal{C}_1[(\mathrm{wcm}\,v_1\,(\mathrm{ccm}))]\,k)\,\textbf{(}e\textbf{,}m\textbf{)}))\,m)\\
-= &\lambda k.\lambda m.((\mathcal{C}_1[v_0]\,\lambda e.((\lambda k.\lambda m.((\mathcal{C}_1[v_1]\,\lambda e.((\mathcal{C}_1[(\mathrm{ccm})]\,k)\,\textbf{(}e\textbf{,}m\textbf{)}))\,m)\,k)\,\textbf{(}e\textbf{,}m\textbf{)}))\,m)\\
-= &\lambda k.\lambda m.((\mathcal{C}_1[v_0]\,\lambda e.((\lambda k.\lambda m.((\mathcal{C}_1[v_1]\,\lambda e.((\lambda k.\lambda m.(k\,m)\,k)\,\textbf{(}e\textbf{,}m\textbf{)}))\,m)\,k)\,\textbf{(}e\textbf{,}m\textbf{)}))\,m)\\
+= &\lambda k.\lambda m.((\mathcal{C}_1[v_0]\,\lambda e.((\mathcal{C}_1[(\mathrm{wcm}\,v_1\,(\mathrm{ccm}))]\,k)\,\mathbf{(}e\mathbf{,}m\mathbf{)}))\,m)\\
+= &\lambda k.\lambda m.((\mathcal{C}_1[v_0]\,\lambda e.((\lambda k.\lambda m.((\mathcal{C}_1[v_1]\,\lambda e.((\mathcal{C}_1[(\mathrm{ccm})]\,k)\,\mathbf{(}e\mathbf{,}m\mathbf{)}))\,m)\,k)\,\mathbf{(}e\mathbf{,}m\mathbf{)}))\,m)\\
+= &\lambda k.\lambda m.((\mathcal{C}_1[v_0]\,\lambda e.((\lambda k.\lambda m.((\mathcal{C}_1[v_1]\,\lambda e.((\lambda k.\lambda m.(k\,m)\,k)\,\mathbf{(}e\mathbf{,}m\mathbf{)}))\,m)\,k)\,\mathbf{(}e\mathbf{,}m\mathbf{)}))\,m)\\
 \end{align*}
 and its corresponding evaluation when provided an appropriate continuation and marks argument
 \begin{align*}
-                        &((\lambda k.\lambda m.((\mathcal{C}_1[v_0]\,\lambda e.((\lambda k.\lambda m.((\mathcal{C}_1[v_1]\,\lambda e.((\lambda k.\lambda m.(k\,m)\,k)\,\textbf{(}e\textbf{,}m\textbf{)}))\,m)\,k)\,\textbf{(}e\textbf{,}m\textbf{)}))\,m)\,\lambda z.z)\,\textbf{nil})\\
-\rightarrow_{\lambda_v} &(\lambda m.((\mathcal{C}_1[v_0]\,\lambda e.((\lambda k.\lambda m.((\mathcal{C}_1[v_1]\,\lambda e.((\lambda k.\lambda m.(k\,m)\,k)\,\textbf{(}e\textbf{,}m\textbf{)}))\,m)\,\lambda z.z)\,\textbf{(}e\textbf{,}m\textbf{)}))\,m)\,\textbf{nil})\\
-\rightarrow_{\lambda_v} &((\mathcal{C}_1[v_0]\,\lambda e.((\lambda k.\lambda m.((\mathcal{C}_1[v_1]\,\lambda e.((\lambda k.\lambda m.(k\,m)\,k)\,\textbf{(}e\textbf{,}m\textbf{)}))\,m)\,\lambda z.z)\,\textbf{(}e\textbf{,}\textbf{nil}\textbf{)}))\,\textbf{nil})\\
+                        &((\lambda k.\lambda m.((\mathcal{C}_1[v_0]\,\lambda e.((\lambda k.\lambda m.((\mathcal{C}_1[v_1]\,\lambda e.((\lambda k.\lambda m.(k\,m)\,k)\,\mathbf{(}e\mathbf{,}m\mathbf{)}))\,m)\,k)\,\mathbf{(}e\mathbf{,}m\mathbf{)}))\,m)\,\lambda z.z)\,\mathbf{nil})\\
+\rightarrow_{\lambda_v} &(\lambda m.((\mathcal{C}_1[v_0]\,\lambda e.((\lambda k.\lambda m.((\mathcal{C}_1[v_1]\,\lambda e.((\lambda k.\lambda m.(k\,m)\,k)\,\mathbf{(}e\mathbf{,}m\mathbf{)}))\,m)\,\lambda z.z)\,\mathbf{(}e\mathbf{,}m\mathbf{)}))\,m)\,\mathbf{nil})\\
+\rightarrow_{\lambda_v} &((\mathcal{C}_1[v_0]\,\lambda e.((\lambda k.\lambda m.((\mathcal{C}_1[v_1]\,\lambda e.((\lambda k.\lambda m.(k\,m)\,k)\,\mathbf{(}e\mathbf{,}m\mathbf{)}))\,m)\,\lambda z.z)\,\mathbf{(}e\mathbf{,}\mathbf{nil}\mathbf{)}))\,\mathbf{nil})\\
 \rightarrow_{\lambda_v} &...\\
 \end{align*}
 
@@ -1218,12 +1218,12 @@ in $\lambda_v$, however, cannot. The intuition behind the transform is to explic
 provide to the resultant $\lambda_v$ program any information about the context that could
 be observed by the original $\lambda_{cm}$ program.
 
-\setspecialsymbol{TRUE}{$\textbf{true}$}
-\setspecialsymbol{FALSE}{$\textbf{false}$}
-\setspecialsymbol{PAIR}{$\textbf{pair}$}
-\setspecialsymbol{FST}{$\textbf{fst}$}
-\setspecialsymbol{SND}{$\textbf{snd}$}
-\setspecialsymbol{NIL}{$\textbf{nil}$}
+\setspecialsymbol{TRUE}{$\mathbf{true}$}
+\setspecialsymbol{FALSE}{$\mathbf{false}$}
+\setspecialsymbol{PAIR}{$\mathbf{pair}$}
+\setspecialsymbol{FST}{$\mathbf{fst}$}
+\setspecialsymbol{SND}{$\mathbf{snd}$}
+\setspecialsymbol{NIL}{$\mathbf{nil}$}
 
 \setspecialsymbol{e_0}{$e_0$}
 \setspecialsymbol{v_0}{$v_0$}
@@ -1245,8 +1245,8 @@ v     &\text{if $p\rightarrow_{cm}^{*}v$}\\
 and
 \[
 \mathrm{eval}_{v}(p)=\begin{cases}
-v     &\text{if $((p\,(\lambda\,(v)\,(\lambda\,(k)\,(\lambda\,(m)\,(k\,v)))))\,((\textbf{pair}\,\textbf{false})\,\mathcal{C}[\textbf{nil}]))\rightarrow_{v}^{*}v$}\\
-\perp &\text{if $((p\,(\lambda\,(v)\,(\lambda\,(k)\,(\lambda\,(m)\,(k\,v)))))\,((\textbf{pair}\,\textbf{false})\,\mathcal{C}[\textbf{nil}]))\rightarrow_{v}^{*}\cdots$}
+v     &\text{if $((p\,(\lambda\,(v)\,(\lambda\,(k)\,(\lambda\,(m)\,(k\,v)))))\,((\mathbf{pair}\,\mathbf{false})\,\mathcal{C}[\mathbf{nil}]))\rightarrow_{v}^{*}v$}\\
+\perp &\text{if $((p\,(\lambda\,(v)\,(\lambda\,(k)\,(\lambda\,(m)\,(k\,v)))))\,((\mathbf{pair}\,\mathbf{false})\,\mathcal{C}[\mathbf{nil}]))\rightarrow_{v}^{*}\cdots$}
 \end{cases}
 \]
 
@@ -1271,18 +1271,18 @@ v     &\text{if $((p\,(\lambda\,(v)\,(\lambda\,(k)\,(\lambda\,(m)\,(k\,v)))))\,(
 \newtheorem{theorem}{Theorem}
 \newtheorem{case}{Case}
 
-The following lemma is too soft.
-\begin{lemma}
-The tail-position flag is correct.
-\end{lemma}
+%The following lemma is too soft.
+%\begin{lemma}
+%The tail-position flag is correct.
+%\end{lemma}
 
-\begin{proof}
-Appeal to specific reductions.
-\end{proof}
+%\begin{proof}
+%Appeal to specific reductions.
+%\end{proof}
 
-\begin{lemma}
-$\chi(E)$ is correct.
-\end{lemma}
+%\begin{lemma}
+%$\chi(E)$ is correct.
+%\end{lemma}
 
 % The crux of this proof comes down to two invariants: first, every expression is 
 % passed the value of chi(E) before evaluation; second, every expression is passed
@@ -1357,6 +1357,35 @@ $\chi(E)$ is correct.
 % interp v flag ms = v
 % interp x flag ms = error
 
+Define
+
+\[
+\mathrm{\xi}(E)=\begin{cases}
+\mathrm{true} &\text{if $E=E'[(\mathrm{wcm}\,v'\,\bullet)]$ for some $E'$ and $v'$}\\
+\mathrm{false} &\text{otherwise}
+\end{cases}
+\]
+
+\newtheorem*{simulation}{Simulation}
+\begin{simulation}
+If $E[e]\rightarrow_{\lambda_{cm}}E[v]$, then $((\mathcal{C}[E[e]]\,k)\,((\mathbf{pair}\,\mathbf{false})\,\mathbf{nil})\rightarrow_{\lambda_v}^{+}((\mathcal{C}[E[v]]\,k)\,((\mathbf{pair}\,\mathbf{false})\,\mathbf{nil})$.
+\end{simulation}
+
+\begin{proof}
+$((\mathcal{C}[E[(e_0\,e_1)]]\,k)\,(\mathbf{pair}\,\mathbf{false})\,\mathbf{nil}))\equiv\mathcal(({C}[(e_0\,e_1)]\,k)\,((\mathbf{pair}\,\xi(E))\,\chi(E)))$
+
+Let $E_0=E[(\bullet\,e_1)]$ (and note that $\xi(E_0)=\mathrm{false}$ and $\chi(E_0)=\chi(E)$).
+
+By inductive hypothesis, $((\mathcal{C}[e_0]\,k_0)\,((\mathbf{pair}\,\xi(E_0))\,\chi(E_0)))\rightarrow_{\lambda_v}^{*}((\mathcal{C}[v_0]\,k_0)\,((\mathbf{pair}\,\xi(E_0))\,\chi(E_0)))$
+
+Similarly, let $E_1=E[(v_0\,\bullet)]$ (and note that $\xi(E_1)=\mathrm{false}$ and $\chi(E_1)=\chi(E)$).
+
+By inductive hypothesis, $((\mathcal{C}[e_1]\,k_1)\,((\mathbf{pair}\,\xi(E_1))\,\chi(E_1)))\rightarrow_{\lambda_v}^{*}((\mathcal{C}[v_1]\,k_1)\,((\mathbf{pair}\,\xi(E_1))\,\chi(E_1)))$
+
+$\mathcal(({C}[(e_0\,e_1)]\,k)\,((\mathbf{pair}\,\xi)\,\chi(E)))$
+% assume e0 -> v0 = \x., e1 -> v1
+\end{proof}
+
 \newtheorem*{maintheorem}{Correctness of $\mathcal{C}$}
 \begin{maintheorem}
 For all programs $p\in\lambda_{cm}$, $\mathcal{C}[\mathrm{eval}_{cm}(p)]=\mathrm{eval}_{v}(\mathcal{C}[p])$.
@@ -1416,6 +1445,8 @@ prove tail position flag gives correct behavior
 prove tail position flag is correct
 prove chi(E) is correct by appeal to steps and applications
 prove C[(wcm e0 e1)] k (flag,C[chi(E)] equiv C[e1] k (true,C[chi(E')]) where E[(wcm v0 e1)]=E'[e1]
+
+$\mathcal{A}$ is a transformation with the property that $\mathcal{A}[(\mathcal{C}[e_0]\,\mathcal{C}[e_1])]=\mathcal{C}[(e_0\,e_1)]$.
 
 \setspecialsymbol{k0}{$k_0$}
 \setconstant{error}
