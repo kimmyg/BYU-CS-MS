@@ -1300,7 +1300,7 @@ v     &\text{if $((p\,(\lambda\,(v)\,(\lambda\,(k)\,(\lambda\,(m)\,(k\,v)))))\,(
 
 % We then demonstrate on the following fact:
 
-% if E[e] -> E[v], then C[E[e]] -> C[E[v]] by C[e] k (flag,chi(E)) -> C[v] k (flag,chi(E))
+% if E[e] -> E[v], then C[E[e]] -> C[E[v]] by C[e] k (xi(E),chi(E)) -> C[v] k (xi(E),chi(E))
 
 % We do this by C[E[e]] -> C[E][C[e]] -> C[E][C[v]] -> C[E[v]]
 
@@ -1317,7 +1317,7 @@ v     &\text{if $((p\,(\lambda\,(v)\,(\lambda\,(k)\,(\lambda\,(m)\,(k\,v)))))\,(
 
 
 
-% look at C[(e0 e1)] k' (flag,chi(E))
+% look at C[(e0 e1)] k' (xi(E),chi(E))
 % by induction, E(* e1)[e0] ->cm E(* e1)[v0] => C[e0] k0 (false,chi(E0)) -> (k0 v0)
 % where E0 = E(* e1)
 % by induction, E(v0 *)[e1] ->cm E(v1 *)[v1] => C[e1] k1 (false,chi(E1)) -> (k1 v1)
@@ -1329,7 +1329,7 @@ v     &\text{if $((p\,(\lambda\,(v)\,(\lambda\,(k)\,(\lambda\,(m)\,(k\,v)))))\,(
 % C[(wcm v0 e1)] k0 (true,v:vs) equiv C[e1] k0 (true,v0:vs)
 % C[(wcm e0 e1)]
 
-% E[e0'[x<-v1]] ->cm E[e3] => C[(\x.e0' v1)] k' (flag,chi(E)) ->v C[
+% E[e0'[x<-v1]] ->cm E[e3] => C[(\x.e0' v1)] k' (xi(E),chi(E)) ->v C[
 
 
 % an ML-esque interpreter
@@ -1361,8 +1361,8 @@ Define
 
 \[
 \mathrm{\xi}(E)=\begin{cases}
-\mathrm{true} &\text{if $E=E'[(\mathrm{wcm}\,v'\,\bullet)]$ for some $E'$ and $v'$}\\
-\mathrm{false} &\text{otherwise}
+\mathbf{true} &\text{if $E=E'[(\mathrm{wcm}\,v'\,\bullet)]$ for some $E'$ and $v'$}\\
+\mathbf{false} &\text{otherwise}
 \end{cases}
 \]
 
@@ -1370,6 +1370,7 @@ Define
 \begin{simulation}
 If $E[e]\rightarrow_{\lambda_{cm}}E[v]$, then $((\mathcal{C}[E[e]]\,k)\,((\mathbf{pair}\,\mathbf{false})\,\mathbf{nil})\rightarrow_{\lambda_v}^{+}((\mathcal{C}[E[v]]\,k)\,((\mathbf{pair}\,\mathbf{false})\,\mathbf{nil})$.
 \end{simulation}
+The contexts are not necessary above.
 
 \begin{proof}
 $((\mathcal{C}[E[(e_0\,e_1)]]\,k)\,(\mathbf{pair}\,\mathbf{false})\,\mathbf{nil}))\equiv\mathcal(({C}[(e_0\,e_1)]\,k)\,((\mathbf{pair}\,\xi(E))\,\chi(E)))$
@@ -1397,10 +1398,10 @@ A program \scheme'p' must take the form \scheme|(e_0 e_1)|, \scheme|(wcm e_0 e_1
 
 
 % suppose we have E[(e_0 e_1)]
-% C[E[(e_0 e_1)]] k0 (false,nil) equiv C[(e_0 e_1)] k0 (flag,chi(E))
-% -> C[e2] k0 (flag,chi(E))
+% C[E[(e_0 e_1)]] k0 (false,nil) equiv C[(e_0 e_1)] k0 (\xi(E),chi(E))
+% -> C[e2] k0 (\xi(E),chi(E))
 
-% C[E[(ccm)]] k0 (false,nil) equiv C[(ccm)] k0 (flag,chi(E))
+% C[E[(ccm)]] k0 (false,nil) equiv C[(ccm)] k0 (\xi(E),chi(E))
 %by induction
 
 % C[(wcm e0 e1)] k0 (false,nil)
@@ -1421,12 +1422,12 @@ A program \scheme'p' must take the form \scheme|(e_0 e_1)|, \scheme|(wcm e_0 e_1
 
 %C[E[(wcm v0 e1)]] k0 chi(E')\equiv
 
-By some lemma, we know that $((C[(e_0\,e_1)] k) (flag,\chi(E)))\rightarrow_{\lambda_{v}}^{*}((C[v]\,k)\,(flag,\chi(E)))$ iff $E[(e_0\,e_1)]\rightarrow_{\lambda_{cm}}^{*}v$
+By some lemma, we know that $((C[(e_0\,e_1)] k) (\xi(E),\chi(E)))\rightarrow_{\lambda_{v}}^{*}((C[v]\,k)\,(\xi(E),\chi(E)))$ iff $E[(e_0\,e_1)]\rightarrow_{\lambda_{cm}}^{*}v$
 \end{proof}
 
 \begin{proof}[Case \scheme|(ccm)|]
 
-% if E[(ccm)] -> E[chi(E)], then C[E[(ccm)]] ? ? equiv C[(ccm)] ? (flag,chi(E))
+% if E[(ccm)] -> E[chi(E)], then C[E[(ccm)]] ? ? equiv C[(ccm)] ? (\xi(E),chi(E))
 
 % 
 
@@ -1444,7 +1445,7 @@ By some lemma, we know that $((C[(e_0\,e_1)] k) (flag,\chi(E)))\rightarrow_{\lam
 prove tail position flag gives correct behavior
 prove tail position flag is correct
 prove chi(E) is correct by appeal to steps and applications
-prove C[(wcm e0 e1)] k (flag,C[chi(E)] equiv C[e1] k (true,C[chi(E')]) where E[(wcm v0 e1)]=E'[e1]
+prove C[(wcm e0 e1)] k (xi(E),C[chi(E)] equiv C[e1] k (true,C[chi(E')]) where E[(wcm v0 e1)]=E'[e1]
 
 $\mathcal{A}$ is a transformation with the property that $\mathcal{A}[(\mathcal{C}[e_0]\,\mathcal{C}[e_1])]=\mathcal{C}[(e_0\,e_1)]$.
 
@@ -1476,7 +1477,7 @@ E[e_0p_x_v_1]
 
 
 \begin{schemedisplay}
-((C[(e_0 e_1)] k0) ((PAIR flag) CchiE))
+((C[(e_0 e_1)] k0) ((PAIR xiE) CchiE))
 \end{schemedisplay}
 
 app0
@@ -1494,7 +1495,7 @@ app0
                 ((Ce_1
                   (lambda (f)
                     (((e f) k) m))) n))) n)))))))
-  k0) ((PAIR flag) CchiE))
+  k0) ((PAIR xiE) CchiE))
 \end{schemedisplay}
 
 app1
@@ -1511,13 +1512,13 @@ app1
              ((Ce_1
                (lambda (f)
                  (((e f) k0) m))) n))) n))))))
- ((PAIR flag) CchiE))
+ ((PAIR xiE) CchiE))
 \end{schemedisplay}
 
 app2
 \begin{schemedisplay}
 ((lambda (k)
-   (k (SND ((PAIR flag) CchiE))))
+   (k (SND ((PAIR xiE) CchiE))))
  (lambda (s)
    ((lambda (k)
       (k ((PAIR FALSE) s)))
@@ -1526,7 +1527,7 @@ app2
         (lambda (e)
           ((Ce_1
             (lambda (f)
-              (((e f) k0) ((PAIR flag) CchiE)))) n))) n)))))
+              (((e f) k0) ((PAIR xiE) CchiE)))) n))) n)))))
 \end{schemedisplay}
 
 app3
@@ -1539,8 +1540,8 @@ app3
         (lambda (e)
           ((Ce_1
             (lambda (f)
-              (((e f) k0) ((PAIR flag) CchiE)))) n))) n))))
- (SND ((PAIR flag) CchiE)))
+              (((e f) k0) ((PAIR xiE) CchiE)))) n))) n))))
+ (SND ((PAIR xiE) CchiE)))
 \end{schemedisplay}
 
 app4
@@ -1553,7 +1554,7 @@ app4
         (lambda (e)
           ((Ce_1
             (lambda (f)
-              (((e f) k0) ((PAIR flag) CchiE)))) n))) n))))
+              (((e f) k0) ((PAIR xiE) CchiE)))) n))) n))))
  CchiE)
 \end{schemedisplay}
 
@@ -1566,7 +1567,7 @@ app5
      (lambda (e)
        ((Ce_1
          (lambda (f)
-           (((e f) k0) ((PAIR flag) CchiE)))) n))) n)))
+           (((e f) k0) ((PAIR xiE) CchiE)))) n))) n)))
 \end{schemedisplay}
 
 app6
@@ -1576,7 +1577,7 @@ app6
      (lambda (e)
        ((Ce_1
          (lambda (f)
-           (((e f) k0) ((PAIR flag) CchiE)))) n))) n))
+           (((e f) k0) ((PAIR xiE) CchiE)))) n))) n))
  ((PAIR FALSE) CchiE))
 \end{schemedisplay}
 
@@ -1586,7 +1587,7 @@ app7
   (lambda (e)
     ((Ce_1
       (lambda (f)
-        (((e f) k0) ((PAIR flag) CchiE))))
+        (((e f) k0) ((PAIR xiE) CchiE))))
      ((PAIR FALSE) CchiE))))
  ((PAIR FALSE) CchiE))
 \end{schemedisplay}
@@ -1597,7 +1598,7 @@ application operator error
 ((lambda (e)
    ((Ce_1
      (lambda (f)
-       (((e f) k0) ((PAIR flag) CchiE))))
+       (((e f) k0) ((PAIR xiE) CchiE))))
     ((PAIR FALSE) CchiE))) error)
 \end{schemedisplay}
 
@@ -1610,7 +1611,7 @@ app8
 \begin{schemedisplay}
 ((Ce_1
   (lambda (f)
-    ((((lambda (x) Ce_0p) f) k0) ((PAIR flag) CchiE))))
+    ((((lambda (x) Ce_0p) f) k0) ((PAIR xiE) CchiE))))
  ((PAIR FALSE) CchiE))
 \end{schemedisplay}
 
@@ -1618,7 +1619,7 @@ app9e'
 application operand error
 \begin{schemedisplay}
 ((lambda (f)
-   ((((lambda (x) Ce_0p) f) k0) ((PAIR flag) CchiE))) error)
+   ((((lambda (x) Ce_0p) f) k0) ((PAIR xiE) CchiE))) error)
 \end{schemedisplay}
 
 app10e'
@@ -1628,15 +1629,15 @@ error
 
 app9
 \begin{schemedisplay}
-((((lambda (x) Ce_0p) (lambda (y) Ce_1p)) k0) ((PAIR flag) CchiE))
+((((lambda (x) Ce_0p) (lambda (y) Ce_1p)) k0) ((PAIR xiE) CchiE))
 \end{schemedisplay}
 
 \begin{schemedisplay}
-((Ce_0p_x_Ce_1p k0) ((PAIR flag) CchiE))
+((Ce_0p_x_Ce_1p k0) ((PAIR xiE) CchiE))
 \end{schemedisplay}
 
 \begin{schemedisplay}
-((C[e_0p_x_v_1] k0) ((PAIR flag) CchiE))
+((C[e_0p_x_v_1] k0) ((PAIR xiE) CchiE))
 \end{schemedisplay}
 
 wcm not in tail position
@@ -2693,22 +2694,22 @@ E[chiE]
 \end{schemedisplay}
 
 \begin{schemedisplay}
-((C[(ccm)] k0) ((PAIR flag) CchiE))
+((C[(ccm)] k0) ((PAIR xiE) CchiE))
 \end{schemedisplay}
 
 ccm0
 \begin{schemedisplay}
-(((lambda (k) (lambda (m) (((SND m) k) (lambda (z) z)))) k0) ((PAIR flag) CchiE))
+(((lambda (k) (lambda (m) (((SND m) k) (lambda (z) z)))) k0) ((PAIR xiE) CchiE))
 \end{schemedisplay}
 
 ccm1
 \begin{schemedisplay}
-((lambda (m) (((SND m) k0) (lambda (z) z))) ((PAIR flag) CchiE))
+((lambda (m) (((SND m) k0) (lambda (z) z))) ((PAIR xiE) CchiE))
 \end{schemedisplay}
 
 ccm2
 \begin{schemedisplay}
-(((SND ((PAIR flag) CchiE)) k0) (lambda (z) z))
+(((SND ((PAIR xiE) CchiE)) k0) (lambda (z) z))
 \end{schemedisplay}
 
 ccm3
@@ -2741,17 +2742,17 @@ E[error]
 \end{schemedisplay}
 
 \begin{schemedisplay}
-((C[x] k0) ((PAIR flag) CchiE))
+((C[x] k0) ((PAIR xiE) CchiE))
 \end{schemedisplay}
 
 x0
 \begin{schemedisplay}
-(((lambda (k) (lambda (m) (k x))) k0) ((PAIR flag) CchiE))
+(((lambda (k) (lambda (m) (k x))) k0) ((PAIR xiE) CchiE))
 \end{schemedisplay}
 
 x1
 \begin{schemedisplay}
-((lambda (m) (k0 x)) ((PAIR flag) CchiE))
+((lambda (m) (k0 x)) ((PAIR xiE) CchiE))
 \end{schemedisplay}
 
 x2
@@ -2770,17 +2771,17 @@ E[v]
 \end{schemedisplay}
 
 \begin{schemedisplay}
-((Cv_0 k0) ((PAIR flag) CchiE))
+((Cv_0 k0) ((PAIR xiE) CchiE))
 \end{schemedisplay}
 
 v0
 \begin{schemedisplay}
-(((lambda (k) (lambda (m) (k (lambda (x) Ce_0p)))) k0) ((PAIR flag) CchiE))
+(((lambda (k) (lambda (m) (k (lambda (x) Ce_0p)))) k0) ((PAIR xiE) CchiE))
 \end{schemedisplay}
 
 v1
 \begin{schemedisplay}
-((lambda (m) (k0 (lambda (x) Ce_0p))) ((PAIR flag) CchiE))
+((lambda (m) (k0 (lambda (x) Ce_0p))) ((PAIR xiE) CchiE))
 \end{schemedisplay}
 
 v2
