@@ -1226,14 +1226,133 @@ be observed by the original $\lambda_{cm}$ program.
 \setspecialsymbol{NIL}{$\mathbf{nil}$}
 
 \setspecialsymbol{e_0}{$e_0$}
-\setspecialsymbol{v_0}{$v_0$}
+\setspecialsymbol{e_0p}{$e'_0$}
+\setspecialsymbol{Ce_0}{$\mathcal{C}[e_0]$}
+\setspecialsymbol{Ce_0p}{$\mathcal{C}[e'_0]$}
 \setspecialsymbol{e_1}{$e_1$}
+\setspecialsymbol{Ce_1}{$\mathcal{C}[e_1]$}
+\setspecialsymbol{Ce_1p}{$\mathcal{C}[e'_1]$}
+\setspecialsymbol{Cv}{$\mathcal{C}[v]$}
+\setspecialsymbol{v_0}{$v_0$}
+\setspecialsymbol{Cv_0}{$\mathcal{C}[v_0]$}
+\setspecialsymbol{Cv_0p}{$\mathcal{C}[v'_0]$}
 \setspecialsymbol{v_1}{$v_1$}
+\setspecialsymbol{T}{$\mathcal{A}$}
+\setspecialsymbol{C}{$\mathcal{C}$}
+\setspecialsymbol{hole}{$\bullet$}
+\setspecialsymbol{Ce_0p_x_Ce_1p}{$\mathcal{C}[e'_0][x\leftarrow(\lambda\,(y)\,\mathcal{C}[e'_1])]$}
+\setspecialsymbol{e_0p_x_v_1}{$e'_0[x\leftarrow v_1]$}
+\setspecialsymbol{Cz}{$\mathcal{C}[z]$}
+\setspecialsymbol{CE}{$\mathcal{C}[E]$}
+\setspecialsymbol{xiE}{$\xi(E)$}
+\setspecialsymbol{chiE}{$\chi(E)$}
+\setspecialsymbol{CchiE}{$\mathcal{C}[\chi(E)]$}
 
 Define \scheme{TRUE}=\scheme|(lambda (x) (lambda (y) x))|, \scheme{FALSE}=\scheme|(lambda
 (x) (lambda (y) y))|, \scheme{PAIR}=\scheme|(lambda a (lambda b (lambda (z) ((z a) b))))|,
 \scheme{FST}=\scheme|(lambda (p) (p TRUE))|, \scheme{SND}=\scheme|(lambda (p) (p FALSE))|,
 and \scheme{NIL}=\scheme{FALSE}.
+
+terms
+\begin{schemedisplay}
+T[(e_0 e_1)]
+(lambda (k)
+  (lambda (m)
+    ((lambda (k) (k (SND m)))
+     (lambda (s) ((lambda (k) (k ((PAIR FALSE) s)))
+                  (lambda (n) ((e_0
+                                (lambda (e) ((e_1
+                                              (lambda (f) (((e f) k) m)))
+                                             n))) n)))))))
+
+C[(e_0 e_1)]
+(lambda (k)
+  (lambda (m)
+    ((lambda (k) (k (SND m)))
+     (lambda (s) ((lambda (k) (k ((PAIR FALSE) s)))
+                  (lambda (n) ((Ce_0
+                                (lambda (e) ((Ce_1
+                                              (lambda (f) (((e f) k) m)))
+                                             n))) n)))))))
+
+C[(wcm e_0 e_1)]
+(lambda (k)
+  (lambda (m)
+    ((lambda (k) (k (SND m)))
+     (lambda (s) ((lambda (k) (k ((PAIR FALSE) s)))
+                  (lambda (u) ((Ce_0
+                                (lambda (v) ((lambda (k)
+                                               (k (((((s (lambda (z) z))
+                                                      (lambda (z) z))
+                                                     (lambda (x) C[(lambda (y) y)]))
+                                                    (lambda (v) Cv))
+                                                   (lambda (z) z))))
+                                             (lambda (t)
+                                               ((lambda (k) (k (FST m))
+                                                  (lambda (f) ((lambda (k) (k ((f t) s)))
+                                                               (lambda (a)
+                                                                 ((lambda (k)
+                                                                    (k ((PAIR TRUE)
+                                                                        (lambda (k)
+                                                                          (lambda (m)
+                                                                            (k (lambda (z) T[(C[(z v)] a)])))))))
+                                                                  (lambda (m) ((Ce_1 k) m))))))))))) u))))))))
+
+C[(ccm)]
+(lambda (k) (lambda (m) (((SND m) k) (lambda (z) z))))
+
+C[(lambda (x) e_0)]
+(lambda (k) (lambda (m) (k Ce_0)))
+
+C[x]
+(lambda (k) (lambda (m) (k x)))
+
+C[error]
+error
+\end{schemedisplay}
+
+contexts
+\begin{schemedisplay}
+C[hole]
+(lambda (v) (lambda (k) (lambda (m) (k v))))
+
+C[(hole e_1)]
+(lambda (e) ((Ce_1
+              (lambda (f) (((e f) CE) ((PAIR xiE) chiE))))
+             ((PAIR FALSE) chiE)))
+
+C[(v_0 hole)]
+(lambda (f) (((e f) CE) ((PAIR xiE) chiE)))
+
+C[(wcm hole e_1)]
+(lambda (v) ((lambda (k)
+               (k (((((chiE (lambda (z) z))
+                      (lambda (z) z))
+                     (lambda (x) C[(lambda (y) y)]))
+                    (lambda (v) Cv))
+                   (lambda (z) z))))
+             (lambda (t)
+               ((lambda (k) (k (FST ((PAIR xiE) chiE))))
+                (lambda (f) ((lambda (k) (k ((f t) s)))
+                             (lambda (a)
+                               ((lambda (k)
+                                  (k ((PAIR TRUE)
+                                      (lambda (k)
+                                        (lambda (m)
+                                          (k (lambda (z) T[(C[(z v)] a)])))))))
+                                (lambda (m) ((Ce_1 CE) m))))))))))
+
+C[(wcm v_0 hole)]
+CE
+\end{schemedisplay}
+
+% C[e] C[E] (xi(E),chi(E))
+% C[(e0 e1)] C[E] (xi(E),chi(E))
+% C[e0] \e.((Ce1 \f.(((e f) C[E]) (xi(E),chi(E))) (false,chi(E))) (false,chi(E))
+% C[e1] \f.(((C'[v0] f) C[E]) (xi(E),chi(E))) (false,chi(E))
+% assume C'[v0]=\x.C[e0'] so C[e0'][x <- C'[v1]]
+% do something to show that C[e0'][x <- C'[v1]] equiv C[e0'[x <- v1]]?
+
 
 Let
 \[
@@ -1249,23 +1368,6 @@ v     &\text{if $((p\,(\lambda\,(v)\,(\lambda\,(k)\,(\lambda\,(m)\,(k\,v)))))\,(
 \perp &\text{if $((p\,(\lambda\,(v)\,(\lambda\,(k)\,(\lambda\,(m)\,(k\,v)))))\,((\mathbf{pair}\,\mathbf{false})\,\mathcal{C}[\mathbf{nil}]))\rightarrow_{v}^{*}\cdots$}
 \end{cases}
 \]
-
-\setspecialsymbol{T}{$\mathcal{A}$}
-\setspecialsymbol{C}{$\mathcal{C}$}
-\setspecialsymbol{e_0}{$e_0$}
-\setspecialsymbol{e_0p}{$e'_0$}
-\setspecialsymbol{Ce_0}{$\mathcal{C}[e_0]$}
-\setspecialsymbol{Ce_0p}{$\mathcal{C}[e'_0]$}
-\setspecialsymbol{v_0}{$v_0$}
-\setspecialsymbol{Cv_0}{$\mathcal{C}[v_0]$}
-\setspecialsymbol{Cv_0p}{$\mathcal{C}[v'_0]$}
-\setspecialsymbol{Ce_1}{$\mathcal{C}[e_1]$}
-\setspecialsymbol{Ce_1p}{$\mathcal{C}[e'_1]$}
-\setspecialsymbol{Ce_0p_x_Ce_1p}{$\mathcal{C}[e'_0][x\leftarrow(\lambda\,(y)\,\mathcal{C}[e'_1])]$}
-\setspecialsymbol{e_0p_x_v_1}{$e'_0[x\leftarrow v_1]$}
-\setspecialsymbol{Cz}{$\mathcal{C}[z]$}
-\setspecialsymbol{chiE}{$\chi(E)$}
-\setspecialsymbol{CchiE}{$\mathcal{C}[\chi(E)]$}
 
 \newtheorem{lemma}{Lemma}
 \newtheorem{theorem}{Theorem}
@@ -1387,11 +1489,114 @@ $\mathcal(({C}[(e_0\,e_1)]\,k)\,((\mathbf{pair}\,\xi)\,\chi(E)))$
 % assume e0 -> v0 = \x., e1 -> v1
 \end{proof}
 
+\begin{lemma}
+For all contexts $E$, $\xi(E)$ is correct.
+\end{lemma}
+
+We proceed with a proof by induction over $E$.
+
+\begin{proof}[Case $\bullet$]
+If $E=\bullet$
+\end{proof}
+
+\begin{proof}[Case $(\bullet\,e_1)$]
+Assume it holds for $E$. $\chi(E[(\bullet\,e_1)])=\chi(E)$.
+\end{proof}
+
+\begin{proof}[Case $(e_0\,\bullet)$]
+Assume it holds for $E$. $\chi(E[(e_0\,\bullet)])=\chi(E)$.
+\end{proof}
+
+\begin{proof}[Case $(\mathrm{wcm}\,\bullet\,e_1)$]
+Assume it holds for $E$. $\chi(E[(\mathrm{wcm}\,\bullet\,e_1)])=\chi(E)$.
+\end{proof}
+
+\begin{proof}[Case $(\mathrm{wcm}\,v_0\,\bullet)$]
+Assume it holds for $E$ where $E\ne E'[(\mathrm{wcm}\,v\,\bullet)]$ for any $E'$ or $v$.
+$\chi(E[(\mathrm{wcm}\,v_0\,\bullet)])=v_0 :\chi(E)$.
+\end{proof}
+
+\begin{lemma}
+For all contexts $E$, $\chi(E)$ is correct.
+\end{lemma}
+
+We proceed with a proof by induction over $E$.
+
+\begin{proof}[Case $\bullet$]
+In the base case, it is correct.
+\end{proof}
+
+\begin{proof}[Case $(\bullet\,e_1)$]
+Assume it holds for $E$. $\chi(E[(\bullet\,e_1)])=\chi(E)$.
+\end{proof}
+
+\begin{proof}[Case $(e_0\,\bullet)$]
+Assume it holds for $E$. $\chi(E[(e_0\,\bullet)])=\chi(E)$.
+\end{proof}
+
+\begin{proof}[Case $(\mathrm{wcm}\,\bullet\,e_1)$]
+Assume it holds for $E$. $\chi(E[(\mathrm{wcm}\,\bullet\,e_1)])=\chi(E)$.
+\end{proof}
+
+\begin{proof}[Case $(\mathrm{wcm}\,v\,(\mathrm{wcm}\,v_0\,\bullet))$]
+Assume it holds for $E$. 
+$\chi(E[(\mathrm{wcm}\,v\,(\mathrm{wcm}\,v_0\,\bullet))])=v_0 :\chi(E)$.
+\end{proof}
+
+\begin{proof}[Case $(\mathrm{wcm}\,v_0\,\bullet)$]
+Assume it holds for $E$ where $E\ne E'[(\mathrm{wcm}\,v\,\bullet)]$ for any $E'$ or $v$.
+$\chi(E[(\mathrm{wcm}\,v_0\,\bullet)])=v_0 :\chi(E)$.
+\end{proof}
+
+Let $e_0\equiv e_1$ signify there exists $e'$ such that $e_0\rightarrow_{\lambda_v}^{*}e'$ and $e_1\rightarrow_{\lambda_v}^{*}e'$.
+
+\begin{lemma}
+For all contexts $E$, $((\mathcal{C}[E[e]]\,k')\,((\mathbf{pair}\,\mathbf{false})\,\mathbf{nil}))\equiv((\mathcal{C}[e]\,k'')\,((\mathbf{pair}\,\xi(E))\,\chi(E)))$ for some continuation $k''$.
+\end{lemma}
+
+We proceed by induction on the structure of $E$.
+
+\begin{proof}[Case $\bullet$]
+If $E=\bullet$, $\xi(E)=\mathbf{false}$.
+\end{proof}
+
+\begin{proof}[Case $(\bullet\,e_1)$]
+
+\end{proof}
+
 \newtheorem*{maintheorem}{Correctness of $\mathcal{C}$}
 \begin{maintheorem}
 For all programs $p\in\lambda_{cm}$, $\mathcal{C}[\mathrm{eval}_{cm}(p)]=\mathrm{eval}_{v}(\mathcal{C}[p])$.
 \end{maintheorem}
 A program \scheme'p' must take the form \scheme|(e_0 e_1)|, \scheme|(wcm e_0 e_1)|, \scheme|(ccm)|, \scheme{v_0}, or \scheme'x'. We will consider each case.
+
+% C[(\x.x 1)] k (false,nil) -> C[\x.x] k0 (false,nil) -> C[1] k1
+% k /is/ the context (continuation)
+% encoding of * is \v.\k.\m.(k v)
+% encoding of (* e1) is
+% \e.((C[e1] \f.(((e f) C[E]) (xi(E),chi(E))) (false,chi(E)))
+% where k is the encoding of the parent context
+% encoding of (v1 *) is
+% \f.(((C'[v0] f) k) (xi(E),chi(E)))
+% encoding of (wcm * e1) is
+% \v.(\k.(k ((((chi(E) \x.x) \x.x) \x.C[\y.y]) \v.C[v]) \x.x)
+%  \t.(\k.(k xi(E)))
+%   ...
+% encoding of (wcm v0 *)
+% C[E] (tail!)
+
+% C[*] = \k.\m.(k *)
+% C[((e0 e1) e2)] = C[e0] C[((* e1) e2)] ... 
+% \e.((C[e1] \f.(((e f) \e.((C[e2] \f.(((e f) C[E]
+
+% C[(e0 e1)] C[*] (xi(E),chi(E)) ->
+% C[e0] C[E] (xi(E),chi(E))
+% if E[e0] -> E[v0], then C[e0] C[E] (xi(E),chi(E)) -> C[v0] C[E] 
+
+%C[(wcm 1 (ccm))] k (false,nil) = C[*[(wcm 1 (ccm))]] k (xi(*),chi(*)) ->* 
+%C[1] k0 (false,[])
+%C[(ccm)] k (true,[1])
+
 
 % C[(e_0 e_1)] k0 chi(E) -> C[e'_0[x <- v1]] k0 chi(E)
 % C[(wcm v0 (wcm e1 e2))] k0 chi(E) -> C[v2] k0 chi(E') where E[(wcm v0 (wcm v1 e2))] -> E[(wcm v1 e2)] -> 
