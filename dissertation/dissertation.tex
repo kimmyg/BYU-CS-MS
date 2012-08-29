@@ -1606,73 +1606,34 @@ For all programs $p\in\lambda_{cm}$, $\mathcal{C}[\mathrm{eval}_{cm}(p)]=\mathrm
 A program \scheme'p' must take the form \scheme|(e_0 e_1)|, \scheme|(wcm e_0 e_1)|,
 \scheme|(ccm)|, \scheme{v_0}, or \scheme'x'. We will consider each case.
 
-% C[(\x.x 1)] k (false,nil) -> C[\x.x] k0 (false,nil) -> C[1] k1
-% k /is/ the context (continuation)
-% encoding of * is \v.\k.\m.(k v)
-% encoding of (* e1) is
-% \e.((C[e1] \f.(((e f) C[E]) (xi(E),chi(E))) (false,chi(E)))
-% where k is the encoding of the parent context
-% encoding of (v1 *) is
-% \f.(((C'[v0] f) k) (xi(E),chi(E)))
-% encoding of (wcm * e1) is
-% \v.(\k.(k ((((chi(E) \x.x) \x.x) \x.C[\y.y]) \v.C[v]) \x.x)
-%  \t.(\k.(k xi(E)))
-%   ...
-% encoding of (wcm v0 *)
-% C[E] (tail!)
-
-% C[*] = \k.\m.(k *)
-% C[((e0 e1) e2)] = C[e0] C[((* e1) e2)] ... 
-% \e.((C[e1] \f.(((e f) \e.((C[e2] \f.(((e f) C[E]
-
-% C[(e0 e1)] C[*] (xi(E),chi(E)) ->
-% C[e0] C[E] (xi(E),chi(E))
-% if E[e0] -> E[v0], then C[e0] C[E] (xi(E),chi(E)) -> C[v0] C[E] 
-
-%C[(wcm 1 (ccm))] k (false,nil) = C[*[(wcm 1 (ccm))]] k (xi(*),chi(*)) ->* 
-%C[1] k0 (false,[])
-%C[(ccm)] k (true,[1])
-
-
-% C[(e_0 e_1)] k0 chi(E) -> C[e'_0[x <- v1]] k0 chi(E)
-% C[(wcm v0 (wcm e1 e2))] k0 chi(E) -> C[v2] k0 chi(E') where E[(wcm v0 (wcm v1 e2))] -> E[(wcm v1 e2)] -> 
-
-
-% suppose we have E[(e_0 e_1)]
-% C[E[(e_0 e_1)]] k0 (false,nil) equiv C[(e_0 e_1)] k0 (\xi(E),chi(E))
-% -> C[e2] k0 (\xi(E),chi(E))
-
-% C[E[(ccm)]] k0 (false,nil) equiv C[(ccm)] k0 (\xi(E),chi(E))
-%by induction
-
-% C[(wcm e0 e1)] k0 (false,nil)
-% C[e0] k1 (false,nil) -> v1
-% C[(wcm v1 e1)] k0 (false,nil)
-% C[(wcm v1 *)[e1]] k0 (false,nil)
-% C[e1] k0 (true,[v1])
-
-% if   C[E[(wcm e0 e1)]] k0 (false,nil) equiv C[(wcm e0 e1)] k0 (false,chi(E))
-% then C[E(wcm * e1)[e0]] k0 (false,nil) equiv C[e0] k1 (true,chi(E')) where E'=E(wcm * e1)
-% and  C[E(wcm v1 *)[e1]] k0 (false,nil) equiv C[e1] k0 (true,chi(E'')) where E''=E(wcm v1 *)
 
 \begin{proof}[Case \scheme|(e_0 e_1)|]
 
-%$((\mathcal{C}[E(e_0\,e_1)]\,k_0$
+% ((C[(e0 e1)] C[E]) ((pair xi(E)) chi(E)))
+% ((C[(e0 e1)] C[*]) ((pair false) C[nil])) ->
+% ((C[e0] C[(* e1)]) ((pair false) C[nil])) ->
+% ((C[e1] C[(v0 *)]) ((pair false) C[nil])) ->
+% ((C[e'0[x <- v1]] C[*]) ((pair false) C[nil])
+% mechanically show these steps (with C[E], xi(E), and chi(E))
+% assume e0 and e1 reduce to correct values by structural induction
 
-%if E[e0] -> E[v0] then C[E[e0]]=C[E][C[e0]]=C[E][C[v0]]=C[E[v0]]
+% ((C[(wcm e0 e1)] C[*]) ((pair false) C[nil])) ->
+% ((C[e0] C[(wcm * e1)]) ((pair false) C[nil])) ->
+% ((C[e1] C[*]) ((pair true) C[((pair v0) nil)])) ->
 
-%C[E[(wcm v0 e1)]] k0 chi(E')\equiv
+% ((C[(ccm)] C[*]) ((pair false) C[nil])) ->
+% (C[*] C'[nil]) ->
+% C[nil]
+
+% ((C[v0] C[*]) ((pair false) C[nil])) ->
+% (C[*] C'[v0]) ->
+% C[v0] 
 
 By some lemma, we know that $((C[(e_0\,e_1)] k) (\xi(E),\chi(E)))\rightarrow_{\lambda_{v}}^{*}((C[v]\,k)\,(\xi(E),\chi(E)))$ iff $E[(e_0\,e_1)]\rightarrow_{\lambda_{cm}}^{*}v$
 \end{proof}
 
 \begin{proof}[Case \scheme|(ccm)|]
 
-% if E[(ccm)] -> E[chi(E)], then C[E[(ccm)]] ? ? equiv C[(ccm)] ? (\xi(E),chi(E))
-
-% 
-
-% by inductive hypothesis, C[E[(ccm)]] k (false,nil)
 
 \scheme|(k0 (lambda (x) Cv_0p))|
 
@@ -1682,11 +1643,6 @@ By some lemma, we know that $((C[(e_0\,e_1)] k) (\xi(E),\chi(E)))\rightarrow_{\l
 
 \scheme|Cv_0|
 \end{proof}
-
-prove tail position flag gives correct behavior
-prove tail position flag is correct
-prove chi(E) is correct by appeal to steps and applications
-prove C[(wcm e0 e1)] k (xi(E),C[chi(E)] equiv C[e1] k (true,C[chi(E')]) where E[(wcm v0 e1)]=E'[e1]
 
 $\mathcal{A}$ is a transformation with the property that $\mathcal{A}[(\mathcal{C}[e_0]\,\mathcal{C}[e_1])]=\mathcal{C}[(e_0\,e_1)]$.
 
