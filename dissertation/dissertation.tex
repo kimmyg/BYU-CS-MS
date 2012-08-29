@@ -1491,15 +1491,18 @@ For all programs $p\in\lambda_{cm}$, $\mathcal{C}[\mathrm{eval}_{cm}(p)]=\mathrm
 \end{maintheorem}
 
 \begin{proof}
-Each $p\in\lambda_{cm}$ is of the form \scheme|(e_0 e_1)|, \scheme|(wcm e_0 e_1)|, \scheme|(ccm)|, \scheme{v_0}, or \scheme'x'.
 
-Consider $((p\,\mathcal{C}[\bullet])\,((\mathbf{pair}\,\xi(\bullet))\,\mathcal{C}[\chi(\bullet)]))$. By some lemma, we have that $E[e]\rightarrow_{\lambda_{cm}} v\Rightarrow((\mathcal{C}[e]\,\mathcal{C}[E])\,((\mathbf{pair}\,\xi(E))\,\chi(E)))\rightarrow_{\lambda_v} \mathcal{C}[v]$. Then $\bullet[p]\rightarrow_{\lambda_{cm}}v\Rightarrow ((p\,\mathcal{C}[\bullet])\,((\mathbf{pair}\,\xi(\bullet))\,\mathcal{C}[\chi(\bullet)]))\rightarrow_{\lambda_v} \mathcal{C}[v]$
+\begin{align*}
+p\rightarrow_{\lambda_{cm}}v &\Rightarrow\mathrm{eval}_{cm}(p)=v &\text{(by definition of $\mathrm{eval}_{cm}$)}\\
+                             &\Rightarrow\mathcal{C}[\mathrm{eval}_{cm}(p)]=\mathcal{C}[v] &\text{(by well-definedness of $\mathcal{C}$)}
+\end{align*}
 
-Note that $p=\bullet[p]$.
-
-$p\rightarrow_{\lambda_{cm}}v\Rightarrow\mathrm{eval}_{cm}(p)=v\Rightarrow\mathcal{C}[\mathrm{eval}_{cm}(p)]=\mathcal{C}[v]$
-
-$p\rightarrow_{\lambda_{cm}}v\Rightarrow ((\mathcal{C}[p]\,\mathcal{C}[\bullet])\,((\mathbf{pair}\,\xi(\bullet))\,\mathcal{C}[\chi(\bullet)]))\rightarrow_{\lambda_v} \mathcal{C}[v]\Rightarrow\mathrm{eval}_{v}(\mathcal{C}[p])=\mathcal{C}[v]$
+\begin{align*}
+p\rightarrow_{\lambda_{cm}}v &\Rightarrow\bullet[p]\rightarrow_{\lambda_{cm}}v &\text{(since $p=\bullet[p]$)}\\
+                             &\Rightarrow((\mathcal{C}[p]\,\mathcal{C}[\bullet])\,((\mathbf{pair}\,\xi(\bullet))\,\mathcal{C}[\chi(\bullet)]))\rightarrow_{\lambda_v} \mathcal{C}[v] &\text{(by the Great Lemma)}\\
+                             &\Rightarrow((\mathcal{C}[p]\,(\lambda\,(v)\,\mathcal{C}[v]))\,((\mathbf{pair}\,\mathbf{false})\,\mathcal{C}[\mathbf{nil}]))\rightarrow_{\lambda_v} \mathcal{C}[v] &\text{(by definitions x, y, and z)}\\
+                             &\Rightarrow\mathrm{eval}_{v}(\mathcal{C}[p])=\mathcal{C}[v] &\text{(by definition of $\mathrm{eval}_v$)}
+\end{align*}
 
 Therefore, $\mathcal{C}[\mathrm{eval}_{cm}(p)]=\mathrm{eval}_{v}(\mathcal{C}[p])$.
 \end{proof}
