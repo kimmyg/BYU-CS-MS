@@ -1236,6 +1236,7 @@ be observed by the original $\lambda_{cm}$ program.
 \setspecialsymbol{v_0}{$v_0$}
 \setspecialsymbol{Cv_0}{$\mathcal{C}[v_0]$}
 \setspecialsymbol{Cv_0p}{$\mathcal{C}[v'_0]$}
+\setspecialsymbol{Cpv_0}{$\mathcal{C}'[v_0]$}
 \setspecialsymbol{v_1}{$v_1$}
 \setspecialsymbol{T}{$\mathcal{A}$}
 \setspecialsymbol{C}{$\mathcal{C}$}
@@ -1314,17 +1315,17 @@ error
 contexts
 \begin{schemedisplay}
 C[hole]
-(lambda (v) (lambda (k) (lambda (m) (k v))))
+(lambda (v) C[v])
 
-C[(hole e_1)]
+C[E[(hole e_1)]]
 (lambda (e) ((Ce_1
               (lambda (f) (((e f) CE) ((PAIR xiE) chiE))))
              ((PAIR FALSE) chiE)))
 
-C[(v_0 hole)]
-(lambda (f) (((e f) CE) ((PAIR xiE) chiE)))
+C[E[(v_0 hole)]]
+(lambda (f) (((Cpv_0 f) CE) ((PAIR xiE) chiE)))
 
-C[(wcm hole e_1)]
+C[E[(wcm hole e_1)]]
 (lambda (v) ((lambda (k)
                (k (((((chiE (lambda (z) z))
                       (lambda (z) z))
@@ -1342,7 +1343,7 @@ C[(wcm hole e_1)]
                                           (k (lambda (z) T[(C[(z v)] a)])))))))
                                 (lambda (m) ((Ce_1 CE) m))))))))))
 
-C[(wcm v_0 hole)]
+C[E[(wcm v_0 hole)]]
 CE
 \end{schemedisplay}
 
@@ -1353,6 +1354,40 @@ CE
 % assume C'[v0]=\x.C[e0'] so C[e0'][x <- C'[v1]]
 % do something to show that C[e0'][x <- C'[v1]] equiv C[e0'[x <- v1]]?
 
+% values are of the form \x.C[e]
+
+% ((C[p] \v.C[v]) ((pair false) nil))
+% ((C[(e0 e1)] \v.C[v]) ((pair false) nil)) ->
+% ((C[e0] \e.((C[e1] \f.(((e f) \v.C[v]) ((pair false) nil))))) ((pair false) nil))
+% ((C[e1] \f.(((\x.C[e0'] f) \v.C[v]) ((pair false) nil))))
+% (((\x.C[e0'] \y.C[e1']) \v.C[v]) ((pair false) nil))
+% ((C[e0'][x <- \y.C[e1']] \k.C[v]) ((pair false) nil))
+% ((C[e0'[x <- v1]] \k.C[v]) ((pair false) nil))
+
+% (fact-tr 3 1)
+% (if (= 3 0) 1 (wcm 3 (fact-tr 2 (* 3 1))))
+% (wcm 3 (fact-tr 2 (* 3 1)))
+% (wcm 3 (fact-tr 2 3))
+% (wcm 3 (if (= 2 0) 1 (wcm 2 (fact-tr 1 (* 2 3)))))
+% (wcm 3 (wcm 2 (fact-tr 1 (* 2 3))
+% (wcm 2 (fact-tr 1 (* 2 3)))
+% (wcm 2 (fact-tr 1 6))
+% (wcm 2 (if (= 1 0) 1 (wcm 1 (fact-tr 0 (* 1 6)))))
+% (wcm 2 (wcm 1 (fact-tr 0 (* 1 6))))
+% (wcm 1 (fact-tr 0 (* 1 6)))
+% (wcm 1 (fact-tr 0 6))
+% (wcm 1 (if (= 0 0) 6 (fact-tr (- 0 1) (* 0 6)))
+% (wcm 1 6)
+% 6
+
+
+%C[(hole e_1)]
+%(lambda (e) ((Ce_1
+%              (lambda (f) (((e f) CE) ((PAIR xiE) chiE))))
+%             ((PAIR FALSE) chiE)))
+
+%C[(v_0 hole)]
+%(lambda (f) (((e f) CE) ((PAIR xiE) chiE)))
 
 Let
 \[
@@ -1364,8 +1399,8 @@ v     &\text{if $p\rightarrow_{cm}^{*}v$}\\
 and
 \[
 \mathrm{eval}_{v}(p)=\begin{cases}
-v     &\text{if $((p\,(\lambda\,(v)\,(\lambda\,(k)\,(\lambda\,(m)\,(k\,v)))))\,((\mathbf{pair}\,\mathbf{false})\,\mathcal{C}[\mathbf{nil}]))\rightarrow_{v}^{*}v$}\\
-\perp &\text{if $((p\,(\lambda\,(v)\,(\lambda\,(k)\,(\lambda\,(m)\,(k\,v)))))\,((\mathbf{pair}\,\mathbf{false})\,\mathcal{C}[\mathbf{nil}]))\rightarrow_{v}^{*}\cdots$}
+v     &\text{if $((p\,(\lambda\,(v)\,\mathcal{C}[v]))\,((\mathbf{pair}\,\mathbf{false})\,\mathcal{C}[\mathbf{nil}]))\rightarrow_{v}^{*}v$}\\
+\perp &\text{if $((p\,(\lambda\,(v)\,\mathcal{C}[v]))\,((\mathbf{pair}\,\mathbf{false})\,\mathcal{C}[\mathbf{nil}]))\rightarrow_{v}^{*}\cdots$}
 \end{cases}
 \]
 
@@ -1548,7 +1583,7 @@ Assume it holds for $E$ where $E\ne E'[(\mathrm{wcm}\,v\,\bullet)]$ for any $E'$
 $\chi(E[(\mathrm{wcm}\,v_0\,\bullet)])=v_0 :\chi(E)$.
 \end{proof}
 
-Let $e_0\equiv e_1$ signify there exists $e'$ such that $e_0\rightarrow_{\lambda_v}^{*}e'$ and $e_1\rightarrow_{\lambda_v}^{*}e'$.
+Let $e_0\equiv_v e_1$ signify there exists $e'$ such that $e_0\rightarrow_{\lambda_v}^{*}e'$ and $e_1\rightarrow_{\lambda_v}^{*}e'$.
 
 \begin{lemma}
 For all contexts $E$, $((\mathcal{C}[E[e]]\,k')\,((\mathbf{pair}\,\mathbf{false})\,\mathbf{nil}))\equiv((\mathcal{C}[e]\,k'')\,((\mathbf{pair}\,\xi(E))\,\chi(E)))$ for some continuation $k''$.
@@ -1568,7 +1603,8 @@ If $E=\bullet$, $\xi(E)=\mathbf{false}$.
 \begin{maintheorem}
 For all programs $p\in\lambda_{cm}$, $\mathcal{C}[\mathrm{eval}_{cm}(p)]=\mathrm{eval}_{v}(\mathcal{C}[p])$.
 \end{maintheorem}
-A program \scheme'p' must take the form \scheme|(e_0 e_1)|, \scheme|(wcm e_0 e_1)|, \scheme|(ccm)|, \scheme{v_0}, or \scheme'x'. We will consider each case.
+A program \scheme'p' must take the form \scheme|(e_0 e_1)|, \scheme|(wcm e_0 e_1)|,
+\scheme|(ccm)|, \scheme{v_0}, or \scheme'x'. We will consider each case.
 
 % C[(\x.x 1)] k (false,nil) -> C[\x.x] k0 (false,nil) -> C[1] k1
 % k /is/ the context (continuation)
