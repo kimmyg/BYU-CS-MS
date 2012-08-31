@@ -912,11 +912,11 @@ E[(\mathrm{ccm})]                           &\rightarrow E[\chi(E)]
 
 \begin{figure}
 \begin{align*}
-\chi([])                   &= \mathrm{empty}\\
-\chi((E\,e))               &= \chi(E)\\
-\chi((v\,E))               &= \chi(E)\\
-\chi((\mathrm{wcm}\,E\,e)) &= \chi(E)\\
-\chi((\mathrm{wcm}\,v\,E)) &= v : \chi(E)
+\chi(\bullet)                       &= \mathrm{nil}\\
+\chi(E[(\bullet\,e)])               &= \chi(E)\\
+\chi(E[(v\,\bullet)])               &= \chi(E)\\
+\chi(E[(\mathrm{wcm}\,\bullet\,e)]) &= \chi(E)\\
+\chi(E[(\mathrm{wcm}\,v\,\bullet)]) &= v : \chi(E)
 \end{align*}
 \caption{Definition of $\chi$ metafunction}
 \label{chi-metafunction}
