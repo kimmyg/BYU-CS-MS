@@ -1490,13 +1490,58 @@ For all values $(\lambda\,(x)\,e)$, $(\mathcal{C}[\bullet]\,\mathcal{C}'[(\lambd
 For all contexts $E\in\lambda_{cm}$ and expressions $e\in\lambda_{cm}$, $E[e]\rightarrow_{\lambda_{cm}}^{*}v\Rightarrow ((\mathcal{C}[e]\,\mathcal{C}[E]) \overline{((\mathbf{pair}\,\xi(E))\,\chi(E))})\rightarrow_{\lambda_v}^{*}\mathcal{C}[v]$.
 \end{eqtheorem}
 
-%\begin{proof}[Case $E=\bullet$, $e=(\mathrm{ccm})$]
-%$(\mathcal{C}[\bullet]\,\mathcal{C}'[\chi(E)])$
-%\end{proof}
+Fix $E$ and assume it works for $E$.
 
-%\begin{proof}[Case $E=E'[(\bullet\,e_1)]$, $e=(\mathrm{ccm})$]
-%$(\mathcal{C}[\bullet]\,\mathcal{C}'[\chi(E)])$
-%\end{proof}
+\begin{proof}[Case $e=(e_0\,e_1)$]
+% prove E[(e0 e1)] -> v => ((C[(e0 e1)] C[E]) ((pair xi(E)) C[chi(E)])) -> C[v]
+% -> ((C[e0] C[E[(* e1)]]) ((pair xi(E[(* e1)])) C[chi(E[(* e1)])]))
+% assume C[e0] goes to correct value (structural induction) E[(* e1)][e0] -> E[(* e1)][v0]
+% -> ((C[e1] C[E[(v0 *)]]) ((pair xi(E[(v0 *)])) C[chi(E[(v0 *)])]))
+% assume C[e1] goes to correct value (structural induction) E[(v0 *)][e1] -> E[(v0 *)][v1]
+% -> ((C[(v0 v1)] C[E]) ((pair xi(E)) C[chi(E)]))
+% assume (v0 v1) -> e2
+% -> ((C[e2] C[E]) ((pair xi(E)) C[chi(E)]))
+% assume C[e2] goes to correct value (structural induction) E[e2] -> E[v2]
+% ((C[v2] C[E]) ((pair xi(E)) C[chi(E)])) is correct by assumption (structural induction (and E?))
+\end{proof}
+
+\begin{proof}[Case $e=(\mathrm{wcm}\,e_0\,e_1)$]
+% prove E[(wcm e0 e1)] -> v => ((C[(wcm e0 e1)] C[E]) ((pair xi(E)) C[chi(E)])) -> C[v]
+% -> ((C[e0] C[E[(wcm * e1)]]) ((pair xi(E[(wcm * e1)])) C[chi(E[(wcm * e1)])]))
+% assume reduces correctly by induction
+% -> ((C[e1] C[E[(wcm v0 *)]]) ((pair xi(E[(wcm v0 *)])) C[chi(E[(wcm v0 *)])]))
+% assume reduces by structural induction
+\end{proof}
+
+\begin{proof}[Case $e=v$]
+% prove E[v] -> v' => ((C[v] C[E]) ((pair xi(E)) C[chi(E)])) -> C[v']
+% by assumption of E
+\end{proof}
+
+\begin{proof}[Case $e=x$]
+% prove E[x] -> error => ((C[x] C[E]) ((pair xi(E)) C[chi(E)])) -> C[error]
+% ?
+\end{proof}
+
+\begin{proof}[Case $e=\mathrm{error}$]
+
+\end{proof}
+Fix $e$ and assume it works for $e$.
+
+\begin{proof}[Case $E=\bullet$]
+\begin{align*}
+\bullet[e]\rightarrow v\\
+((\mathcal{C}[e]\,\mathcal{C}[\bullet])\,\overline{((\mathbf{pair}\,\xi(\bullet))\,\mathcal{C}[\chi(\bullet)])})\\
+\end{align*}
+\end{proof}
+
+\begin{proof}[Case $E=\bullet$, $e=(\mathrm{ccm})$]
+$(\mathcal{C}[\bullet]\,\mathcal{C}'[\chi(E)])$
+\end{proof}
+
+\begin{proof}[Case $E=E'(\bullet\,e_1)$, $e=(\mathrm{ccm})$]
+$(\mathcal{C}[\bullet]\,\mathcal{C}'[\chi(E)])$
+\end{proof}
 
 \newtheorem*{maintheorem}{Correctness of $\mathcal{C}$}
 \begin{maintheorem}
@@ -1510,10 +1555,18 @@ p\rightarrow_{\lambda_{cm}}^{*}v &\Rightarrow\mathrm{eval}_{cm}(p)=v &\text{(by 
                              &\Rightarrow\mathcal{C}[\mathrm{eval}_{cm}(p)]=\mathcal{C}[v] &\text{(by well-definedness of $\mathcal{C}$)}
 \end{align*}
 
+% does E[e] -> E[v] => ((C[e] C[E]) ((pair xi(E)) C[chi(E)])) -> C[E[v]] make sense?
+% it doesn't look like it. consider what C[E[v]] is.
+% does e -> v => C[e] -> C[v] make sense?
+% not really, unless e is at the top level (so e is p).
+% does E[e] -> v => ((C[e] C[E]) ((pair xi(E)) C[chi(E)])) -> C[v] make sense?
+% assume it works for all E, prove e by induction
+% assume it works for all e, prove E by induction
+
 \begin{align*}
-p\rightarrow_{\lambda_{cm}}^{*}v &\Rightarrow\bullet[p]\rightarrow_{\lambda_{cm}}^{*}v &\text{(since $p=\bullet[p]$)}\\
-                             &\Rightarrow((\mathcal{C}[p]\,\mathcal{C}[\bullet])\,\overline{((\mathbf{pair}\,\xi(\bullet))\,\mathcal{C}[\chi(\bullet)]))})\rightarrow_{\lambda_v}^{*} \mathcal{C}[v] &\text{(by the Great Lemma)}\\
-                             &\Rightarrow((\mathcal{C}[p]\,(\lambda\,(v)\,\mathcal{C}[v]))\,\overline{((\mathbf{pair}\,\mathbf{false})\,\mathcal{C}[\mathbf{nil}]))})\rightarrow_{\lambda_v}^{*} \mathcal{C}[v] &\text{(by definitions x, y, and z)}\\
+p\rightarrow_{\lambda_{cm}}^{*}v &\Rightarrow\bullet[p]\rightarrow_{\lambda_{cm}}^{*}\bullet[v] &\text{(since $p\rightarrow_{\lambda_{cm}}\bullet[p]$ and $v$ can only be reached by $\bullet[v]$)}\\
+                             &\Rightarrow((\mathcal{C}[p]\,\mathcal{C}[\bullet])\,\overline{((\mathbf{pair}\,\xi(\bullet))\,\mathcal{C}[\chi(\bullet)])})\rightarrow_{\lambda_v}^{*} \mathcal{C}[v] &\text{(by the Great Lemma)}\\
+                             &\Rightarrow((\mathcal{C}[p]\,(\lambda\,(v)\,\mathcal{C}[v]))\,\overline{((\mathbf{pair}\,\mathbf{false})\,\mathcal{C}[\mathbf{nil}])})\rightarrow_{\lambda_v}^{*} \mathcal{C}[v] &\text{(by definitions x, y, and z)}\\
                              &\Rightarrow\mathrm{eval}_{v}(\mathcal{C}[p])=\mathcal{C}[v] &\text{(by definition of $\mathrm{eval}_v$)}
 \end{align*}
 
