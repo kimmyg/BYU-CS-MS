@@ -1402,33 +1402,43 @@ Fix $E$ and assume it works for $E$.
 
 \begin{proof}[Case $e=(e_0\,e_1)$]
 % prove E[(e0 e1)] -> v => ((C[(e0 e1)] C[E]) ((pair xi(E)) C[chi(E)])) -> C[v]
+Assume $E[(e_0\,e_1)]\rightarrow_{\lambda_{cm}}^{*}v$. Consider $((\mathcal{C}[(e_0\,e_1)]\,\mathcal{C}[E])\,\overline{((\mathbf{pair}\,\xi(E))\,\chi(E))})$.
 % -> ((C[e0] C[E[(* e1)]]) ((pair xi(E[(* e1)])) C[chi(E[(* e1)])]))
-By app1-app7,
-\[((\mathcal{C}[(e_0\,e_1)]\,\mathcal{C}[E])\,\overline{((\mathbf{pair}\,\xi(E))\,\chi(E))})\rightarrow_{\lambda_v}^{*}((\mathcal{C}[e_0]\,\mathcal{C}[E[(\bullet\,e_1)]])\,\overline{((\mathbf{pair}\,\xi(E[(\bullet\,e_1)]))\,\chi(E[(\bullet\,e_1)]))})
+Steps app1-app7 show
+\[
+((\mathcal{C}[(e_0\,e_1)]\,\mathcal{C}[E])\,\overline{((\mathbf{pair}\,\xi(E))\,\chi(E))})\rightarrow_{\lambda_v}^{*}((\mathcal{C}[e_0]\,\mathcal{C}[E[(\bullet\,e_1)]])\,\overline{((\mathbf{pair}\,\xi(E[(\bullet\,e_1)]))\,\chi(E[(\bullet\,e_1)]))})
 \]
-From here, there are two contingencies for which we must account:
+From here, we must account for two contingencies:
 \begin{enumerate}
-\item The body of $\mathcal{C}[e_0]$ evaluates to \scheme'error', as in app8-e0-error.
-The entire term evaluates to \scheme'error', by app9-e0-error.
-\item The body of $\mathcal{C}[e_0]$ fails to terminate, as in app8-e0-bottom.
-The entire term fails to evaluate, by app9-e0-bottom.
+\item Following application, evaluation of the body of $\mathcal{C}[e_0]$ yields \scheme'error', as in app8-e0-error.
+The entire term evaluates to \scheme'error', as in app9-e0-error. As this term represents the entire program, the entire program evaluates to \scheme'error'.
+\item Following application, evaluation of the body of $\mathcal{C}[e_0]$ fails to terminate, as in app8-e0-bottom.
+The entire term fails to evaluate, as in app9-e0-bottom. This property is lifted to the program.
 \end{enumerate}
 % assume C[e0] goes to correct value (structural induction) E[(* e1)][e0] -> E[(* e1)][v0]
-Otherwise, we assume the body of $\mathcal{C}[e_0]$ evaluates to $\mathcal{C}'[v_0]$, as in app8.
+Otherwise, we assume by induction that 
+\[
+((\mathcal{C}[e_0]\,\mathcal{C}[E[(\bullet\,e_1)]])\,\overline{((\mathbf{pair}\,\xi(E[(\bullet\,e_1)]))\,\chi(E[(\bullet\,e_1)]))})\rightarrow_{\lambda_v}^{*}(\mathcal{C}[E[(\bullet\,e_1)]]\,\mathcal{C}'[v_0])
+\]
+where $E[(\bullet\,e_1)][e_0]\rightarrow_{\lambda_{cm}}^{*}E[(\bullet\,e_1)][v_0]$, as in app8.
 % -> ((C[e1] C[E[(v0 *)]]) ((pair xi(E[(v0 *)])) C[chi(E[(v0 *)])]))
-By app9,
+By app9, 
 \[
 (\mathcal{C}[E[(\bullet\,e_1)]]\,\mathcal{C}'[v_0])\rightarrow_{\lambda_v}((\mathcal{C}[e_1]\,\mathcal{C}[E[(v_0\,\bullet)]])\,\overline{((\mathbf{pair}\,\xi(E[(v_0\,\bullet)]))\,\chi(E[(v_0\,\bullet)]))})
 \]
-From here, we must account for the same contingencies as before:
+From here, we must account for the same two contingencies as before:
 \begin{enumerate}
-\item The body of $\mathcal{C}[e_1]$ evaluates to \scheme'error', as in app10-e1-error.
-The entire term evaluates to \scheme'error', by app11-e1-error.
-\item The body of $\mathcal{C}[e_1]$ fails to terminate, as in app10-e1-bottom.
-The entire term fails to evaluate, by app11-e1-bottom.
+\item Following application, evaluation of the body of $\mathcal{C}[e_1]$ yields \scheme'error', as in app10-e0-error.
+The entire term evaluates to \scheme'error', as in app11-e0-error. As this term represents the entire program, the entire program evaluates to \scheme'error'.
+\item Following application, evaluation of the body of $\mathcal{C}[e_1]$ fails to terminate, as in app10-e0-bottom.
+The entire term fails to evaluate, as in app11-e0-bottom. This property is lifted to the program.
 \end{enumerate}
 % assume C[e1] goes to correct value (structural induction) E[(v0 *)][e1] -> E[(v0 *)][v1]
-Otherwise, we assume the body of $\mathcal{C}[e_1]$ evaluates to $\mathcal{C}'[v_1]$, as in app10.
+Otherwise, we assume by induction that 
+\[
+((\mathcal{C}[e_1]\,\mathcal{C}[E[(v_0\,\bullet)]])\,\overline{((\mathbf{pair}\,\xi(E[(v_0\,\bullet)]))\,\chi(E[(v_0\,\bullet)]))})\rightarrow_{\lambda_v}^{*}(\mathcal{C}[E[(v_0\,\bullet)]]\,\mathcal{C}'[v_1])
+\]
+where $E[(v_0\,\bullet)][e_1]\rightarrow_{\lambda_{cm}}^{*}E[(v_0\,\bullet)][v_1]$, as in app10.
 % -> ((C[(v0 v1)] C[E]) ((pair xi(E)) C[chi(E)]))
 By app11,
 \[
@@ -1436,28 +1446,95 @@ By app11,
 \]
 If $\mathcal{C}'[v_0]=(\lambda\,(x)\,\mathcal{C}[e'_0])$, then, by lemma \ref{collapse},
 \begin{align*}
-(((\mathcal{C}'[v_0]\,\mathcal{C}'[v_1])\,\mathcal{C}[E])\,\overline{((\mathbf{pair}\,\xi(E))\,\chi(E))}) &=((\mathcal{C}[e'_0[x\leftarrow v_1]]\,\mathcal{C}[E])\,\overline{((\mathbf{pair}\,\xi(E))\,\chi(E))})\\
+(((\mathcal{C}'[v_0]\,\mathcal{C}'[v_1])\,\mathcal{C}[E])\,\overline{((\mathbf{pair}\,\xi(E))\,\chi(E))})\rightarrow_{\lambda_v} &((\mathcal{C}[e'_0[x\leftarrow v_1]]\,\mathcal{C}[E])\,\overline{((\mathbf{pair}\,\xi(E))\,\chi(E))})\\
 % assume (v0 v1) -> e2
 % -> ((C[e2] C[E]) ((pair xi(E)) C[chi(E)]))
-                                                                                                          &\rightarrow_{\lambda_v}((\mathcal{C}[e_2]\,\mathcal{C}[E])\,\overline{((\mathbf{pair}\,\xi(E))\,\chi(E))})
+= &((\mathcal{C}[e_2]\,\mathcal{C}[E])\,\overline{((\mathbf{pair}\,\xi(E))\,\chi(E))})
 \end{align*}
 for some $e_2$.
+
 % ((C[v2] C[E]) ((pair xi(E)) C[chi(E)])) is correct by assumption (structural induction (and E?))
 By induction, we assume that $E[e_2]\rightarrow_{\lambda_{cm}}^{*}v\Rightarrow((\mathcal{C}[e_2]\,\mathcal{C}[E])\,\overline{((\mathbf{pair}\,\xi(E))\,\chi(E))})\rightarrow_{\lambda_v}^{*}\mathcal{C}[v]$.
-
+(There's something missing in this last statement. How do we know that $e_2$ is what we want--that we've preserved the correct execution?)
 \end{proof}
 
 \begin{proof}[Case $e=(\mathrm{wcm}\,e_0\,e_1)$]
 % prove E[(wcm e0 e1)] -> v => ((C[(wcm e0 e1)] C[E]) ((pair xi(E)) C[chi(E)])) -> C[v]
+Assume $E[(\mathrm{wcm}\,e_0\,e_1)]\rightarrow_{\lambda_{cm}}^{*}v$. Consider $((\mathcal{C}[(\mathrm{wcm}\,e_0\,e_1)]\,\mathcal{C}[E])\,\overline{((\mathbf{pair}\,\xi(E))\,\chi(E))})$.
 % -> ((C[e0] C[E[(wcm * e1)]]) ((pair xi(E[(wcm * e1)])) C[chi(E[(wcm * e1)])]))
+Steps wcm1-wcm7 show
+\[
+((\mathcal{C}[(\mathrm{wcm}\,e_0\,e_1)]\,\mathcal{C}[E])\,\overline{((\mathbf{pair}\,\xi(E))\,\chi(E))})\rightarrow_{\lambda_v}^{*}((\mathcal{C}[e_0]\,\mathcal{C}[E[(\bullet\,e_1)]])\,\overline{((\mathbf{pair}\,\xi(E[(\bullet\,e_1)]))\,\chi(E[(\bullet\,e_1)]))})
+\]
+From here, we must account for two contingencies:
+\begin{enumerate}
+\item Following application, evaluation of the body of $\mathcal{C}[e_0]$ yields \scheme'error', as in app8-e0-error.
+The entire term evaluates to \scheme'error', as in app9-e0-error. As this term represents the entire program, the entire program evaluates to \scheme'error'.
+\item Following application, evaluation of the body of $\mathcal{C}[e_0]$ fails to terminate, as in app8-e0-bottom.
+The entire term fails to evaluate, as in app9-e0-bottom. This property is lifted to the program.
+\end{enumerate}
+% assume C[e0] goes to correct value (structural induction) E[(* e1)][e0] -> E[(* e1)][v0]
+Otherwise, we assume by induction that 
+\[
+((\mathcal{C}[e_0]\,\mathcal{C}[E[(\bullet\,e_1)]])\,\overline{((\mathbf{pair}\,\xi(E[(\bullet\,e_1)]))\,\chi(E[(\bullet\,e_1)]))})\rightarrow_{\lambda_v}^{*}(\mathcal{C}[E[(\bullet\,e_1)]]\,\mathcal{C}'[v_0])
+\]
+where $E[(\bullet\,e_1)][e_0]\rightarrow_{\lambda_{cm}}^{*}E[(\bullet\,e_1)][v_0]$, as in app8.
+% -> ((C[e1] C[E[(v0 *)]]) ((pair xi(E[(v0 *)])) C[chi(E[(v0 *)])]))
+By app9, 
+\[
+(\mathcal{C}[E[(\bullet\,e_1)]]\,\mathcal{C}'[v_0])\rightarrow_{\lambda_v}((\mathcal{C}[e_1]\,\mathcal{C}[E[(v_0\,\bullet)]])\,\overline{((\mathbf{pair}\,\xi(E[(v_0\,\bullet)]))\,\chi(E[(v_0\,\bullet)]))})
+\]
+From here, we must account for the same two contingencies as before:
+\begin{enumerate}
+\item Following application, evaluation of the body of $\mathcal{C}[e_1]$ yields \scheme'error', as in app10-e0-error.
+The entire term evaluates to \scheme'error', as in app11-e0-error. As this term represents the entire program, the entire program evaluates to \scheme'error'.
+\item Following application, evaluation of the body of $\mathcal{C}[e_1]$ fails to terminate, as in app10-e0-bottom.
+The entire term fails to evaluate, as in app11-e0-bottom. This property is lifted to the program.
+\end{enumerate}
+% assume C[e1] goes to correct value (structural induction) E[(v0 *)][e1] -> E[(v0 *)][v1]
+Otherwise, we assume by induction that 
+\[
+((\mathcal{C}[e_1]\,\mathcal{C}[E[(v_0\,\bullet)]])\,\overline{((\mathbf{pair}\,\xi(E[(v_0\,\bullet)]))\,\chi(E[(v_0\,\bullet)]))})\rightarrow_{\lambda_v}^{*}(\mathcal{C}[E[(v_0\,\bullet)]]\,\mathcal{C}'[v_1])
+\]
+where $E[(v_0\,\bullet)][e_1]\rightarrow_{\lambda_{cm}}^{*}E[(v_0\,\bullet)][v_1]$, as in app10.
+% -> ((C[(v0 v1)] C[E]) ((pair xi(E)) C[chi(E)]))
+By app11,
+\[
+(\mathcal{C}[E[(v_0\,\bullet)]]\,\mathcal{C}'[v_1])\rightarrow_{\lambda_v}(((\mathcal{C}'[v_0]\,\mathcal{C}'[v_1])\,\mathcal{C}[E])\,\overline{((\mathbf{pair}\,\xi(E))\,\chi(E))})
+\]
+If $\mathcal{C}'[v_0]=(\lambda\,(x)\,\mathcal{C}[e'_0])$, then, by lemma \ref{collapse},
+\begin{align*}
+(((\mathcal{C}'[v_0]\,\mathcal{C}'[v_1])\,\mathcal{C}[E])\,\overline{((\mathbf{pair}\,\xi(E))\,\chi(E))})\rightarrow_{\lambda_v} &((\mathcal{C}[e'_0[x\leftarrow v_1]]\,\mathcal{C}[E])\,\overline{((\mathbf{pair}\,\xi(E))\,\chi(E))})\\
+% assume (v0 v1) -> e2
+% -> ((C[e2] C[E]) ((pair xi(E)) C[chi(E)]))
+= &((\mathcal{C}[e_2]\,\mathcal{C}[E])\,\overline{((\mathbf{pair}\,\xi(E))\,\chi(E))})
+\end{align*}
+for some $e_2$.
+
+% ((C[v2] C[E]) ((pair xi(E)) C[chi(E)])) is correct by assumption (structural induction (and E?))
+By induction, we assume that $E[e_2]\rightarrow_{\lambda_{cm}}^{*}v\Rightarrow((\mathcal{C}[e_2]\,\mathcal{C}[E])\,\overline{((\mathbf{pair}\,\xi(E))\,\chi(E))})\rightarrow_{\lambda_v}^{*}\mathcal{C}[v]$.
+(There's something missing in this last statement. How do we know that $e_2$ is what we want--that we've preserved the correct execution?)
 % assume reduces correctly by induction
 % -> ((C[e1] C[E[(wcm v0 *)]]) ((pair xi(E[(wcm v0 *)])) C[chi(E[(wcm v0 *)])]))
 % assume reduces by structural induction
 \end{proof}
 
+\begin{proof}[Case $e=(\mathrm{ccm})$]
+% prove E[(ccm)] -> v => ((C[(ccm)] C[E]) ((pair xi(E)) C[chi(E)])) -> C[v]
+Assume $E[(\mathrm{ccm})]\rightarrow_{\lambda_{cm}}^{*}v$. Consider $((\mathcal{C}[(\mathrm{ccm})]\,\mathcal{C}[E])\,\overline{((\mathbf{pair}\,\xi(E))\,\chi(E))})$.
+% -> ((C[e0] C[E[(* e1)]]) ((pair xi(E[(* e1)])) C[chi(E[(* e1)])]))
+Steps ccm1-ccm3 show
+\[
+((\mathcal{C}[(\mathrm{ccm})]\,\mathcal{C}[E])\,\overline{((\mathbf{pair}\,\xi(E))\,\chi(E))})\rightarrow_{\lambda_v}^{*}((\mathcal{C}[\chi(E)]\,\mathcal{C}[E])\,(\lambda\,(z)\,z))
+\]
+Since $\chi(E)$ is a value, we appeal to the value case.
+\end{proof}
+
 \begin{proof}[Case $e=v$]
 % prove E[v] -> v' => ((C[v] C[E]) ((pair xi(E)) C[chi(E)])) -> C[v']
+Assume $E[v]\rightarrow_{\lambda_{cm}}^{*}v'$. Consider $((\mathcal{C}[v]\,\mathcal{C}[E])\,\overline{((\mathbf{pair}\,\xi(E))\,\chi(E))})$.
 % by assumption of E
+By assumption of the correctness of $E$, $((\mathcal{C}[v]\,\mathcal{C}[E])\,\overline{((\mathbf{pair}\,\xi(E))\,\chi(E))})\rightarrow_{\lambda_v}\mathcal{C}[v']$.
 \end{proof}
 
 \begin{proof}[Case $e=x$]
