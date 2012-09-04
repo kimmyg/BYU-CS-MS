@@ -1241,6 +1241,7 @@ be observed by the original $\lambda_{cm}$ program.
 \setspecialsymbol{v_1}{$v_1$}
 \setspecialsymbol{T}{$\mathcal{A}$}
 \setspecialsymbol{C}{$\mathcal{C}$}
+\setspecialsymbol{Cp}{$\mathcal{C}'$}
 \setspecialsymbol{hole}{$\bullet$}
 \setspecialsymbol{bottom}{$\perp$}
 \setspecialsymbol{Ce_0p_x_Cpv_1}{$\mathcal{C}[e'_0][x\leftarrow\mathcal{C}'[v_1]]$}
@@ -1256,6 +1257,7 @@ Define \scheme{TRUE}=\scheme|(lambda (x) (lambda (y) x))|, \scheme{FALSE}=\schem
 \scheme{FST}=\scheme|(lambda (p) (p TRUE))|, \scheme{SND}=\scheme|(lambda (p) (p FALSE))|,
 and \scheme{NIL}=\scheme{FALSE}.
 
+\begin{singlespace}
 terms
 \begin{schemedisplay}
 T[(e_0 e_1)]
@@ -1306,8 +1308,8 @@ C[x]
 C[error]
 error
 
-C'[v_0] = C'[(lambda (x) e'_0)]
-(lambda (x) C[e'_0])
+Cp[v_0] = Cp[(lambda (x) e_0p)]
+(lambda (x) C[e_0p])
 \end{schemedisplay}
 
 contexts
@@ -1335,19 +1337,20 @@ C[E[(wcm hole e_1)]]
 C[E[(wcm v_0 hole)]]
 CE
 \end{schemedisplay}
+\end{singlespace}
 
 Let
 \[
 \mathrm{eval}_{cm}(p)=\begin{cases}
-v     &\text{if $p\rightarrow_{cm}^{*}v$}\\
-\perp &\text{if $p\rightarrow_{cm}^{*}\cdots$}
+v     &\text{if $p\rightarrow_{\lambda_{cm}}^{*}v$}\\
+\perp &\text{if $p\rightarrow_{\lambda_{cm}}^{*}\cdots$}
 \end{cases}
 \]
 and
 \[
 \mathrm{eval}_{v}(p)=\begin{cases}
-v     &\text{if $((p\,(\lambda\,(v)\,\mathcal{C}[v]))\,((\mathbf{pair}\,\mathbf{false})\,\mathcal{C}[\mathbf{nil}]))\rightarrow_{v}^{*}v$}\\
-\perp &\text{if $((p\,(\lambda\,(v)\,\mathcal{C}[v]))\,((\mathbf{pair}\,\mathbf{false})\,\mathcal{C}[\mathbf{nil}]))\rightarrow_{v}^{*}\cdots$}
+v     &\text{if $((p\,(\lambda\,(v)\,\mathcal{C}[v]))\,((\mathbf{pair}\,\mathbf{false})\,\mathcal{C}[\mathbf{nil}]))\rightarrow_{\lambda_v}^{*}v$}\\
+\perp &\text{if $((p\,(\lambda\,(v)\,\mathcal{C}[v]))\,((\mathbf{pair}\,\mathbf{false})\,\mathcal{C}[\mathbf{nil}]))\rightarrow_{\lambda_v}^{*}\cdots$}
 \end{cases}
 \]
 
@@ -1364,28 +1367,8 @@ Define
 \end{cases}
 \]
 
-\newtheorem*{simulation}{Simulation}
-\begin{simulation}
-If $E[e]\rightarrow_{\lambda_{cm}}E[v]$, then $((\mathcal{C}[E[e]]\,k)\,((\mathbf{pair}\,\mathbf{false})\,\mathbf{nil})\rightarrow_{\lambda_v}^{+}((\mathcal{C}[E[v]]\,k)\,((\mathbf{pair}\,\mathbf{false})\,\mathbf{nil})$.
-\end{simulation}
-The contexts are not necessary above.
-
-\begin{proof}
-$((\mathcal{C}[E[(e_0\,e_1)]]\,k)\,(\mathbf{pair}\,\mathbf{false})\,\mathbf{nil}))\equiv\mathcal(({C}[(e_0\,e_1)]\,k)\,((\mathbf{pair}\,\xi(E))\,\chi(E)))$
-
-Let $E_0=E[(\bullet\,e_1)]$ (and note that $\xi(E_0)=\mathrm{false}$ and $\chi(E_0)=\chi(E)$).
-
-By inductive hypothesis, $((\mathcal{C}[e_0]\,k_0)\,((\mathbf{pair}\,\xi(E_0))\,\chi(E_0)))\rightarrow_{\lambda_v}^{*}((\mathcal{C}[v_0]\,k_0)\,((\mathbf{pair}\,\xi(E_0))\,\chi(E_0)))$
-
-Similarly, let $E_1=E[(v_0\,\bullet)]$ (and note that $\xi(E_1)=\mathrm{false}$ and $\chi(E_1)=\chi(E)$).
-
-By inductive hypothesis, $((\mathcal{C}[e_1]\,k_1)\,((\mathbf{pair}\,\xi(E_1))\,\chi(E_1)))\rightarrow_{\lambda_v}^{*}((\mathcal{C}[v_1]\,k_1)\,((\mathbf{pair}\,\xi(E_1))\,\chi(E_1)))$
-
-$\mathcal(({C}[(e_0\,e_1)]\,k)\,((\mathbf{pair}\,\xi)\,\chi(E)))$
-% assume e0 -> v0 = \x., e1 -> v1
-\end{proof}
-
 \begin{lemma}
+\label{collapse}
 For all values $(\lambda\,(x)\,e_0)$ and $(\lambda\,(y)\,e_1)$, $\mathcal{C}[e_0][x\leftarrow (\lambda\,(y)\,\mathcal{C}[e_1])]=\mathcal{C}[e_0[x\leftarrow (\lambda\,(y)\,e_1)]]$.
 \end{lemma}
 
@@ -1410,84 +1393,9 @@ For all values $(\lambda\,(x)\,e)$, $(\mathcal{C}[\bullet]\,\mathcal{C}'[(\lambd
 \end{align*}
 \end{proof}
 
-%\begin{lemma}
-%For all contexts $E$, $\xi(E)$ is correct.
-%\end{lemma}
-
-%We proceed with a proof by induction over $E$.
-
-%\begin{proof}[Case $\bullet$]
-%If $E=\bullet$
-%\end{proof}
-
-%\begin{proof}[Case $(\bullet\,e_1)$]
-%Assume it holds for $E$. $\chi(E[(\bullet\,e_1)])=\chi(E)$.
-%\end{proof}
-
-%\begin{proof}[Case $(e_0\,\bullet)$]
-%Assume it holds for $E$. $\chi(E[(e_0\,\bullet)])=\chi(E)$.
-%\end{proof}
-
-%\begin{proof}[Case $(\mathrm{wcm}\,\bullet\,e_1)$]
-%Assume it holds for $E$. $\chi(E[(\mathrm{wcm}\,\bullet\,e_1)])=\chi(E)$.
-%\end{proof}
-
-%\begin{proof}[Case $(\mathrm{wcm}\,v_0\,\bullet)$]
-%Assume it holds for $E$ where $E\ne E'[(\mathrm{wcm}\,v\,\bullet)]$ for any $E'$ or $v$.
-%$\chi(E[(\mathrm{wcm}\,v_0\,\bullet)])=v_0 :\chi(E)$.
-%\end{proof}
-
-%\begin{lemma}
-%For all contexts $E$, $\chi(E)$ is correct.
-%\end{lemma}
-
-%We proceed with a proof by induction over $E$.
-
-%\begin{proof}[Case $\bullet$]
-%In the base case, it is correct.
-%\end{proof}
-
-%\begin{proof}[Case $(\bullet\,e_1)$]
-%Assume it holds for $E$. $\chi(E[(\bullet\,e_1)])=\chi(E)$.
-%\end{proof}
-
-%\begin{proof}[Case $(e_0\,\bullet)$]
-%Assume it holds for $E$. $\chi(E[(e_0\,\bullet)])=\chi(E)$.
-%\end{proof}
-
-%\begin{proof}[Case $(\mathrm{wcm}\,\bullet\,e_1)$]
-%Assume it holds for $E$. $\chi(E[(\mathrm{wcm}\,\bullet\,e_1)])=\chi(E)$.
-%\end{proof}
-
-%\begin{proof}[Case $(\mathrm{wcm}\,v\,(\mathrm{wcm}\,v_0\,\bullet))$]
-%Assume it holds for $E$. 
-%$\chi(E[(\mathrm{wcm}\,v\,(\mathrm{wcm}\,v_0\,\bullet))])=v_0 :\chi(E)$.
-%\end{proof}
-
-%\begin{proof}[Case $(\mathrm{wcm}\,v_0\,\bullet)$]
-%Assume it holds for $E$ where $E\ne E'[(\mathrm{wcm}\,v\,\bullet)]$ for any $E'$ or $v$.
-%$\chi(E[(\mathrm{wcm}\,v_0\,\bullet)])=v_0 :\chi(E)$.
-%\end{proof}
-
-%Let $e_0\equiv_v e_1$ signify there exists $e'$ such that $e_0\rightarrow_{\lambda_v}^{*}e'$ and $e_1\rightarrow_{\lambda_v}^{*}e'$.
-
-%\begin{lemma}
-%For all contexts $E$, $((\mathcal{C}[E[e]]\,k')\,((\mathbf{pair}\,\mathbf{false})\,\mathbf{nil}))\equiv((\mathcal{C}[e]\,k'')\,((\mathbf{pair}\,\xi(E))\,\chi(E)))$ for some continuation $k''$.
-%\end{lemma}
-
-%We proceed by induction on the structure of $E$.
-
-%\begin{proof}[Case $\bullet$]
-%If $E=\bullet$, $\xi(E)=\mathbf{false}$.
-%\end{proof}
-
-%\begin{proof}[Case $(\bullet\,e_1)$]
-
-%\end{proof}
-
 \newtheorem*{eqtheorem}{Equivalence Theorem}
 \begin{eqtheorem}
-For all contexts $E\in\lambda_{cm}$ and expressions $e\in\lambda_{cm}$, $E[e]\rightarrow_{\lambda_{cm}}^{*}v\Rightarrow ((\mathcal{C}[e]\,\mathcal{C}[E]) \overline{((\mathbf{pair}\,\xi(E))\,\chi(E))})\rightarrow_{\lambda_v}^{*}\mathcal{C}[v]$.
+For all contexts $E\in\lambda_{cm}$ and expressions $e\in\lambda_{cm}$, $E[e]\rightarrow_{\lambda_{cm}}^{*}v\Rightarrow ((\mathcal{C}[e]\,\mathcal{C}[E])\,\overline{((\mathbf{pair}\,\xi(E))\,\chi(E))})\rightarrow_{\lambda_v}^{*}\mathcal{C}[v]$.
 \end{eqtheorem}
 
 Fix $E$ and assume it works for $E$.
@@ -1495,14 +1403,48 @@ Fix $E$ and assume it works for $E$.
 \begin{proof}[Case $e=(e_0\,e_1)$]
 % prove E[(e0 e1)] -> v => ((C[(e0 e1)] C[E]) ((pair xi(E)) C[chi(E)])) -> C[v]
 % -> ((C[e0] C[E[(* e1)]]) ((pair xi(E[(* e1)])) C[chi(E[(* e1)])]))
+By app1-app7,
+\[((\mathcal{C}[(e_0\,e_1)]\,\mathcal{C}[E])\,\overline{((\mathbf{pair}\,\xi(E))\,\chi(E))})\rightarrow_{\lambda_v}^{*}((\mathcal{C}[e_0]\,\mathcal{C}[E[(\bullet\,e_1)]])\,\overline{((\mathbf{pair}\,\xi(E[(\bullet\,e_1)]))\,\chi(E[(\bullet\,e_1)]))})
+\]
+From here, there are two contingencies for which we must account:
+\begin{enumerate}
+\item The body of $\mathcal{C}[e_0]$ evaluates to \scheme'error', as in app8-e0-error.
+The entire term evaluates to \scheme'error', by app9-e0-error.
+\item The body of $\mathcal{C}[e_0]$ fails to terminate, as in app8-e0-bottom.
+The entire term fails to evaluate, by app9-e0-bottom.
+\end{enumerate}
 % assume C[e0] goes to correct value (structural induction) E[(* e1)][e0] -> E[(* e1)][v0]
+Otherwise, we assume the body of $\mathcal{C}[e_0]$ evaluates to $\mathcal{C}'[v_0]$, as in app8.
 % -> ((C[e1] C[E[(v0 *)]]) ((pair xi(E[(v0 *)])) C[chi(E[(v0 *)])]))
+By app9,
+\[
+(\mathcal{C}[E[(\bullet\,e_1)]]\,\mathcal{C}'[v_0])\rightarrow_{\lambda_v}((\mathcal{C}[e_1]\,\mathcal{C}[E[(v_0\,\bullet)]])\,\overline{((\mathbf{pair}\,\xi(E[(v_0\,\bullet)]))\,\chi(E[(v_0\,\bullet)]))})
+\]
+From here, we must account for the same contingencies as before:
+\begin{enumerate}
+\item The body of $\mathcal{C}[e_1]$ evaluates to \scheme'error', as in app10-e1-error.
+The entire term evaluates to \scheme'error', by app11-e1-error.
+\item The body of $\mathcal{C}[e_1]$ fails to terminate, as in app10-e1-bottom.
+The entire term fails to evaluate, by app11-e1-bottom.
+\end{enumerate}
 % assume C[e1] goes to correct value (structural induction) E[(v0 *)][e1] -> E[(v0 *)][v1]
+Otherwise, we assume the body of $\mathcal{C}[e_1]$ evaluates to $\mathcal{C}'[v_1]$, as in app10.
 % -> ((C[(v0 v1)] C[E]) ((pair xi(E)) C[chi(E)]))
+By app11,
+\[
+(\mathcal{C}[E[(v_0\,\bullet)]]\,\mathcal{C}'[v_1])\rightarrow_{\lambda_v}(((\mathcal{C}'[v_0]\,\mathcal{C}'[v_1])\,\mathcal{C}[E])\,\overline{((\mathbf{pair}\,\xi(E))\,\chi(E))})
+\]
+If $\mathcal{C}'[v_0]=(\lambda\,(x)\,\mathcal{C}[e'_0])$, then, by lemma \ref{collapse},
+\begin{align*}
+(((\mathcal{C}'[v_0]\,\mathcal{C}'[v_1])\,\mathcal{C}[E])\,\overline{((\mathbf{pair}\,\xi(E))\,\chi(E))}) &=((\mathcal{C}[e'_0[x\leftarrow v_1]]\,\mathcal{C}[E])\,\overline{((\mathbf{pair}\,\xi(E))\,\chi(E))})\\
 % assume (v0 v1) -> e2
 % -> ((C[e2] C[E]) ((pair xi(E)) C[chi(E)]))
-% assume C[e2] goes to correct value (structural induction) E[e2] -> E[v2]
+                                                                                                          &\rightarrow_{\lambda_v}((\mathcal{C}[e_2]\,\mathcal{C}[E])\,\overline{((\mathbf{pair}\,\xi(E))\,\chi(E))})
+\end{align*}
+for some $e_2$.
 % ((C[v2] C[E]) ((pair xi(E)) C[chi(E)])) is correct by assumption (structural induction (and E?))
+By induction, we assume that $E[e_2]\rightarrow_{\lambda_{cm}}^{*}v\Rightarrow((\mathcal{C}[e_2]\,\mathcal{C}[E])\,\overline{((\mathbf{pair}\,\xi(E))\,\chi(E))})\rightarrow_{\lambda_v}^{*}\mathcal{C}[v]$.
+
 \end{proof}
 
 \begin{proof}[Case $e=(\mathrm{wcm}\,e_0\,e_1)$]
@@ -1524,14 +1466,14 @@ Fix $E$ and assume it works for $E$.
 \end{proof}
 
 \begin{proof}[Case $e=\mathrm{error}$]
-
+% prove E[error] -> error => ((C[error] C[E]) ((pair xi(E)) C[chi(E)])) -> C[error]
 \end{proof}
 Fix $e$ and assume it works for $e$.
 
 \begin{proof}[Case $E=\bullet$]
 \begin{align*}
-\bullet[e]\rightarrow v\\
-((\mathcal{C}[e]\,\mathcal{C}[\bullet])\,\overline{((\mathbf{pair}\,\xi(\bullet))\,\mathcal{C}[\chi(\bullet)])})\\
+% prove that *[e] -> v => ((C[e] C[*]) ((pair xi(*)) C[chi(*)])) -> C[v]
+% ((C[e] C[*]) ((pair xi(*)) C[chi(*)])) -> 
 \end{align*}
 \end{proof}
 
@@ -1618,7 +1560,7 @@ E[e_0p_x_v_1]
 \end{schemedisplay}
 
 \begin{schemedisplay}
-((C[(e_0 e_1)] k0) ((PAIR xiE) CchiE))
+((C[(e_0 e_1)] C[E]) ((PAIR xiE) CchiE))
 \end{schemedisplay}
 
 app0
