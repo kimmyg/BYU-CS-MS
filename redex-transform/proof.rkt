@@ -7,10 +7,6 @@
          "cm.rkt"
          "tex.rkt")
 
-;(define p '(wcm ph (ccm)))
-;(traces λcm-rr p)
-;(traces λv-rr (init (transform p)))
-
 (define (apply-reduction-relation*/tags R e)
   (let ((things (apply-reduction-relation/tag-with-names R e)))
     (match things
@@ -20,27 +16,40 @@
       [(list)
        (list #f)])))
 
-(define (transform-test P)
-  (let ((P-steps (apply-reduction-relation*/tags λcm-rr P))
-        (C.P (init (transform P))))
-    (let ((C.P-steps (apply-reduction-relation*/tags λv-rr C.P)))
-      (define display-step (λ (step)
-                             (if step
-                                 (begin
-                                   (display (first step))
-                                   (newline)
-                                   (cm->tex (third step)))
-                                 (begin
-                                   (display "done")
-                                   (newline)))))
-      (cm->tex P)
-      (map display-step P-steps)
-      (cm->tex C.P)
-      (map display-step C.P-steps))))
+(define (apply-substitutions s substitutions)
+  (if (empty? substitutions)
+      s
+      (apply-substitutions (string-replace s (car (first substitutions)) (cdr (first substitutions))) (rest substitutions))))
 
-(transform-test 'x)
+(define (transform-test P (M `(λ (z) ((z (λ (x) (λ (y) y))) ,(transform '(λ (x) (λ (y) y)))))))
+  (let ((P-steps (apply-reduction-relation*/tags λcm-rr P))
+        (C.P `((,(transform P) (λ (v) (λ (k) (λ (m) (k v))))) ,M)))
+    (let ((C.P-steps (apply-reduction-relation*/tags λv-rr C.P)))
+      (define format-step (λ (step)
+                             (if step
+                                 (format "~a~n~a~n" (first step) (cm->slatex (third step)))
+                                 (format "done~n"))))
+      (let ((P.tex (cm->slatex P))
+            (P-steps.tex (foldl (λ (step acc) (string-append acc (format-step step))) "" P-steps))
+            (C.P.tex (cm->slatex C.P))
+            (C.P-steps.tex (foldl (λ (step acc) (string-append acc (format-step step))) "" C.P-steps)))
+        (begin
+          (printf "~a~n" P.tex)
+          (newline)
+          (display P-steps.tex)
+          (printf "~a~n" C.P.tex)
+          (newline)
+          (display C.P-steps.tex))))))
+
+#;(transform-test '((λ (x) e0) (λ (x) f1)) (list (cons "\\k.\\m.(k e)" "C[e0]")
+                                               (cons "\\k.\\m.(k f)" "C[e1]")
+                                               (cons "\\k.k" "k")
+                                               (cons "\\f.f" "FLAG")
+                                               (cons "\\x.\\y.y" "FALSE")
+                                               (cons "\\m.m" "m")))
 #;(transform-test '(x e_2))
-#;(transform-test '(wcm 0 1))
+(transform-test '(ph qh))
+;(transform-test '(wcm 0 1) `(λ (z) ((z (λ (x) (λ (y) y))) ,(transform '(λ (x) (λ (y) y))))))
 
 (define (list-replace l x y)
   (map (λ (z)

@@ -2,7 +2,8 @@
 (require redex)
 
 (define-language λv
-  (e (e e) x v error ph)
+  (e (e e) x v error Cop)
+  (Cop Cope Copf) ; C[opaque]
   (x variable-not-otherwise-mentioned)
   (v (λ (x) e) number)
   (E (E e) (v E) hole))
@@ -24,7 +25,9 @@
         "error in operand")
    (--> (in-hole E ((λ (x) e) v))
         (in-hole E (subst x v e))
-        "βv")))
+        "βv")
+   (--> (in-hole E ((Cop (λ (x) e)) v))
+        (in-hole E (subst x Cop e)))))
 
 #;(define-metafunction λv
   rename : x x e -> e
@@ -35,30 +38,31 @@
     )
 
 (define-metafunction λv
-  subst : x v e -> e
+  subst : x e e -> e
   ;; 1. x_1 bound, so don't continue in λ body
-  [(subst x_1 v_1 (λ (x_1) e_1))
+  [(subst x_1 e_2 (λ (x_1) e_1))
    (λ (x_1) e_1)]
   ;; 2. descend into abstraction
-  [(subst x_1 v_1 (λ (x_2) e_1))
-   (λ (x_2) (subst x_1 v_1 e_1))]
+  [(subst x_1 e_2 (λ (x_2) e_1))
+   (λ (x_2) (subst x_1 e_2 e_1))]
   
-  [(subst x_1 v_1 error)
+  [(subst x_1 e_1 error)
    error]
   
-  [(subst x_1 v_1 number_1)
+  [(subst x_1 e_1 number_1)
    number_1]
-  [(subst x_1 v_1 ph)
-   ph]
   ;; 3. substitute in application
-  [(subst x_1 v_1 (e_1 e_2))
-   ((subst x_1 v_1 e_1) (subst x_1 v_1 e_2))]
+  [(subst x_1 e_3 (e_1 e_2))
+   ((subst x_1 e_3 e_1) (subst x_1 e_3 e_2))]
   
-  [(subst x_1 v_1 x_1)
-   v_1]
+  [(subst x_1 e_1 x_1)
+   e_1]
   
-  [(subst x_1 v_1 x_2)
-   x_2])
+  [(subst x_1 e_1 x_2)
+   x_2]
+  
+  [(subst x_1 e_1 Cop_1)
+   Cop_1])
   
 
 

@@ -100,8 +100,11 @@
 (transform-test '((wcm (ccm) (ccm)) 1))
 ;(transform-test '(Y (wcm (ccm) (ccm))))
 (transform-test '(error (ccm)))
+(transform-test '(wcm 1 (wcm (ccm) (ccm))))
+(transform-test '(wcm 0 ((λ (x) (wcm x (ccm))) 1)))
 
 (define p '(wcm 0 (ccm)))
+;(trace '(x (λ (y) y)))
 
 ;(traces λcm-rr p)
 ;(traces λv-rr (init (transform p)))
@@ -154,7 +157,8 @@
                   (newline))))
     result))
 
-;(check random-cm-term the-important-property-holds #:attempts 25)
+;(check random-cm-term the-important-property-holds #:attempts 10)
+
 
 
 ;(redex-check λcm e (the-important-property-holds (term e)) #:attempts 1000 #:prepare prepare-cm-term)

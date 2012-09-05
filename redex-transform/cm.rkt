@@ -2,7 +2,8 @@
 (require redex)
 
 (define-language λcm
-  (e (e e) (wcm e e) (ccm) x v error ph)
+  (e (e e) (wcm e e) (ccm) x v error op)
+  (op ope opf)
   (x variable-not-otherwise-mentioned)
   (v (λ (x) e) number)
   (E (wcm v F) (wcm ph F) F)
