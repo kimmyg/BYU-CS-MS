@@ -245,6 +245,20 @@ My wife is the hottest thing ever.
 \setkeyword{get-function-representing-continuation call/cc}
 \setspecialsymbol{lambda}{$\lambda$}
 
+%\newcommand{\implies}{\Rightarrow}
+
+\newcommand{\lvrr}{\rightarrow_{\lambda_v}}
+\newcommand{\lvrrs}{\rightarrow_{\lambda_v}^{*}}
+\newcommand{\cmrr}{\rightarrow_{\lambda_{cm}}}
+\newcommand{\cmrrs}{\rightarrow_{\lambda_{cm}}^{*}}
+\newcommand{\C}[1]{\mathcal{C}[#1]}
+\newcommand{\Cp}[1]{\mathcal{C}'[#1]}
+
+\newcommand{\app}[2]{(#1\,#2)}
+\newcommand{\wcm}[2]{(\mathrm{wcm}\,#1\,#2)}
+\newcommand{\ccm}{(\mathrm{ccm})}
+\newcommand{\hole}{\bullet}
+
 \begin{document}
 
 % Produce the preamble
@@ -654,8 +668,8 @@ transformation of $\lambda x.x$
 If we apply this term to the identity function, it reduces as
 \begin{align*}
                         &\lambda k.(k \lambda x.\lambda k.(k\,x))\,\lambda y.y\\
-\rightarrow_{\lambda_v} &\lambda y.y\,\lambda x.\lambda k.(k\,x)\\
-\rightarrow_{\lambda_v} &\lambda x.\lambda k.(k\,x)
+\lvrr &\lambda y.y\,\lambda x.\lambda k.(k\,x)\\
+\lvrr &\lambda x.\lambda k.(k\,x)
 \end{align*}
 The result of this reduction, in common with most others, contains residual terms from the
 CPS transform. We will need to account for this particular property of Fischer's CPS
@@ -866,7 +880,7 @@ manipulate continuation marks, introduced by Pettyjohn et al.
 
 Figure \ref{language-syntax} presents the syntactic definition of $\lambda_{cm}$.
 Definitions of $E$ and $F$ signify evaluation contexts. The non-terminal $E$ is simply any
-term in the language but for the constraint that $(\mathrm{wcm}\,v\,F)$ contexts cannot be
+term in the language but for the constraint that $\wcm{v}{F}$ contexts cannot be
 directly nested, to enforce proper tail-call behavior. The definition of $e$ establishes
 the forms of valid expressions in the language: applications, variables, values,
 \emph{wcm} forms, and \emph{ccm} forms. The definition of $v$ denotes that values in the
@@ -878,12 +892,12 @@ our concern.)
 
 \begin{figure}
 \begin{align*}
-E = &(\mathrm{wcm}\,v\,F) & e = &(e\,e)\\
-    &F                    &     &x\\
-F = &[]                   &     &v\\
-    &(E\,e)               &     &(\mathrm{wcm}\,e\,e)\\
-    &(v\,E)               &     &(\mathrm{ccm})\\
-    &(\mathrm{wcm}\,E\,e) & v = & \lambda x. e
+E = &\wcm{v}{F} & e = &(e\,e)\\
+    &F          &     &x\\
+F = &[]         &     &v\\
+    &\app{E}{e} &     &\wcm{e}{e}\\
+    &\app{v}{E} &     &\ccm\\
+    &\wcm{E}{e} & v = & \lambda x. e
 \end{align*}
 \caption{$\lambda_{cm}$ syntax}
 \label{language-syntax}
@@ -901,10 +915,10 @@ corresponds closely to the definition of $\lambda_{cm}$ found in figure
 
 \begin{figure}
 \begin{align*}
-E[(\lambda x.e)\,v]                         &\rightarrow E[e[x\leftarrow v]]\\
-E[(\mathrm{wcm}\,v\,(\mathrm{wcm}\,v'\,e))] &\rightarrow E[(\mathrm{wcm}\,v'\,e)]\\
-E[(\mathrm{wcm}\,v\,v')]                    &\rightarrow E[v']\\
-E[(\mathrm{ccm})]                           &\rightarrow E[\chi(E)]
+E[(\lambda x.e)\,v]     &\rightarrow E[e[x\leftarrow v]]\\
+E[\wcm{v}{\wcm{v'}{e}}] &\rightarrow E[\wcm{v'}{e}]\\
+E[\wcm{v}{v'}]          &\rightarrow E[v']\\
+E[\ccm]                 &\rightarrow E[\chi(E)]
 \end{align*}
 \caption{$\lambda_{cm}$ evaluation rules}
 \label{language-semantics}
@@ -912,11 +926,11 @@ E[(\mathrm{ccm})]                           &\rightarrow E[\chi(E)]
 
 \begin{figure}
 \begin{align*}
-\chi(\bullet)                       &= \mathrm{nil}\\
-\chi(E[(\bullet\,e)])               &= \chi(E)\\
-\chi(E[(v\,\bullet)])               &= \chi(E)\\
-\chi(E[(\mathrm{wcm}\,\bullet\,e)]) &= \chi(E)\\
-\chi(E[(\mathrm{wcm}\,v\,\bullet)]) &= v : \chi(E)
+\chi(\hole)             &= \mathrm{nil}\\
+\chi(E[\app{\hole}{e}]) &= \chi(E)\\
+\chi(E[\app{v}{\hole}]) &= \chi(E)\\
+\chi(E[\wcm{\hole}{e}]) &= \chi(E)\\
+\chi(E[\wcm{v}{\hole}]) &= v : \chi(E)
 \end{align*}
 \caption{Definition of $\chi$ metafunction}
 \label{chi-metafunction}
@@ -1042,9 +1056,9 @@ $\mathcal{C}_{1}$ formally as
 \begin{align*}
 \mathcal{C}_{1}[x]                      &= \lambda k.\lambda m.(k\,x)\\
 \mathcal{C}_{1}[\lambda x.E]            &= \lambda k.\lambda m.(k\,\lambda x.\mathcal{C}_{1}[E])\\
-\mathcal{C}_{1}[(E\,F)]                 &= \lambda k.\lambda m.((\mathcal{C}_{1}[E]\,\lambda e.((\mathcal{C}_{1}[F]\,\lambda f.(((e\,f)\,k)\,m))\,m))\,m)\\
-\mathcal{C}_{1}[(\mathrm{wcm}\,E\,F)]   &= \lambda k.\lambda m.((\mathcal{C}_{1}[E]\,\lambda e.((\mathcal{C}_{1}[F]\,k)\,\mathbf{(}e\mathbf{,}m\mathbf{)}))\,m)\\
-\mathcal{C}_{1}[(\mathrm{ccm})]         &= \lambda k.\lambda m.(k\,m)
+\mathcal{C}_{1}[\app{E}{F}]                 &= \lambda k.\lambda m.((\mathcal{C}_{1}[E]\,\lambda e.((\mathcal{C}_{1}[F]\,\lambda f.(((e\,f)\,k)\,m))\,m))\,m)\\
+\mathcal{C}_{1}[\wcm{E}{F}]   &= \lambda k.\lambda m.((\mathcal{C}_{1}[E]\,\lambda e.((\mathcal{C}_{1}[F]\,k)\,\mathbf{(}e\mathbf{,}m\mathbf{)}))\,m)\\
+\mathcal{C}_{1}[\ccm]         &= \lambda k.\lambda m.(k\,m)
 \end{align*}
 
 Despite its gross deficiencies, this definition captures some of the critical aspects of a
@@ -1118,14 +1132,14 @@ we will assume that this approach is a fine way to go.
 
 \subsubsection{A principled approach}
 
-Consider the program $(\mathrm{ccm})$. In $\lambda_{cm}$, it evaluates to the empty list under 
+Consider the program $\ccm$. In $\lambda_{cm}$, it evaluates to the empty list under 
 Church encoding; that is,
 \[
-(\mathrm{ccm})\rightarrow_{\lambda_{cm}}\mathbf{nil}
+\ccm\cmrr \mathbf{nil}
 \]
 We also have
 \[
-\mathcal{C}_{1}[(\mathrm{ccm})]=\lambda k.\lambda m.(k\,m)
+\mathcal{C}_{1}[\ccm]=\lambda k.\lambda m.(k\,m)
 \]
 and assuming for now that the identity function is a satisfactory continuation to provide, 
 we have
@@ -1139,27 +1153,27 @@ This might suggest that we're on the right track.
 
 We now turn our attention to the tail-call behavior of $\mathcal{C}_{1}$. According to the 
 semantics of $\lambda_{cm}$, the program 
-$(\mathrm{wcm}\,v_0\,(\mathrm{wcm}\,v_1\,(\mathrm{ccm})))$ evaluates as
+$\wcm{v_0}{\wcm{v_1}{\ccm}}$ evaluates as
 \begin{align*}
-                          &(\mathrm{wcm}\,v_0\,(\mathrm{wcm}\,v_1\,(\mathrm{ccm})))\\
-\rightarrow_{\lambda_{cm}}&(\mathrm{wcm}\,v_1\,(\mathrm{ccm}))\\
-\rightarrow_{\lambda_{cm}}&(\mathrm{wcm}\,v_1\,[v_1])\\
-\rightarrow_{\lambda_{cm}}&[v_1]
+      &\wcm{v_0}{\wcm{v_1}{\ccm}}\\
+\cmrr &\wcm{v_1}{\ccm}\\
+\cmrr &\wcm{v_1}{[v_1]}\\
+\cmrr &[v_1]
 \end{align*}
 
 However, consider the $\mathcal{C}_1$ transformation of this program
 \begin{align*}
-  &\mathcal{C}_1[(\mathrm{wcm}\,v_0\,(\mathrm{wcm}\,v_1\,(\mathrm{ccm})))]\\
-= &\lambda k.\lambda m.((\mathcal{C}_1[v_0]\,\lambda e.((\mathcal{C}_1[(\mathrm{wcm}\,v_1\,(\mathrm{ccm}))]\,k)\,\mathbf{(}e\mathbf{,}m\mathbf{)}))\,m)\\
-= &\lambda k.\lambda m.((\mathcal{C}_1[v_0]\,\lambda e.((\lambda k.\lambda m.((\mathcal{C}_1[v_1]\,\lambda e.((\mathcal{C}_1[(\mathrm{ccm})]\,k)\,\mathbf{(}e\mathbf{,}m\mathbf{)}))\,m)\,k)\,\mathbf{(}e\mathbf{,}m\mathbf{)}))\,m)\\
+  &\mathcal{C}_1[\wcm{v_0}{\wcm{v_1}{\ccm}}]\\
+= &\lambda k.\lambda m.((\mathcal{C}_1[v_0]\,\lambda e.((\mathcal{C}_1[\wcm{v_1}{\ccm}]\,k)\,\mathbf{(}e\mathbf{,}m\mathbf{)}))\,m)\\
+= &\lambda k.\lambda m.((\mathcal{C}_1[v_0]\,\lambda e.((\lambda k.\lambda m.((\mathcal{C}_1[v_1]\,\lambda e.((\mathcal{C}_1[\ccm]\,k)\,\mathbf{(}e\mathbf{,}m\mathbf{)}))\,m)\,k)\,\mathbf{(}e\mathbf{,}m\mathbf{)}))\,m)\\
 = &\lambda k.\lambda m.((\mathcal{C}_1[v_0]\,\lambda e.((\lambda k.\lambda m.((\mathcal{C}_1[v_1]\,\lambda e.((\lambda k.\lambda m.(k\,m)\,k)\,\mathbf{(}e\mathbf{,}m\mathbf{)}))\,m)\,k)\,\mathbf{(}e\mathbf{,}m\mathbf{)}))\,m)\\
 \end{align*}
 and its corresponding evaluation when provided an appropriate continuation and marks argument
 \begin{align*}
                         &((\lambda k.\lambda m.((\mathcal{C}_1[v_0]\,\lambda e.((\lambda k.\lambda m.((\mathcal{C}_1[v_1]\,\lambda e.((\lambda k.\lambda m.(k\,m)\,k)\,\mathbf{(}e\mathbf{,}m\mathbf{)}))\,m)\,k)\,\mathbf{(}e\mathbf{,}m\mathbf{)}))\,m)\,\lambda z.z)\,\mathbf{nil})\\
-\rightarrow_{\lambda_v} &(\lambda m.((\mathcal{C}_1[v_0]\,\lambda e.((\lambda k.\lambda m.((\mathcal{C}_1[v_1]\,\lambda e.((\lambda k.\lambda m.(k\,m)\,k)\,\mathbf{(}e\mathbf{,}m\mathbf{)}))\,m)\,\lambda z.z)\,\mathbf{(}e\mathbf{,}m\mathbf{)}))\,m)\,\mathbf{nil})\\
-\rightarrow_{\lambda_v} &((\mathcal{C}_1[v_0]\,\lambda e.((\lambda k.\lambda m.((\mathcal{C}_1[v_1]\,\lambda e.((\lambda k.\lambda m.(k\,m)\,k)\,\mathbf{(}e\mathbf{,}m\mathbf{)}))\,m)\,\lambda z.z)\,\mathbf{(}e\mathbf{,}\mathbf{nil}\mathbf{)}))\,\mathbf{nil})\\
-\rightarrow_{\lambda_v} &...\\
+\lvrr &(\lambda m.((\mathcal{C}_1[v_0]\,\lambda e.((\lambda k.\lambda m.((\mathcal{C}_1[v_1]\,\lambda e.((\lambda k.\lambda m.(k\,m)\,k)\,\mathbf{(}e\mathbf{,}m\mathbf{)}))\,m)\,\lambda z.z)\,\mathbf{(}e\mathbf{,}m\mathbf{)}))\,m)\,\mathbf{nil})\\
+\lvrr &((\mathcal{C}_1[v_0]\,\lambda e.((\lambda k.\lambda m.((\mathcal{C}_1[v_1]\,\lambda e.((\lambda k.\lambda m.(k\,m)\,k)\,\mathbf{(}e\mathbf{,}m\mathbf{)}))\,m)\,\lambda z.z)\,\mathbf{(}e\mathbf{,}\mathbf{nil}\mathbf{)}))\,\mathbf{nil})\\
+\lvrr &...\\
 \end{align*}
 
 ---
@@ -1172,7 +1186,7 @@ a superset of the $\lambda$-calculus, such a program considered in $\lambda_{cm}
 reduce to an equivalent value as when considered in the $\lambda$-calculus. More precisely, 
 if $e$ is a program,
 \[
-e\rightarrow_{\lambda_{cm}}v
+e\cmrr v
 \]
 and
 \[
@@ -1184,7 +1198,7 @@ This case is complicated by our transform, however, as terms in $\lambda_{cm}$ a
 directly interpreted as terms in the $\lambda$-calculus. The idea we are really after is, 
 if $e$ is a program,
 \[
-e\rightarrow_{\lambda_{cm}}v
+e\cmrr v
 \]
 and
 \[
@@ -1242,7 +1256,7 @@ be observed by the original $\lambda_{cm}$ program.
 \setspecialsymbol{T}{$\mathcal{A}$}
 \setspecialsymbol{C}{$\mathcal{C}$}
 \setspecialsymbol{Cp}{$\mathcal{C}'$}
-\setspecialsymbol{hole}{$\bullet$}
+\setspecialsymbol{hole}{$\hole$}
 \setspecialsymbol{bottom}{$\perp$}
 \setspecialsymbol{Ce_0p_x_Cpv_1}{$\mathcal{C}[e'_0][x\leftarrow\mathcal{C}'[v_1]]$}
 \setspecialsymbol{e_0p_x_v_1}{$e'_0[x\leftarrow v_1]$}
@@ -1342,15 +1356,15 @@ CE
 Let
 \[
 \mathrm{eval}_{cm}(p)=\begin{cases}
-v     &\text{if $p\rightarrow_{\lambda_{cm}}^{*}v$}\\
-\perp &\text{if $p\rightarrow_{\lambda_{cm}}^{*}\cdots$}
+v     &\text{if $p\cmrrs v$}\\
+\perp &\text{if $p\cmrrs \cdots$}
 \end{cases}
 \]
 and
 \[
 \mathrm{eval}_{v}(p)=\begin{cases}
-v     &\text{if $((p\,(\lambda\,(v)\,\mathcal{C}[v]))\,((\mathbf{pair}\,\mathbf{false})\,\mathcal{C}[\mathbf{nil}]))\rightarrow_{\lambda_v}^{*}v$}\\
-\perp &\text{if $((p\,(\lambda\,(v)\,\mathcal{C}[v]))\,((\mathbf{pair}\,\mathbf{false})\,\mathcal{C}[\mathbf{nil}]))\rightarrow_{\lambda_v}^{*}\cdots$}
+v     &\text{if $((p\,(\lambda\,(v)\,\mathcal{C}[v]))\,((\mathbf{pair}\,\mathbf{false})\,\mathcal{C}[\mathbf{nil}]))\lvrrs v$}\\
+\perp &\text{if $((p\,(\lambda\,(v)\,\mathcal{C}[v]))\,((\mathbf{pair}\,\mathbf{false})\,\mathcal{C}[\mathbf{nil}]))\lvrrs \cdots$}
 \end{cases}
 \]
 
@@ -1362,7 +1376,7 @@ Define
 
 \[
 \mathrm{\xi}(E)=\begin{cases}
-\mathbf{true} &\text{if $E=E'[(\mathrm{wcm}\,v'\,\bullet)]$ for some $E'$ and $v'$}\\
+\mathbf{true} &\text{if $E=E'[\wcm{v'}{\hole}]$ for some $E'$ and $v'$}\\
 \mathbf{false} &\text{otherwise}
 \end{cases}
 \]
@@ -1381,14 +1395,14 @@ For all values $(\lambda\,(x)\,e_0)$ and $(\lambda\,(y)\,e_1)$, $\mathcal{C}[e_0
 
 \begin{lemma}
 \label{hole-context-to-value}
-For all values $(\lambda\,(x)\,e)$, $(\mathcal{C}[\bullet]\,\mathcal{C}'[(\lambda\,(x)\,e)]=\mathcal{C}[(\lambda\,(x)\,e)]$.
+For all values $(\lambda\,(x)\,e)$, $(\mathcal{C}[\hole]\,\mathcal{C}'[(\lambda\,(x)\,e)]=\mathcal{C}[(\lambda\,(x)\,e)]$.
 \end{lemma}
 
 \begin{proof}
 \begin{align*}
-(\mathcal{C}[\bullet]\,\mathcal{C}'[(\lambda\,(x)\,e)] = &((\lambda\,(v)\,\mathcal{C}[v])\,\mathcal{C}'[(\lambda\,(x)\,e)]\\
+(\mathcal{C}[\hole]\,\mathcal{C}'[(\lambda\,(x)\,e)] = &((\lambda\,(v)\,\mathcal{C}[v])\,\mathcal{C}'[(\lambda\,(x)\,e)]\\
                                                        = &((\lambda\,(v)\,\mathcal{C}[v])\,(\lambda\,(x)\,\mathcal{C}[e])\\
-                                 \rightarrow_{\lambda_v} &\mathcal{C}[v][v\leftarrow (\lambda\,(x)\,\mathcal{C}[e])]\\
+                                 \lvrr &\mathcal{C}[v][v\leftarrow (\lambda\,(x)\,\mathcal{C}[e])]\\
                                                        = &\mathcal{C}[v[v\leftarrow (\lambda\,(x)\,e)]]\\
                                                        = &\mathcal{C}[(\lambda\,(x)\,e)]
 \end{align*}
@@ -1396,18 +1410,18 @@ For all values $(\lambda\,(x)\,e)$, $(\mathcal{C}[\bullet]\,\mathcal{C}'[(\lambd
 
 \newtheorem*{eqtheorem}{Equivalence Theorem}
 \begin{eqtheorem}
-For all contexts $E\in\lambda_{cm}$ and expressions $e\in\lambda_{cm}$, $E[e]\rightarrow_{\lambda_{cm}}^{*}v\Rightarrow ((\mathcal{C}[e]\,\mathcal{C}[E])\,\overline{((\mathbf{pair}\,\xi(E))\,\chi(E))})\rightarrow_{\lambda_v}^{*}\mathcal{C}[v]$.
+For all contexts $E\in\lambda_{cm}$ and expressions $e\in\lambda_{cm}$, $E[e]\cmrrs v\implies ((\mathcal{C}[e]\,\mathcal{C}[E])\,\overline{((\mathbf{pair}\,\xi(E))\,\chi(E))})\lvrrs \mathcal{C}[v]$.
 \end{eqtheorem}
 
 Fix $E$ and assume it works for $E$.
 
 \begin{proof}[Case $e=(e_0\,e_1)$]
 % prove E[(e0 e1)] -> v => ((C[(e0 e1)] C[E]) ((pair xi(E)) C[chi(E)])) -> C[v]
-Assume $E[(e_0\,e_1)]\rightarrow_{\lambda_{cm}}^{*}v$. Consider $((\mathcal{C}[(e_0\,e_1)]\,\mathcal{C}[E])\,\overline{((\mathbf{pair}\,\xi(E))\,\chi(E))})$.
+Assume $E[(e_0\,e_1)]\cmrrs v$. Consider $((\mathcal{C}[(e_0\,e_1)]\,\mathcal{C}[E])\,\overline{((\mathbf{pair}\,\xi(E))\,\chi(E))})$.
 % -> ((C[e0] C[E[(* e1)]]) ((pair xi(E[(* e1)])) C[chi(E[(* e1)])]))
 Steps app1-app7 show
 \[
-((\mathcal{C}[(e_0\,e_1)]\,\mathcal{C}[E])\,\overline{((\mathbf{pair}\,\xi(E))\,\chi(E))})\rightarrow_{\lambda_v}^{*}((\mathcal{C}[e_0]\,\mathcal{C}[E[(\bullet\,e_1)]])\,\overline{((\mathbf{pair}\,\xi(E[(\bullet\,e_1)]))\,\chi(E[(\bullet\,e_1)]))})
+((\mathcal{C}[(e_0\,e_1)]\,\mathcal{C}[E])\,\overline{((\mathbf{pair}\,\xi(E))\,\chi(E))})\lvrrs ((\mathcal{C}[e_0]\,\mathcal{C}[E[(\hole\,e_1)]])\,\overline{((\mathbf{pair}\,\xi(E[(\hole\,e_1)]))\,\chi(E[(\hole\,e_1)]))})
 \]
 From here, we must account for two contingencies:
 \begin{enumerate}
@@ -1419,13 +1433,13 @@ The entire term fails to evaluate, as in app9-e0-bottom. This property is lifted
 % assume C[e0] goes to correct value (structural induction) E[(* e1)][e0] -> E[(* e1)][v0]
 Otherwise, we assume by induction that 
 \[
-((\mathcal{C}[e_0]\,\mathcal{C}[E[(\bullet\,e_1)]])\,\overline{((\mathbf{pair}\,\xi(E[(\bullet\,e_1)]))\,\chi(E[(\bullet\,e_1)]))})\rightarrow_{\lambda_v}^{*}(\mathcal{C}[E[(\bullet\,e_1)]]\,\mathcal{C}'[v_0])
+((\mathcal{C}[e_0]\,\mathcal{C}[E[(\hole\,e_1)]])\,\overline{((\mathbf{pair}\,\xi(E[(\hole\,e_1)]))\,\chi(E[(\hole\,e_1)]))})\lvrrs (\mathcal{C}[E[(\hole\,e_1)]]\,\mathcal{C}'[v_0])
 \]
-where $E[(\bullet\,e_1)][e_0]\rightarrow_{\lambda_{cm}}^{*}E[(\bullet\,e_1)][v_0]$, as in app8.
+where $E[(\hole\,e_1)][e_0]\cmrrs E[(\hole\,e_1)][v_0]$, as in app8.
 % -> ((C[e1] C[E[(v0 *)]]) ((pair xi(E[(v0 *)])) C[chi(E[(v0 *)])]))
 By app9, 
 \[
-(\mathcal{C}[E[(\bullet\,e_1)]]\,\mathcal{C}'[v_0])\rightarrow_{\lambda_v}((\mathcal{C}[e_1]\,\mathcal{C}[E[(v_0\,\bullet)]])\,\overline{((\mathbf{pair}\,\xi(E[(v_0\,\bullet)]))\,\chi(E[(v_0\,\bullet)]))})
+(\mathcal{C}[E[(\hole\,e_1)]]\,\mathcal{C}'[v_0])\lvrr((\mathcal{C}[e_1]\,\mathcal{C}[E[(v_0\,\hole)]])\,\overline{((\mathbf{pair}\,\xi(E[(v_0\,\hole)]))\,\chi(E[(v_0\,\hole)]))})
 \]
 From here, we must account for the same two contingencies as before:
 \begin{enumerate}
@@ -1437,17 +1451,17 @@ The entire term fails to evaluate, as in app11-e0-bottom. This property is lifte
 % assume C[e1] goes to correct value (structural induction) E[(v0 *)][e1] -> E[(v0 *)][v1]
 Otherwise, we assume by induction that 
 \[
-((\mathcal{C}[e_1]\,\mathcal{C}[E[(v_0\,\bullet)]])\,\overline{((\mathbf{pair}\,\xi(E[(v_0\,\bullet)]))\,\chi(E[(v_0\,\bullet)]))})\rightarrow_{\lambda_v}^{*}(\mathcal{C}[E[(v_0\,\bullet)]]\,\mathcal{C}'[v_1])
+((\mathcal{C}[e_1]\,\mathcal{C}[E[(v_0\,\hole)]])\,\overline{((\mathbf{pair}\,\xi(E[(v_0\,\hole)]))\,\chi(E[(v_0\,\hole)]))})\lvrrs (\mathcal{C}[E[(v_0\,\hole)]]\,\mathcal{C}'[v_1])
 \]
-where $E[(v_0\,\bullet)][e_1]\rightarrow_{\lambda_{cm}}^{*}E[(v_0\,\bullet)][v_1]$, as in app10.
+where $E[(v_0\,\hole)][e_1]\cmrrs E[(v_0\,\hole)][v_1]$, as in app10.
 % -> ((C[(v0 v1)] C[E]) ((pair xi(E)) C[chi(E)]))
 By app11,
 \[
-(\mathcal{C}[E[(v_0\,\bullet)]]\,\mathcal{C}'[v_1])\rightarrow_{\lambda_v}(((\mathcal{C}'[v_0]\,\mathcal{C}'[v_1])\,\mathcal{C}[E])\,\overline{((\mathbf{pair}\,\xi(E))\,\chi(E))})
+(\mathcal{C}[E[(v_0\,\hole)]]\,\mathcal{C}'[v_1])\lvrr(((\mathcal{C}'[v_0]\,\mathcal{C}'[v_1])\,\mathcal{C}[E])\,\overline{((\mathbf{pair}\,\xi(E))\,\chi(E))})
 \]
 If $\mathcal{C}'[v_0]=(\lambda\,(x)\,\mathcal{C}[e'_0])$, then, by lemma \ref{collapse},
 \begin{align*}
-(((\mathcal{C}'[v_0]\,\mathcal{C}'[v_1])\,\mathcal{C}[E])\,\overline{((\mathbf{pair}\,\xi(E))\,\chi(E))})\rightarrow_{\lambda_v} &((\mathcal{C}[e'_0[x\leftarrow v_1]]\,\mathcal{C}[E])\,\overline{((\mathbf{pair}\,\xi(E))\,\chi(E))})\\
+(((\mathcal{C}'[v_0]\,\mathcal{C}'[v_1])\,\mathcal{C}[E])\,\overline{((\mathbf{pair}\,\xi(E))\,\chi(E))})\lvrr &((\mathcal{C}[e'_0[x\leftarrow v_1]]\,\mathcal{C}[E])\,\overline{((\mathbf{pair}\,\xi(E))\,\chi(E))})\\
 % assume (v0 v1) -> e2
 % -> ((C[e2] C[E]) ((pair xi(E)) C[chi(E)]))
 = &((\mathcal{C}[e_2]\,\mathcal{C}[E])\,\overline{((\mathbf{pair}\,\xi(E))\,\chi(E))})
@@ -1455,17 +1469,17 @@ If $\mathcal{C}'[v_0]=(\lambda\,(x)\,\mathcal{C}[e'_0])$, then, by lemma \ref{co
 for some $e_2$.
 
 % ((C[v2] C[E]) ((pair xi(E)) C[chi(E)])) is correct by assumption (structural induction (and E?))
-By induction, we assume that $E[e_2]\rightarrow_{\lambda_{cm}}^{*}v\Rightarrow((\mathcal{C}[e_2]\,\mathcal{C}[E])\,\overline{((\mathbf{pair}\,\xi(E))\,\chi(E))})\rightarrow_{\lambda_v}^{*}\mathcal{C}[v]$.
+By induction, we assume that $E[e_2]\cmrrs v\implies((\mathcal{C}[e_2]\,\mathcal{C}[E])\,\overline{((\mathbf{pair}\,\xi(E))\,\chi(E))})\lvrrs \mathcal{C}[v]$.
 (There's something missing in this last statement. How do we know that $e_2$ is what we want--that we've preserved the correct execution?)
 \end{proof}
 
-\begin{proof}[Case $e=(\mathrm{wcm}\,e_0\,e_1)$]
+\begin{proof}[Case $e=\wcm{e_0}{e_1}$]
 % prove E[(wcm e0 e1)] -> v => ((C[(wcm e0 e1)] C[E]) ((pair xi(E)) C[chi(E)])) -> C[v]
-Assume $E[(\mathrm{wcm}\,e_0\,e_1)]\rightarrow_{\lambda_{cm}}^{*}v$. Consider $((\mathcal{C}[(\mathrm{wcm}\,e_0\,e_1)]\,\mathcal{C}[E])\,\overline{((\mathbf{pair}\,\xi(E))\,\chi(E))})$.
+Assume $E[\wcm{e_0}{e_1}]\cmrrs v$. Consider $((\mathcal{C}[\wcm{e_0}{e_1}]\,\mathcal{C}[E])\,\overline{((\mathbf{pair}\,\xi(E))\,\chi(E))})$.
 % -> ((C[e0] C[E[(wcm * e1)]]) ((pair xi(E[(wcm * e1)])) C[chi(E[(wcm * e1)])]))
 Steps wcm1-wcm7 show
 \[
-((\mathcal{C}[(\mathrm{wcm}\,e_0\,e_1)]\,\mathcal{C}[E])\,\overline{((\mathbf{pair}\,\xi(E))\,\chi(E))})\rightarrow_{\lambda_v}^{*}((\mathcal{C}[e_0]\,\mathcal{C}[E[(\mathrm{wcm}\,\bullet\,e_1)]])\,\overline{((\mathbf{pair}\,\xi(E[(\mathrm{wcm}\,\bullet\,e_1)]))\,\chi(E[(\mathrm{wcm}\,\bullet\,e_1)]))})
+((\mathcal{C}[\wcm{e_0}{e_1}]\,\mathcal{C}[E])\,\overline{((\mathbf{pair}\,\xi(E))\,\chi(E))})\lvrrs ((\mathcal{C}[e_0]\,\mathcal{C}[E[\wcm{\hole}{e_1}]])\,\overline{((\mathbf{pair}\,\xi(E[\wcm{\hole}{e_1}]))\,\chi(E[\wcm{\hole}{e_1}]))})
 \]
 From here, we must account for two contingencies:
 \begin{enumerate}
@@ -1477,48 +1491,48 @@ The entire term fails to evaluate, as in wcm9-e0-bottom. This property is lifted
 % assume C[e0] goes to correct value (structural induction) E[(wcm * e1)][e0] -> E[(wcm * e1)][v0]
 Otherwise, we assume by induction that 
 \[
-((\mathcal{C}[e_0]\,\mathcal{C}[E[(\mathrm{wcm}\,\bullet\,e_1)]])\,\overline{((\mathbf{pair}\,\xi(E[(\mathrm{wcm}\,\bullet\,e_1)]))\,\chi(E[(\mathrm{wcm}\,\bullet\,e_1)]))})\rightarrow_{\lambda_v}^{*}(\mathcal{C}[E[(\mathrm{wcm}\,\bullet\,e_1)]]\,\mathcal{C}'[v_0])
+((\mathcal{C}[e_0]\,\mathcal{C}[E[\wcm{\hole}{e_1}]])\,\overline{((\mathbf{pair}\,\xi(E[\wcm{\hole}{e_1}]))\,\chi(E[\wcm{\hole}{e_1}]))})\lvrrs(\mathcal{C}[E[\wcm{\hole}{e_1}]]\,\mathcal{C}'[v_0])
 \]
-where $E[(\mathrm{wcm}\,\bullet\,e_1)][e_0]\rightarrow_{\lambda_{cm}}^{*}E[(\mathrm{wcm}\,\bullet\,e_1)][v_0]$, as in wcm8.
+where $E[\wcm{\hole}{e_1}][e_0]\cmrrs E[\wcm{\hole}{e_1}][v_0]$, as in wcm8.
 By wcm9-wcm13,
 \[
-(\mathcal{C}[E[(\mathrm{wcm}\,\bullet\,e_1)]]\,\mathcal{C}'[v_0])\rightarrow_{\lambda_v}^{*}x
+(\mathcal{C}[E[(\wcm{\hole}{e_1}]]\,\mathcal{C}'[v_0])\lvrrs x
 \]
 From here, reduction depends on the value of $\xi(E)$.
 \begin{proof}[Case $\xi(E)=\mathbf{true}$]
-This corresponds to the case that $E=E'[(\mathrm{wcm}\,v'\,\bullet)]$ for some $E'$ and $v'$.
-%Then $E[(\mathrm{wcm}\,v_0\,e_1)]=E'[(\mathrm{wcm}\,v'\,(\mathrm{wcm}\,v_0\,e_1))]$. Then %$\chi(E[(\mathrm{wcm}\,v_0\,\bullet)])=\chiE'[(\mathrm{wcm}\,v'\,(\mathrm{wcm}\,v_0\,bullet))]$
+This corresponds to the case that $E=E'[\wcm{v'}{\hole}]$ for some $E'$ and $v'$.
+%Then $E[\wcm{v_0}{e_1}]=E'[\wcm{v'}{\wcm{v_0}{e_1}}]$. Then %$\chi(E[\wcm{v_0}{\hole}])=\chiE'[\wcm{v'}{\wcm{v_0}{\hole}}]$
 
-$\chi(E[(\mathrm{wcm}\,v_0\,\bullet)])=\chi(E'[(\mathrm{wcm}\,v_0\,\bullet)])=v_0 : \chi(E')$
+$\chi(E[\wcm{v_0}{\hole}])=\chi(E'[\wcm{v_0}{\hole}])=v_0 : \chi(E')$
 
 \begin{align*}
-E[(\mathrm{wcm}\,v_0\,e_1)]= &E'[(\mathrm{wcm}\,v'\,(\mathrm{wcm}\,v_0\,e_1))]\\
-\rightarrow_{\lambda_{cm}}   &E'[(\mathrm{wcm}\,v_0\,e_1)]
+E[\wcm{v_0}{e_1}]= &E'[\wcm{v'}{\wcm{v_0}{e_1}}]\\
+\cmrr              &E'[\wcm{v_0}{e_1}]
 \end{align*}
 
 \begin{align*}
-\chi(E'[(\mathrm{wcm}\,v_0\,\bullet)]) &=v_0 : \chi(E')\\
-                                       &=v_0 : (\mathrm{snd}\,\chi(E'[(\mathrm{wcm}\,v'\,\bullet)]))\\
-                                       &=v_0 : (\mathrm{snd}\,\chi(E))
+\chi(E'[\wcm{v_0}{\hole}]) &=v_0 : \chi(E')\\
+                           &=v_0 : (\mathrm{snd}\,\chi(E'[\wcm{v'}{\hole}]))\\
+                           &=v_0 : (\mathrm{snd}\,\chi(E))
 \end{align*}
 
 If $\xi(E)=\mathbf{true}$, then $x=y$, as in wcm13-tail. By wcm14-tail-wcm
 \end{proof}
 \begin{proof}[Case $\xi(E)=\mathbf{false}$]
-This corresponds to the case that $E\ne E'[(\mathrm{wcm}\,v'\,\bullet)]$ for any $E'$ and $v'$.
+This corresponds to the case that $E\ne E'[\wcm{v'}{\hole}]$ for any $E'$ and $v'$.
 
 Then
 
 \begin{align*}
-\chi(E[(\mathrm{wcm}\,v_0\,\bullet)]) &=\overline{((\mathbf{pair}\,v_0)\,\chi(E))}\\
+\chi(E[\wcm{v_0}{\hole}]) &=\overline{((\mathbf{pair}\,v_0)\,\chi(E))}\\
 \end{align*}
 \end{proof}
 
-$E[(\mathrm{wcm}\,v_0\,v_1)]\rightarrow_{\lambda_{cm}}E[v_1]$
+$E[\wcm{v_0}{v_1}]\cmrr E[v_1]$
 
-$((\mathcal{C}[e_1]\,\mathcal{C}[E[(\mathrm{wcm}\,v_0\,\bullet)]])\,\overline{((\mathbf{pair}\,\xi(E))\,\mathcal{C}[\chi(E)])})\rightarrow_{\lambda_v}^{*}((\mathcal{C}[v_1]\,\mathcal{C}[E])\,\overline{((\mathbf{pair}\,\xi(E))\,\mathcal{C}[\chi(E)])})$
+$((\mathcal{C}[e_1]\,\mathcal{C}[E[\wcm{v_0}{\hole}]])\,\overline{((\mathbf{pair}\,\xi(E))\,\mathcal{C}[\chi(E)])})\lvrrs ((\mathcal{C}[v_1]\,\mathcal{C}[E])\,\overline{((\mathbf{pair}\,\xi(E))\,\mathcal{C}[\chi(E)])})$
 
-$((\mathcal{C}[(\mathrm{wcm}\,v_0\,v_1)]\,\mathcal{C}[E])\,\overline{((\mathbf{pair}\,\xi(E))\,\mathcal{C}[\chi(E)])})\rightarrow_{\lambda_v}^{*}((\mathcal{C}[v_1]\,\mathcal{C}[E])\,\overline{((\mathbf{pair}\,\xi(E))\,\mathcal{C}[\chi(E)])})$
+$((\mathcal{C}[\wcm{v_0}{v_1}]\,\mathcal{C}[E])\,\overline{((\mathbf{pair}\,\xi(E))\,\mathcal{C}[\chi(E)])})\lvrrs ((\mathcal{C}[v_1]\,\mathcal{C}[E])\,\overline{((\mathbf{pair}\,\xi(E))\,\mathcal{C}[\chi(E)])})$
 
 
 % assume reduces correctly by induction
@@ -1526,22 +1540,22 @@ $((\mathcal{C}[(\mathrm{wcm}\,v_0\,v_1)]\,\mathcal{C}[E])\,\overline{((\mathbf{p
 % assume reduces by structural induction
 \end{proof}
 
-\begin{proof}[Case $e=(\mathrm{ccm})$]
+\begin{proof}[Case $e=\ccm$]
 % prove E[(ccm)] -> v => ((C[(ccm)] C[E]) ((pair xi(E)) C[chi(E)])) -> C[v]
-Assume $E[(\mathrm{ccm})]\rightarrow_{\lambda_{cm}}^{*}v$. Consider $((\mathcal{C}[(\mathrm{ccm})]\,\mathcal{C}[E])\,\overline{((\mathbf{pair}\,\xi(E))\,\chi(E))})$.
+Assume $E[\ccm]\cmrrs v$. Consider $((\mathcal{C}[\ccm]\,\mathcal{C}[E])\,\overline{((\mathbf{pair}\,\xi(E))\,\chi(E))})$.
 % -> ((C[e0] C[E[(* e1)]]) ((pair xi(E[(* e1)])) C[chi(E[(* e1)])]))
 Steps ccm1-ccm3 show
 \[
-((\mathcal{C}[(\mathrm{ccm})]\,\mathcal{C}[E])\,\overline{((\mathbf{pair}\,\xi(E))\,\chi(E))})\rightarrow_{\lambda_v}^{*}((\mathcal{C}[\chi(E)]\,\mathcal{C}[E])\,(\lambda\,(z)\,z))
+((\mathcal{C}[\ccm]\,\mathcal{C}[E])\,\overline{((\mathbf{pair}\,\xi(E))\,\chi(E))})\lvrrs ((\mathcal{C}[\chi(E)]\,\mathcal{C}[E])\,(\lambda\,(z)\,z))
 \]
 Since $\chi(E)$ is a value, we appeal to the value case.
 \end{proof}
 
 \begin{proof}[Case $e=v$]
 % prove E[v] -> v' => ((C[v] C[E]) ((pair xi(E)) C[chi(E)])) -> C[v']
-Assume $E[v]\rightarrow_{\lambda_{cm}}^{*}v'$. Consider $((\mathcal{C}[v]\,\mathcal{C}[E])\,\overline{((\mathbf{pair}\,\xi(E))\,\chi(E))})$.
+Assume $E[v]\cmrrs v'$. Consider $((\mathcal{C}[v]\,\mathcal{C}[E])\,\overline{((\mathbf{pair}\,\xi(E))\,\chi(E))})$.
 % by assumption of E
-By assumption of the correctness of $E$, $((\mathcal{C}[v]\,\mathcal{C}[E])\,\overline{((\mathbf{pair}\,\xi(E))\,\chi(E))})\rightarrow_{\lambda_v}\mathcal{C}[v']$.
+By assumption of the correctness of $E$, $((\mathcal{C}[v]\,\mathcal{C}[E])\,\overline{((\mathbf{pair}\,\xi(E))\,\chi(E))})\lvrr\mathcal{C}[v']$.
 \end{proof}
 
 \begin{proof}[Case $e=x$]
@@ -1555,22 +1569,24 @@ By assumption of the correctness of $E$, $((\mathcal{C}[v]\,\mathcal{C}[E])\,\ov
 
 Fix $e$ and assume it works for $e$.
 
-\begin{proof}{Case $E=\bullet$}
-Assume $\bullet[e]\rightarrow_{\lambda_{cm}}^{*}v$. Consider $((\mathcal{C}[e]\,C[\bullet])\,\overline{((\mathbf{pair}\,\xi(\bullet))\,\chi(\bullet))})$.
+\begin{proof}{Case $E=\hole$}
+Assume $\hole[e]\cmrrs v$. Consider $((\mathcal{C}[e]\,C[\hole])\,\overline{((\mathbf{pair}\,\xi(\hole))\,\chi(\hole))})$.
 
-By assumption on $e$, $((\mathcal{C}[e]\,C[\bullet])\,\overline{((\mathbf{pair}\,\xi(\bullet))\,\chi(\bullet))})\rightarrow_{\lambda_v}^{*}(\mathcal{C}[\bullet]\,\mathcal{C}'[v])$.
-By Lemma \ref{hole-context-to-value}, $(\mathcal{C}[\bullet]\,\mathcal{C}'[v])\rightarrow_{\lambda_v}\mathcal{C}[v]$.
-Then $\bullet[e]\rightarrow_{\lambda_{cm}}^{*}v\Rightarrow((\mathcal{C}[e]\,\mathcal{C}[\bullet])\,\overline{((\mathbf{pair}\,\xi(\bullet))\,\chi(\bullet))})\rightarrow_{\lambda_v}^{*}\mathcal{C}[v]$.
+By assumption on $e$, $((\mathcal{C}[e]\,C[\hole])\,\overline{((\mathbf{pair}\,\xi(\hole))\,\chi(\hole))})\lvrrs (\mathcal{C}[\hole]\,\mathcal{C}'[v])$.
+By Lemma \ref{hole-context-to-value}, $(\mathcal{C}[\hole]\,\mathcal{C}'[v])\lvrr\mathcal{C}[v]$.
+Then $\hole[e]\cmrrs v\implies((\mathcal{C}[e]\,\mathcal{C}[\hole])\,\overline{((\mathbf{pair}\,\xi(\hole))\,\chi(\hole))})\lvrrs \mathcal{C}[v]$.
 \end{proof}
 
-\begin{proof}{Case $E=E'[(\bullet\,e_1)]$}
-Assume $E'[(\bullet\,e_1)][e]\rightarrow_{\lambda_{cm}}^{*}v$. Consider $((\mathcal{C}[e]\,C[E'[(\bullet\,e_1)]])\,\overline{((\mathbf{pair}\,\xi(E'[(\bullet\,e_1)]))\,\chi(E'[(\bullet\,e_1)]))})$.
+\begin{proof}{Case $E=E'[(\hole\,e_1)]$}
+Assume $E'[(\hole\,e_1)][e]\cmrrs v$. Consider $((\mathcal{C}[e]\,C[E'[(\hole\,e_1)]])\,\overline{((\mathbf{pair}\,\xi(E'[(\hole\,e_1)]))\,\chi(E'[(\hole\,e_1)]))})$.
 
-By assumption on $e$, $((\mathcal{C}[e]\,C[E'[(\bullet\,e_1)]])\,\overline{((\mathbf{pair}\,\xi(E'[(\bullet\,e_1)]))\,\chi(E'[(\bullet\,e_1)]))})\rightarrow_{\lambda_v}^{*}(\mathcal{C}[E'[(\bullet\,e_1)]]\,\mathcal{C}'[v])$. $(\mathcal{C}[E'[(\bullet\,e_1)]]\,\mathcal{C}'[v])\rightarrow_{\lambda_v}(C[e_1()$We assume, by induction, 
+By assumption on $e$, $((\mathcal{C}[e]\,C[E'[(\hole\,e_1)]])\,\overline{((\mathbf{pair}\,\xi(E'[(\hole\,e_1)]))\,\chi(E'[(\hole\,e_1)]))})\lvrrs (\mathcal{C}[E'[(\hole\,e_1)]]\,\mathcal{C}'[v])$. $(\mathcal{C}[E'[(\hole\,e_1)]]\,\mathcal{C}'[v])\lvrr(C[e_1()$We assume, by induction, 
 \end{proof}
 
-\begin{proof}{Case $E=E'[(\mathrm{wcm}\,\bullet\,e_1)]$}
-Assume $E'[(\mathrm{wcm}\,\bullet\,e_1)]\rightarrow_{\lambda_{cm}}^{*}v$.
+\begin{proof}{Case $E=E'[\wcm{\hole}{e_1}]$}
+Assume $E'[\wcm{\hole}{e_1}][e]\cmrrs v$.
+Consider $((\mathcal{C}[e]\,\mathcal{C}[E'[\wcm{\hole}{e_1}]])\,\overline{((\mathbf{pair}\,\xi(E'[\wcm{\hole}{e_1}]))\,\mathcal{C}[\chi(E'[\wcm{\hole}{e_1}])])})$.
+By assumption, $E'[\wcm{\hole}{e_1}][e]\cmrrs E'[\wcm{\hole}{e_1}][v']\implies((\mathcal{C}[e]\,\mathcal{C}[E'[\wcm{\hole}{e_1}]])\,\overline{((\mathbf{pair}\,\xi(E'[\wcm{\hole}{e_1}]))\,\mathcal{C}[\chi(E'[\wcm{\hole}{e_1}])])})\lvrr(\mathcal{C}[E'[\wcm{\hole}{e_1}]]\,\mathcal{C}'[v'])$, as in wcm8.
 
 \end{proof}
 
@@ -1582,8 +1598,8 @@ For all programs $p\in\lambda_{cm}$, $\mathcal{C}[\mathrm{eval}_{cm}(p)]=\mathrm
 \begin{proof}
 
 \begin{align*}
-p\rightarrow_{\lambda_{cm}}^{*}v &\Rightarrow\mathrm{eval}_{cm}(p)=v &\text{(by definition of $\mathrm{eval}_{cm}$)}\\
-                             &\Rightarrow\mathcal{C}[\mathrm{eval}_{cm}(p)]=\mathcal{C}[v] &\text{(by well-definedness of $\mathcal{C}$)}
+p\cmrrs v &\implies\mathrm{eval}_{cm}(p)=v &\text{(by definition of $\mathrm{eval}_{cm}$)}\\
+                             &\implies\mathcal{C}[\mathrm{eval}_{cm}(p)]=\mathcal{C}[v] &\text{(by well-definedness of $\mathcal{C}$)}
 \end{align*}
 
 % does E[e] -> E[v] => ((C[e] C[E]) ((pair xi(E)) C[chi(E)])) -> C[E[v]] make sense?
@@ -1595,10 +1611,10 @@ p\rightarrow_{\lambda_{cm}}^{*}v &\Rightarrow\mathrm{eval}_{cm}(p)=v &\text{(by 
 % assume it works for all e, prove E by induction
 
 \begin{align*}
-p\rightarrow_{\lambda_{cm}}^{*}v &\Rightarrow\bullet[p]\rightarrow_{\lambda_{cm}}^{*}\bullet[v] &\text{(since $p\rightarrow_{\lambda_{cm}}\bullet[p]$ and $v$ can only be reached by $\bullet[v]$)}\\
-                             &\Rightarrow((\mathcal{C}[p]\,\mathcal{C}[\bullet])\,\overline{((\mathbf{pair}\,\xi(\bullet))\,\mathcal{C}[\chi(\bullet)])})\rightarrow_{\lambda_v}^{*} \mathcal{C}[v] &\text{(by the Great Lemma)}\\
-                             &\Rightarrow((\mathcal{C}[p]\,(\lambda\,(v)\,\mathcal{C}[v]))\,\overline{((\mathbf{pair}\,\mathbf{false})\,\mathcal{C}[\mathbf{nil}])})\rightarrow_{\lambda_v}^{*} \mathcal{C}[v] &\text{(by definitions x, y, and z)}\\
-                             &\Rightarrow\mathrm{eval}_{v}(\mathcal{C}[p])=\mathcal{C}[v] &\text{(by definition of $\mathrm{eval}_v$)}
+p\cmrrs v &\implies\hole[p]\cmrrs\hole[v] &\text{(since $p\cmrr \hole[p]$ and $v$ can only be reached by $\hole[v]$)}\\
+                             &\implies((\mathcal{C}[p]\,\mathcal{C}[\hole])\,\overline{((\mathbf{pair}\,\xi(\hole))\,\mathcal{C}[\chi(\hole)])})\lvrrs\mathcal{C}[v] &\text{(by the Great Lemma)}\\
+                             &\implies((\mathcal{C}[p]\,(\lambda\,(v)\,\mathcal{C}[v]))\,\overline{((\mathbf{pair}\,\mathbf{false})\,\mathcal{C}[\mathbf{nil}])})\lvrrs\mathcal{C}[v] &\text{(by definitions x, y, and z)}\\
+                             &\implies\mathrm{eval}_{v}(\mathcal{C}[p])=\mathcal{C}[v] &\text{(by definition of $\mathrm{eval}_v$)}
 \end{align*}
 
 Therefore, $\mathcal{C}[\mathrm{eval}_{cm}(p)]=\mathrm{eval}_{v}(\mathcal{C}[p])$.
