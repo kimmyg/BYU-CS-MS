@@ -245,6 +245,7 @@ My wife is the hottest thing ever.
 \setkeyword{get-function-representing-continuation call/cc}
 \setspecialsymbol{lambda}{$\lambda$}
 
+\newcommand{\true}{\mathbf{true}}
 \newcommand{\false}{\mathbf{false}}
 \newcommand{\nil}{\mathbf{nil}}
 \newcommand{\pair}[2]{((\mathbf{pair}\,#1)\,#2)}
@@ -1251,6 +1252,14 @@ We certainly could reduce this by steps and see it work, but that would give us 
 
 \chapter{proof}
 
+\theoremstyle{definition}
+\newtheorem{defn}{Definition}
+
+\theoremstyle{plain}
+\newtheorem{lemma}{Lemma}
+\newtheorem{theorem}{Theorem}
+\newtheorem{case}{Case}
+
 Programs in $\lambda_{cm}$ can observe the context in which they are evaluated. Programs
 in $\lambda_v$, however, cannot. The intuition behind the transform is to explicitly
 provide to the resultant $\lambda_v$ program any information about the context that could
@@ -1290,15 +1299,44 @@ be observed by the original $\lambda_{cm}$ program.
 \setspecialsymbol{chiE}{$\chi(E)$}
 \setspecialsymbol{CchiE}{$\C{\chi(E)}$}
 
-Define \scheme{TRUE}=\scheme|(lambda (x) (lambda (y) x))|, \scheme{FALSE}=\scheme|(lambda
-(x) (lambda (y) y))|, \scheme{PAIR}=\scheme|(lambda a (lambda b (lambda (z) ((z a) b))))|,
-\scheme{FST}=\scheme|(lambda (p) (p TRUE))|, \scheme{SND}=\scheme|(lambda (p) (p FALSE))|,
-and \scheme{NIL}=\scheme{FALSE}.
 
-\begin{singlespace}
-terms
+
+\begin{defn}
+$\true=\abs{x}{\abs{y}{x}}$
+\end{defn}
+
+\begin{defn}
+$\false=\abs{x}{\abs{y}{y}}$
+\end{defn}
+
+\begin{defn}
+$\mathbf{pair}=\abs{a}{\abs{x}{\abs{z}{\app{\app{z}{a}}{b}}}}$
+\end{defn}
+
+\begin{defn}
+$\mathbf{fst}=\abs{p}{\app{p}{\true}}$
+\end{defn}
+
+\begin{defn}
+$\mathbf{snd}=\abs{p}{\app{p}{\false}}$
+\end{defn}
+
+\begin{defn}
+$\nil=\false$
+\end{defn}
+
+\begin{defn}
+If $e\lvrrs v$, $\eval{e}=v$.
+\end{defn}
+
+\begin{defn}
+$\C{E[e]}=\app{\app{\C{e}}{\C{E}}}{\eval{\pair{\xi(E)}{\C{\chi(E)}}}}$.
+\end{defn}
+
+\newenvironment{schemedefn}[1]{\begin{defn}$#1$\begin{singlespace}}{\end{singlespace}\end{defn}}
+
+\begin{schemedefn}{\mathcal{A}[\app{e_0}{e_1}]}
 \begin{schemedisplay}
-T[(e_0 e_1)]
 (lambda (k)
   (lambda (m)
     ((lambda (k) (k (SND m)))
@@ -1307,8 +1345,11 @@ T[(e_0 e_1)]
                                 (lambda (e) ((e_1
                                               (lambda (f) (((e f) k) m)))
                                              n))) n)))))))
+\end{schemedisplay}
+\end{schemedefn}
 
-C[(e_0 e_1)]
+\begin{schemedefn}{\C{\app{e_0}{e_1}}}
+\begin{schemedisplay}
 (lambda (k)
   (lambda (m)
     ((lambda (k) (k (SND m)))
@@ -1317,8 +1358,11 @@ C[(e_0 e_1)]
                                 (lambda (e) ((Ce_1
                                               (lambda (f) (((e f) k) m)))
                                              n))) n)))))))
+\end{schemedisplay}
+\end{schemedefn}
 
-C[(wcm e_0 e_1)]
+\begin{schemedefn}{\C{\wcm{e_0}{e_1}}}
+\begin{schemedisplay}
 (lambda (k) 
   (lambda (m) 
     ((lambda (k) (k (SND m)))
@@ -1333,37 +1377,53 @@ C[(wcm e_0 e_1)]
                   (lambda (a)
                     ((lambda (k) (k ((PAIR TRUE) (lambda (k) (lambda (m) (k (lambda (z) T[(C[(z v)] a)])))))))
                      (lambda (m) ((Ce_1 k) m))))))))) u)))))))
-
-C[(ccm)]
-(lambda (k) (lambda (m) (((SND m) k) (lambda (z) z))))
-
-C[v_0] = C[(lambda (x) e'_0)]
-(lambda (k) (lambda (m) (k Ce_0)))
-
-C[x]
-(lambda (k) (lambda (m) (k x)))
-
-C[error]
-error
-
-Cp[v_0] = Cp[(lambda (x) e_0p)]
-(lambda (x) C[e_0p])
 \end{schemedisplay}
+\end{schemedefn}
 
-contexts
+\begin{schemedefn}{\C{\ccm}}
 \begin{schemedisplay}
-C[hole]
-(lambda (v) C[v])
+(lambda (k) (lambda (m) (((SND m) k) (lambda (z) z))))
+\end{schemedisplay}
+\end{schemedefn}
 
-C[E[(hole e_1)]]
+\begin{defn}
+$\C{v_0}=\C{\abs{x}{e'_0}}=\abs{k}{\abs{m}{\app{k}{\abs{x}{\C{e'_0}}}}}$
+\end{defn}
+
+\begin{defn}
+$\C{x}=\abs{k}{\abs{m}{\app{k}{x}}}$
+\end{defn}
+
+\begin{defn}
+\scheme|C[error]| = \scheme|error|
+\end{defn}
+
+\begin{defn}
+$\Cp{v_0}=\Cp{\abs{x}{e_0}}=\abs{x}{\C{e_0}}$
+\end{defn}
+
+\begin{schemedefn}{\C{\hole}}
+\begin{schemedisplay}
+(lambda (v) C[v])
+\end{schemedisplay}
+\end{schemedefn}
+
+\begin{schemedefn}{\C{E[\app{\hole}{e_1}]}}
+\begin{schemedisplay}
 (lambda (e) ((Ce_1
               (lambda (f) (((e f) CE) ((PAIR xiE) chiE))))
              ((PAIR FALSE) chiE)))
+\end{schemedisplay}
+\end{schemedefn}
 
-C[E[(v_0 hole)]]
+\begin{schemedefn}{\C{E[\app{v_0}{\hole}]}}
+\begin{schemedisplay}
 (lambda (f) (((Cpv_0 f) CE) ((PAIR xiE) chiE)))
+\end{schemedisplay}
+\end{schemedefn}
 
-C[E[(wcm hole e_1)]]
+\begin{schemedefn}{\C{E[\wcm{\hole}{e_1}]}}
+\begin{schemedisplay}
 (lambda (v) 
   ((lambda (k) (k (FST ((PAIR xiE) CchiE))))
    (lambda (f) 
@@ -1371,30 +1431,60 @@ C[E[(wcm hole e_1)]]
       (lambda (a)
         ((lambda (k) (k ((PAIR TRUE) (lambda (k) (lambda (m) (k (lambda (z) T[(C[(z v)] a)])))))))
          (lambda (m) ((Ce_1 CE) m))))))))
+\end{schemedisplay}
+\end{schemedefn}
 
-C[E[(wcm v_0 hole)]]
+\begin{schemedefn}{\C{E[\wcm{v_0}{\hole}]}}
+\begin{schemedisplay}
 CE
 \end{schemedisplay}
-\end{singlespace}
+\end{schemedefn}
 
-Let
+\begin{defn}
 \[
 \mathrm{eval}_{cm}(p)=\begin{cases}
 v     &\text{if $p\cmrrs v$}\\
 \perp &\text{if $p\cmrrs\cdots$}
 \end{cases}
 \]
-and
+\end{defn}
+
+\begin{defn}
 \[
 \mathrm{eval}_{v}(p)=\begin{cases}
 v     &\text{if $\app{\app{p}{\abs{v}{\C{v}}}}{\pair{\false}{\nil}}\lvrrs v$}\\
 \perp &\text{if $\app{\app{p}{\abs{v}{\C{v}}}}{\pair{\false}{\nil}}\lvrrs\cdots$}
 \end{cases}
 \]
+\end{defn}
 
-\newtheorem{lemma}{Lemma}
-\newtheorem{theorem}{Theorem}
-\newtheorem{case}{Case}
+%    C[E[(e0 e1)]]
+% -> C[E[(* e1)][e0]]
+% -> C[E[(* e1)][v0]]
+% .. C[E[(v0 e1)]]
+% -> C[E[(v0 *)][e1]]
+% -> C[E[(v0 *)][v1]]
+% -> C[E[(v0 v1)]]
+% =  C[E[(\x.e2 v1)]]
+% -> C[E[e2[x <- v1]]
+% =  C[E[e3]]
+
+%    C[E[(wcm e0 e1)]]
+% -> C[E[(wcm * e1)][e0]]
+% -> C[E[(wcm * e1)][v0]]
+% .. C[E[(wcm v0 e1)]]
+% if E=E'[(wcm v *)]
+% .. C[E'[(wcm v0 e1)]]
+% -> C[E'[(wcm v0 *)][e1]]
+% -> C[E'[(wcm v0 *)][v1]]
+% -> C[E'[(wcm v0 v1)]
+% -> C[E'[v1]]
+
+%    C[E[v]]
+
+%    C[E[x]]
+% -> C[E[error]]
+
 
 Define
 
