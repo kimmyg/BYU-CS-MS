@@ -1382,7 +1382,9 @@ $\C{E[e]}=\app{\app{\C{e}}{\C{E}}}{\eval{\pair{\xi(E)}{\C{\chi(E)}}}}$.
 
 \begin{schemedefn}{\C{\ccm}}
 \begin{schemedisplay}
-(lambda (k) (lambda (m) (((SND m) k) (lambda (z) z))))
+(lambda (k)
+  (lambda (m)
+    (((SND m) k) m)))
 \end{schemedisplay}
 \end{schemedefn}
 
@@ -1528,7 +1530,7 @@ For all values $\abs{x}{e}$, $\app{\C{\hole}}{\Cp{\abs{x}{e}}}=\C{\abs{x}{e}}$.
 For all contexts $E\in\lambda_{cm}$ and expressions $e\in\lambda_{cm}$, $E[e]\cmrrs v\implies\C{E[e]}\lvrrs \C{v}$.
 \end{eqtheorem}
 
-Fix $E$ and assume it works for $E$.
+Fix $E$ and assume it works for $E$. (That is, assume that $E[v]\cmrrs v'\implies\C{E[v]}\lvrrs v'$.)
 
 \begin{proof}[Case $e=\app{e_0}{e_1}$]
 $\C{E[\app{e_0}{e_1}]}\lvrrs\C{E[\app{\hole}{e_1}][e_0]}$, by app1-app7.
@@ -1575,7 +1577,7 @@ E[\wcm{\hole}{e_1}][e_0]\cmrrs\cdots\implies\C{E[\wcm{\hole}{e_1}][e_0]}\lvrrs\c
 \]
 and
 \[
-E[\wcm{\hole}{e_1}][e_0]\cmrrsE[\wcm{\hole}{e_1}][v_0]\implies\C{E[\wcm{\hole}{e_1}][e_0]}\lvrrs\C{E[\wcm{\hole}{e_1}][v_0]}
+E[\wcm{\hole}{e_1}][e_0]\cmrrs E[\wcm{\hole}{e_1}][v_0]\implies\C{E[\wcm{\hole}{e_1}][e_0]}\lvrrs\C{E[\wcm{\hole}{e_1}][v_0]}
 \]
 
 $\C{E[\wcm{\hole}{e_1}][v_0]}\lvrrs\C{E[\wcm{v_0}{e_1}]}$, by wcm9-wcm12.
@@ -1584,8 +1586,13 @@ If $E=E'[\wcm{v'}{\hole}]$ for some $E'$ and $v'$, $\C{E'[\wcm{v'}{\wcm{v_0}{e_1
 
 By the inductive hypothesis,
 \[
-E'[\wcm{v_0}{\hole}][e_1]\cmrrs E'[\wcm{v_0}{\hole}][v_1]\implies\C{E'[\wcm{v_0}{\hole}][e_1]}\lvrrs\C{E'[\wcm{v_0}{\hole}][v_1]}}
+E'[\wcm{v_0}{\hole}][e_1]\cmrrs E'[\wcm{v_0}{\hole}][v_1]\implies\C{E'[\wcm{v_0}{\hole}][e_1]}\lvrrs\C{E'[\wcm{v_0}{\hole}][v_1]}
 \]
+
+$\C{E'[\wcm{v_0}{\hole}][v_1]}=\C{E'[v_1]}$, by definition.
+
+now do the false case
+
 
 %   chi(E'[(wcm v0 *)])
 % = v0 : chi(E')
@@ -1595,43 +1602,36 @@ E'[\wcm{v_0}{\hole}][e_1]\cmrrs E'[\wcm{v_0}{\hole}][v_1]\implies\C{E'[\wcm{v_0}
 \end{proof}
 
 \begin{proof}[Case $e=\ccm$]
-% prove E[(ccm)] -> v => ((C[(ccm)] C[E]) ((pair xi(E)) C[chi(E)])) -> C[v]
-Assume $E[\ccm]\cmrrs v$. Consider $\app{\app{\C{\ccm}}{\C{E}}}{\eval{\pair{\xi(E)}{\C{\chi(E)}}}}$.
-% -> ((C[e0] C[E[(* e1)]]) ((pair xi(E[(* e1)])) C[chi(E[(* e1)])]))
-Steps ccm1-ccm3 show
-\[
-\app{\app{\C{\ccm}}{\C{E}}}{\eval{\pair{\xi(E)}{\C{\chi(E)}}}}\lvrrs\app{\app{\C{\chi(E)}}{\C{E}}}{\abs{z}{z}}
-\]
-Since $\chi(E)$ is a value, we appeal to the value case.
+$\C{E[\ccm]}\lvrrs\C{E[\chi(E)]}$, by ccm1-ccm3.
 \end{proof}
 
 \begin{proof}[Case $e=v$]
-% prove E[v] -> v' => ((C[v] C[E]) ((pair xi(E)) C[chi(E)])) -> C[v']
-Assume $E[v]\cmrrs v'$. Consider $\app{\app{\C{v}}{\C{E}}}{\eval{\pair{\xi(E)}{\C{\chi(E)}}}}$.
-% by assumption of E
-By assumption of the correctness of $E$, $\app{\app{\C{v}}{\C{E}}}{\eval{\pair{\xi(E)}{\C{\chi(E)}}}}\lvrrs\C{v'}$.
+% what here?
 \end{proof}
 
 \begin{proof}[Case $e=x$]
-% prove E[x] -> error => ((C[x] C[E]) ((pair xi(E)) C[chi(E)])) -> C[error]
-% ?
+$\C{E[x]}\lvrrs$\scheme'C[error]', by x1-x4.
 \end{proof}
 
-\begin{proof}[Case $e=\mathrm{error}$]
+\begin{proof}[Case $e=$\scheme'error']
 % prove E[error] -> error => ((C[error] C[E]) ((pair xi(E)) C[chi(E)])) -> C[error]
 \end{proof}
 
-Fix $e$ and assume it works for $e$.
+Fix $e$ and assume it works for $e$. (That is, assume that $E[e]\cmrrs E[v]\implies\C{E[e]}\lvrrs\C{E[v]}$.)
 
 \begin{proof}{Case $E=\hole$}
-Assume $\hole[e]\cmrrs v$. Consider $((\C[e]\,C[\hole])\,\eval{\pair{\xi(\hole)}{\chi(\hole)}})$.
+$\hole[e]\cmrrs\hole[v]\implies\C{\hole[e]}\lvrrs\C{\hole[v]}$, by assumption.
 
-By assumption on $e$, $((\C[e]\,C[\hole])\,\eval{\pair{\xi(\hole)}{\chi(\hole)}})\lvrrs (\C[\hole]\,\Cp[v])$.
-By Lemma \ref{hole-context-to-value}, $(\C[\hole]\,\Cp[v])\lvrr\C[v]$.
-Then $\hole[e]\cmrrs v\implies((\C[e]\,\C[\hole])\,\eval{\pair{\xi(\hole)}{\chi(\hole)}})\lvrrs \C[v]$.
+$\C{\hole[v]}\lvrr\C{v}$, by [a lemma].
 \end{proof}
 
 \begin{proof}{Case $E=E'[\app{\hole}{e_1}]$}
+$E[\app{\hole}{e_1}][e_0]\cmrrs E[\app{\hole}{e_1}][v_0]\implies\C{E[\app{\hole}{e_1}][e_0]}\lvrrs\C{E[\app{\hole}{e_1}][v_0]}$, by assumption.
+
+$\C{E[\app{\hole}{e_1}][v_0]}\lvrrs\C{E[\app{v_0}{\hole}][e_1]}$, by app8-app9.
+
+The rest follows from induction.
+
 Assume $E'[\app{\hole}{e_1}][e]\cmrrs v$. Consider $((\C[e]\,C[E'[\app{\hole}{e_1}]])\,\eval{\pair{\xi(E'[\app{\hole}{e_1}])}{\chi(E'[\app{\hole}{e_1}])}})$.
 
 By assumption on $e$, $((\C[e]\,C[E'[\app{\hole}{e_1}]])\,\eval{\pair{\xi(E'[\app{\hole}{e_1}])}{\chi(E'[\app{\hole}{e_1}])}})\lvrrs (\C[E'[\app{\hole}{e_1}]]\,\Cp[v])$. $(\C[E'[\app{\hole}{e_1}]]\,\Cp[v])\lvrr(C[e_1()$We assume, by induction, 
@@ -2299,23 +2299,30 @@ E[chiE]
 
 ccm0
 \begin{schemedisplay}
-(((lambda (k) (lambda (m) (((SND m) k) (lambda (z) z)))) CE) ((PAIR xiE) CchiE))
+(((lambda (k)
+    (lambda (m)
+      (((SND m) k) m)))
+  CE)
+ ((PAIR xiE) CchiE))
 \end{schemedisplay}
 
 ccm1
 \begin{schemedisplay}
-((lambda (m) (((SND m) CE) (lambda (z) z))) ((PAIR xiE) CchiE))
+((lambda (m)
+      (((SND m) CE) m))
+ ((PAIR xiE) CchiE))
 \end{schemedisplay}
 
 ccm2
 \begin{schemedisplay}
-(((SND ((PAIR xiE) CchiE)) CE) (lambda (z) z))
+(((SND ((PAIR xiE) CchiE)) CE) ((PAIR xiE) CchiE))
 \end{schemedisplay}
 
 ccm3
 \begin{schemedisplay}
-((CchiE CE) (lambda (z) z))
+((CchiE CE) ((PAIR xiE) CchiE))
 \end{schemedisplay}
+
 // appeal to value here
 
 variable
@@ -2347,6 +2354,11 @@ x2
 \end{schemedisplay}
 
 x3
+\begin{schemedisplay}
+(CE error)
+\end{schemedisplay}
+
+x4
 \begin{schemedisplay}
 error
 \end{schemedisplay}
