@@ -1567,70 +1567,31 @@ E[e_2]\cmrrs E[v_2]\implies\C{E[e_2]}\lvrrs\C{E[v_2]}
 \end{proof}
 
 \begin{proof}[Case $e=\wcm{e_0}{e_1}$]
-% prove E[(wcm e0 e1)] -> v => ((C[(wcm e0 e1)] C[E]) ((pair xi(E)) C[chi(E)])) -> C[v]
-Assume $E[\wcm{e_0}{e_1}]\cmrrs v$. Consider $\app{\app{\C{\wcm{e_0}{e_1}}}{\C{E}}}{\eval{\pair{\xi(E)}{\C{\chi(E)}}}}$.
-% -> ((C[e0] C[E[(wcm * e1)]]) ((pair xi(E[(wcm * e1)])) C[chi(E[(wcm * e1)])]))
-Steps wcm1-wcm7 show
+$\C{E[\wcm{e_0}{e_1}]}\lvrrs\C{E[\wcm{\hole}{e_1}][e_0]}$, by wcm1-wcm7.
+
+By inductive hypothesis,
 \[
-\app{\app{\C{\wcm{e_0}{e_1}}}{\C{E}}}{\eval{\pair{\xi(E)}{\C{\chi(E)}}}}\lvrrs\app{\app{\C{e_0}}{\C{E[\wcm{\hole}{e_1}]}}}{\eval{\pair{\xi(E[\wcm{\hole}{e_1}])}{\C{\chi(E[\wcm{\hole}{e_1}])}}}}
+E[\wcm{\hole}{e_1}][e_0]\cmrrs\cdots\implies\C{E[\wcm{\hole}{e_1}][e_0]}\lvrrs\cdots
 \]
-From here, we must account for two contingencies:
-\begin{enumerate}
-\item Following application, evaluation of the body of $\C{e_0}$ yields \scheme'error', as in wcm8-e0-error.
-The entire term evaluates to \scheme'error', as in wcm9-e0-error. As this term represents the entire program, the entire program evaluates to \scheme'error'.
-\item Following application, evaluation of the body of $\C{e_0}$ fails to terminate, as in wcm8-e0-bottom.
-The entire term fails to evaluate, as in wcm9-e0-bottom. This property is lifted to the program.
-\end{enumerate}
-% assume C[e0] goes to correct value (structural induction) E[(wcm * e1)][e0] -> E[(wcm * e1)][v0]
-Otherwise, we assume by induction that 
+and
 \[
-\app{\app{\C{e_0}}{\C{E[\wcm{\hole}{e_1}]}}}{\eval{\pair{\xi(E[\wcm{\hole}{e_1}])}{\C{\chi(E[\wcm{\hole}{e_1}])}}}}\lvrrs\app{\C{E[\wcm{\hole}{e_1}]}}{\Cp{v_0}}
+E[\wcm{\hole}{e_1}][e_0]\cmrrsE[\wcm{\hole}{e_1}][v_0]\implies\C{E[\wcm{\hole}{e_1}][e_0]}\lvrrs\C{E[\wcm{\hole}{e_1}][v_0]}
 \]
-where $E[\wcm{\hole}{e_1}][e_0]\cmrrs E[\wcm{\hole}{e_1}][v_0]$, as in wcm8.
-By wcm9-wcm13,
+
+$\C{E[\wcm{\hole}{e_1}][v_0]}\lvrrs\C{E[\wcm{v_0}{e_1}]}$, by wcm9-wcm12.
+
+If $E=E'[\wcm{v'}{\hole}]$ for some $E'$ and $v'$, $\C{E'[\wcm{v'}{\wcm{v_0}{e_1}}]}\lvrrs\C{E'[\wcm{v_0}{\hole}][e_1]}$, by wcm13-tail-wcm18-tail.
+
+By the inductive hypothesis,
 \[
-\app{\C{E[(\wcm{\hole}{e_1}]}}{\Cp{v_0}}\lvrrs x
+E'[\wcm{v_0}{\hole}][e_1]\cmrrs E'[\wcm{v_0}{\hole}][v_1]\implies\C{E'[\wcm{v_0}{\hole}][e_1]}\lvrrs\C{E'[\wcm{v_0}{\hole}][v_1]}}
 \]
-From here, reduction depends on the value of $\xi(E)$.
-\begin{proof}[Case $\xi(E)=\mathbf{true}$]
-This corresponds to the case that $E=E'[\wcm{v'}{\hole}]$ for some $E'$ and $v'$.
-%Then $E[\wcm{v_0}{e_1}]=E'[\wcm{v'}{\wcm{v_0}{e_1}}]$. Then %$\chi(E[\wcm{v_0}{\hole}])=\chiE'[\wcm{v'}{\wcm{v_0}{\hole}}]$
 
-$\chi(E[\wcm{v_0}{\hole}])=\chi(E'[\wcm{v_0}{\hole}])=v_0 : \chi(E')$
+%   chi(E'[(wcm v0 *)])
+% = v0 : chi(E')
+% = v0 : snd chi(E'[(wcm v' *)])
+% = v0 : snd chi(E)
 
-\begin{align*}
-E[\wcm{v_0}{e_1}]= &E'[\wcm{v'}{\wcm{v_0}{e_1}}]\\
-\cmrr              &E'[\wcm{v_0}{e_1}]
-\end{align*}
-
-\begin{align*}
-\chi(E'[\wcm{v_0}{\hole}]) &=v_0 : \chi(E')\\
-                           &=v_0 : (\mathrm{snd}\,\chi(E'[\wcm{v'}{\hole}]))\\
-                           &=v_0 : (\mathrm{snd}\,\chi(E))
-\end{align*}
-
-If $\xi(E)=\mathbf{true}$, then $x=y$, as in wcm13-tail. By wcm14-tail-wcm
-\end{proof}
-\begin{proof}[Case $\xi(E)=\mathbf{false}$]
-This corresponds to the case that $E\ne E'[\wcm{v'}{\hole}]$ for any $E'$ and $v'$.
-
-Then
-
-\begin{align*}
-\chi(E[\wcm{v_0}{\hole}]) &=\pair{v_0}{\chi(E)}\\
-\end{align*}
-\end{proof}
-
-$E[\wcm{v_0}{v_1}]\cmrr E[v_1]$
-
-$\app{\app{\C{e_1}}{\C{E[\wcm{v_0}{\hole}]}}}{\eval{\pair{\xi(E)}{\C{\chi(E)}}}}\lvrrs\app{\app{\C{v_1}}{\C{E}}}{\eval{\pair{\xi(E)}{\C{\chi(E)}}}}$
-
-$\app{\app{\C{\wcm{v_0}{v_1}}}{\C{E}}}{\eval{\pair{\xi(E)}{\C{\chi(E)}}}}\lvrrs\app{\app{\C{v_1}}{\C{E}}}{\eval{\pair{\xi(E)}{\C{\chi(E)}}}}$
-
-
-% assume reduces correctly by induction
-% -> ((C[e1] C[E[(wcm v0 *)]]) ((pair xi(E[(wcm v0 *)])) C[chi(E[(wcm v0 *)])]))
-% assume reduces by structural induction
 \end{proof}
 
 \begin{proof}[Case $e=\ccm$]
