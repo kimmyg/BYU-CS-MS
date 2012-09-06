@@ -1212,7 +1212,7 @@ e\cmrr v
 \]
 and
 \[
-e\rightarrow_{\lambda_{v}}v'
+e\lvrr v'
 \]
 then $v=v'$. 
 
@@ -1224,7 +1224,7 @@ e\cmrr v
 \]
 and
 \[
-\C[e]\rightarrow_{\lambda_{v}}v'
+\C{e}\lvrr v'
 \]
 then $v\equiv v'$. We make a weaker assertion here that the terms are equivalent--not 
 equal--and, by this, expect only that we can formally relate them.
@@ -1249,6 +1249,8 @@ and then to the marks argument
 
 We certainly could reduce this by steps and see it work, but that would give us no intuition as to \emph{why} it works. Recall that our transform, in CPS spirit, augments each call site with two additional parameters, the second being an encoding of the tail position of the context and the continuation marks. The transform of $ccm$ discards the tail-position encoding and applies the supplied continuation to the encoding of the continuation marks. However, as each call site also requires an argument encoding the marks, a dummy variable is passed. This is sound as the marks parameter does not bind any variable in the body, so the dummy variable is promptly ignored. In this process, the double abstraction surrounding the list has been stripped away and should be restored. This is accomplished by the passed continuation which does exactly that. Since the result of the reduction is known to be irreducible--that is, either a variable or an abstraction--and since irreducible terms are wrapped in the same way, we can wrap the value manually, yielding a transformed value as if directly.
 
+\chapter{proof}
+
 Programs in $\lambda_{cm}$ can observe the context in which they are evaluated. Programs
 in $\lambda_v$, however, cannot. The intuition behind the transform is to explicitly
 provide to the resultant $\lambda_v$ program any information about the context that could
@@ -1263,30 +1265,30 @@ be observed by the original $\lambda_{cm}$ program.
 
 \setspecialsymbol{e_0}{$e_0$}
 \setspecialsymbol{e_0p}{$e'_0$}
-\setspecialsymbol{Ce_0}{$\C[e_0]$}
-\setspecialsymbol{Ce_0p}{$\C[e'_0]$}
+\setspecialsymbol{Ce_0}{$\C{e_0}$}
+\setspecialsymbol{Ce_0p}{$\C{e'_0}$}
 \setspecialsymbol{e_1}{$e_1$}
-\setspecialsymbol{Ce_1}{$\C[e_1]$}
-\setspecialsymbol{Ce_1p}{$\C[e'_1]$}
-\setspecialsymbol{Cv}{$\C[v]$}
+\setspecialsymbol{Ce_1}{$\C{e_1}$}
+\setspecialsymbol{Ce_1p}{$\C{e'_1}$}
+\setspecialsymbol{Cv}{$\C{v}$}
 \setspecialsymbol{v_0}{$v_0$}
-\setspecialsymbol{Cv_0}{$\C[v_0]$}
-\setspecialsymbol{Cv_0p}{$\C[v'_0]$}
-\setspecialsymbol{Cpv_0}{$\Cp[v_0]$}
-\setspecialsymbol{Cpv_1}{$\Cp[v_1]$}
+\setspecialsymbol{Cv_0}{$\C{v_0}$}
+\setspecialsymbol{Cv_0p}{$\C{v'_0}$}
+\setspecialsymbol{Cpv_0}{$\Cp{v_0}$}
+\setspecialsymbol{Cpv_1}{$\Cp{v_1}$}
 \setspecialsymbol{v_1}{$v_1$}
 \setspecialsymbol{T}{$\mathcal{A}$}
 \setspecialsymbol{C}{$\mathcal{C}$}
 \setspecialsymbol{Cp}{$\mathcal{C}'$}
 \setspecialsymbol{hole}{$\hole$}
 \setspecialsymbol{bottom}{$\perp$}
-\setspecialsymbol{Ce_0p_x_Cpv_1}{$\C[e'_0][x\leftarrow\Cp[v_1]]$}
+\setspecialsymbol{Ce_0p_x_Cpv_1}{$\C{e'_0}[x\leftarrow\Cp{v_1}]$}
 \setspecialsymbol{e_0p_x_v_1}{$e'_0[x\leftarrow v_1]$}
-\setspecialsymbol{Cz}{$\C[z]$}
-\setspecialsymbol{CE}{$\C[E]$}
+\setspecialsymbol{Cz}{$\C{z}$}
+\setspecialsymbol{CE}{$\C{E}$}
 \setspecialsymbol{xiE}{$\xi(E)$}
 \setspecialsymbol{chiE}{$\chi(E)$}
-\setspecialsymbol{CchiE}{$\C[\chi(E)]$}
+\setspecialsymbol{CchiE}{$\C{\chi(E)}$}
 
 Define \scheme{TRUE}=\scheme|(lambda (x) (lambda (y) x))|, \scheme{FALSE}=\scheme|(lambda
 (x) (lambda (y) y))|, \scheme{PAIR}=\scheme|(lambda a (lambda b (lambda (z) ((z a) b))))|,
@@ -1437,88 +1439,88 @@ For all contexts $E\in\lambda_{cm}$ and expressions $e\in\lambda_{cm}$, $E[e]\cm
 
 Fix $E$ and assume it works for $E$.
 
-\begin{proof}[Case $e=(e_0\,e_1)$]
+\begin{proof}[Case $e=\app{e_0}{e_1}$]
 % prove E[(e0 e1)] -> v => ((C[(e0 e1)] C[E]) ((pair xi(E)) C[chi(E)])) -> C[v]
-Assume $E[(e_0\,e_1)]\cmrrs v$. Consider $((\C[(e_0\,e_1)]\,\C[E])\,pair{\xi(E)}{\chi(E)})$.
+Assume $E[\app{e_0}{e_1}]\cmrrs v$. Consider $\app{\app{\C{\app{e_0}{e_1}}}{\C{E}}}{\eval{\pair{\xi(E)}{\C{\chi(E)}}}}$.
 % -> ((C[e0] C[E[(* e1)]]) ((pair xi(E[(* e1)])) C[chi(E[(* e1)])]))
 Steps app1-app7 show
 \[
-((\C[(e_0\,e_1)]\,\C[E])\,pair{\xi(E)}{\chi(E)})\lvrrs ((\C[e_0]\,\C[E[(\hole\,e_1)]])\,pair{\xi(E[(\hole\,e_1)])}{\chi(E[(\hole\,e_1)])})
+\app{\app{\C{\app{e_0}{e_1}}}{\C{E}}}{\eval{\pair{\xi(E)}{\C{\chi(E)}}}}\lvrrs\app{\app{\C{e_0}}{\C{E[\app{\hole}{e_1}]}}}{\eval{\pair{\xi(E[\app{\hole}{e_1}])}{\C{\chi(E[\app{\hole}{e_1}])}}}}
 \]
 From here, we must account for two contingencies:
 \begin{enumerate}
-\item Following application, evaluation of the body of $\C[e_0]$ yields \scheme'error', as in app8-e0-error.
+\item Following application, evaluation of the body of $\C{e_0}$ yields \scheme'error', as in app8-e0-error.
 The entire term evaluates to \scheme'error', as in app9-e0-error. As this term represents the entire program, the entire program evaluates to \scheme'error'.
-\item Following application, evaluation of the body of $\C[e_0]$ fails to terminate, as in app8-e0-bottom.
+\item Following application, evaluation of the body of $\C{e_0}$ fails to terminate, as in app8-e0-bottom.
 The entire term fails to evaluate, as in app9-e0-bottom. This property is lifted to the program.
 \end{enumerate}
 % assume C[e0] goes to correct value (structural induction) E[(* e1)][e0] -> E[(* e1)][v0]
 Otherwise, we assume by induction that 
 \[
-((\C[e_0]\,\C[E[(\hole\,e_1)]])\,\eval{\pair{\xi(E[\app{\hole}{e_1}])}{\chi(E[\app{\hole}{e_1}])}})\lvrrs (\C[E[(\hole\,e_1)]]\,\Cp[v_0])
+\app{\app{\C{e_0}}{\C{E[\app{\hole}{e_1}]}}}{\eval{\pair{\xi(E[\app{\hole}{e_1}])}{\C{\chi(E[\app{\hole}{e_1}])}}}}\lvrrs\app{\C{E[\app{\hole}{e_1}]}}{\Cp{v_0}}
 \]
-where $E[(\hole\,e_1)][e_0]\cmrrs E[(\hole\,e_1)][v_0]$, as in app8.
+where $E[\app{\hole}{e_1}][e_0]\cmrrs E[\app{\hole}{e_1}][v_0]$, as in app8.
 % -> ((C[e1] C[E[(v0 *)]]) ((pair xi(E[(v0 *)])) C[chi(E[(v0 *)])]))
 By app9, 
 \[
-(\C[E[(\hole\,e_1)]]\,\Cp[v_0])\lvrr((\C[e_1]\,\C[E[(v_0\,\hole)]])\,\eval{\pair{\xi(E[\app{v_0}{\hole}])}{\chi(E[\app{v_0}{\hole}])}})
+\app{\C{E[\app{\hole}{e_1}]}}{\Cp{v_0}}\lvrr\app{\app{\C{e_1}}{\C{E[\app{v_0}{\hole}]}}}{\eval{\pair{\xi(E[\app{v_0}{\hole}])}{\C{\chi(E[\app{v_0}{\hole}])}}}}
 \]
 From here, we must account for the same two contingencies as before:
 \begin{enumerate}
-\item Following application, evaluation of the body of $\C[e_1]$ yields \scheme'error', as in app10-e0-error.
+\item Following application, evaluation of the body of $\C{e_1}$ yields \scheme'error', as in app10-e0-error.
 The entire term evaluates to \scheme'error', as in app11-e0-error. As this term represents the entire program, the entire program evaluates to \scheme'error'.
-\item Following application, evaluation of the body of $\C[e_1]$ fails to terminate, as in app10-e0-bottom.
+\item Following application, evaluation of the body of $\C{e_1}$ fails to terminate, as in app10-e0-bottom.
 The entire term fails to evaluate, as in app11-e0-bottom. This property is lifted to the program.
 \end{enumerate}
 % assume C[e1] goes to correct value (structural induction) E[(v0 *)][e1] -> E[(v0 *)][v1]
 Otherwise, we assume by induction that 
 \[
-((\C[e_1]\,\C[E[(v_0\,\hole)]])\,\eval{\pair{\xi(E[\app{v_0}{\hole}])}{\chi(E[\app{v_0}{\hole}])}})\lvrrs (\C[E[\app{v_0}{\hole}]]\,\Cp[v_1])
+\app{\app{\C{e_1}}{\C{E[\app{v_0}{\hole}]}}}{\eval{\pair{\xi(E[\app{v_0}{\hole}])}{\C{\chi(E[\app{v_0}{\hole}])}}}}\lvrrs\app{\C{E[\app{v_0}{\hole}]}}{\Cp{v_1}}
 \]
 where $E[\app{v_0}{\hole}][e_1]\cmrrs E[\app{v_0}{\hole}][v_1]$, as in app10.
 % -> ((C[(v0 v1)] C[E]) ((pair xi(E)) C[chi(E)]))
 By app11,
 \[
-(\C[E[\app{v_0}{\hole}]]\,\Cp[v_1])\lvrr(((\Cp[v_0]\,\Cp[v_1])\,\C[E])\,\eval{\pair{\xi(E)}{\chi(E)}})
+\app{\C{E[\app{v_0}{\hole}]}}{\Cp{v_1}}\lvrr\app{\app{\app{\Cp{v_0}}{\Cp{v_1}}}{\C{E}}}{\eval{\pair{\xi(E)}{\C{\chi(E)}}}}
 \]
-If $\Cp[v_0]=(\lambda\,(x)\,\C[e'_0])$, then, by lemma \ref{collapse},
+If $\Cp{v_0}=\abs{x}{\C{e'_0}}$, then, by Lemma \ref{collapse},
 \begin{align*}
-(((\Cp[v_0]\,\Cp[v_1])\,\C[E])\,\eval{\pair{\xi(E)}{\chi(E)}})\lvrr &((\C[e'_0[x\leftarrow v_1]]\,\C[E])\,\eval{\pair{\xi(E)}{\chi(E)}})\\
+\app{\app{\app{\Cp{v_0}}{\Cp{v_1}}}{\C{E}}}{\eval{\pair{\xi(E)}{\C{\chi(E)}}}}\lvrr &\app{\app{\C{e'_0[x\leftarrow v_1]}}{\C{E}}}{\eval{\pair{\xi(E)}{\C{\chi(E)}}}}\\
 % assume (v0 v1) -> e2
 % -> ((C[e2] C[E]) ((pair xi(E)) C[chi(E)]))
-= &((\C[e_2]\,\C[E])\,\eval{\pair{\xi(E)}{\chi(E)}})
+= &\app{\app{\C{e_2}}{\C{E}}}{\eval{\pair{\xi(E)}{\C{\chi(E)}}}}
 \end{align*}
 for some $e_2$.
 
 % ((C[v2] C[E]) ((pair xi(E)) C[chi(E)])) is correct by assumption (structural induction (and E?))
-By induction, we assume that $E[e_2]\cmrrs v\implies((\C[e_2]\,\C[E])\,\eval{\pair{\xi(E)}{\chi(E)}})\lvrrs \C[v]$.
+By induction, we assume that $E[e_2]\cmrrs v\implies\app{\app{\C{e_2}}{\C{E}}}{\eval{\pair{\xi(E)}{\C{\chi(E)}}}}\lvrrs \C{v}$.
 (There's something missing in this last statement. How do we know that $e_2$ is what we want--that we've preserved the correct execution?)
 \end{proof}
 
 \begin{proof}[Case $e=\wcm{e_0}{e_1}$]
 % prove E[(wcm e0 e1)] -> v => ((C[(wcm e0 e1)] C[E]) ((pair xi(E)) C[chi(E)])) -> C[v]
-Assume $E[\wcm{e_0}{e_1}]\cmrrs v$. Consider $((\C[\wcm{e_0}{e_1}]\,\C[E])\,\eval{\pair{\xi(E)}{\chi(E)}})$.
+Assume $E[\wcm{e_0}{e_1}]\cmrrs v$. Consider $\app{\app{\C{\wcm{e_0}{e_1}}}{\C{E}}}{\eval{\pair{\xi(E)}{\C{\chi(E)}}}}$.
 % -> ((C[e0] C[E[(wcm * e1)]]) ((pair xi(E[(wcm * e1)])) C[chi(E[(wcm * e1)])]))
 Steps wcm1-wcm7 show
 \[
-((\C[\wcm{e_0}{e_1}]\,\C[E])\,\eval{\pair{\xi(E)}{\chi(E)}})\lvrrs ((\C[e_0]\,\C[E[\wcm{\hole}{e_1}]])\,\eval{\pair{\xi(E[\wcm{\hole}{e_1}])}{\chi(E[\wcm{\hole}{e_1}])}})
+\app{\app{\C{\wcm{e_0}{e_1}}}{\C{E}}}{\eval{\pair{\xi(E)}{\C{\chi(E)}}}}\lvrrs\app{\app{\C{e_0}}{\C{E[\wcm{\hole}{e_1}]}}}{\eval{\pair{\xi(E[\wcm{\hole}{e_1}])}{\C{\chi(E[\wcm{\hole}{e_1}])}}}}
 \]
 From here, we must account for two contingencies:
 \begin{enumerate}
-\item Following application, evaluation of the body of $\C[e_0]$ yields \scheme'error', as in wcm8-e0-error.
+\item Following application, evaluation of the body of $\C{e_0}$ yields \scheme'error', as in wcm8-e0-error.
 The entire term evaluates to \scheme'error', as in wcm9-e0-error. As this term represents the entire program, the entire program evaluates to \scheme'error'.
-\item Following application, evaluation of the body of $\C[e_0]$ fails to terminate, as in wcm8-e0-bottom.
+\item Following application, evaluation of the body of $\C{e_0}$ fails to terminate, as in wcm8-e0-bottom.
 The entire term fails to evaluate, as in wcm9-e0-bottom. This property is lifted to the program.
 \end{enumerate}
 % assume C[e0] goes to correct value (structural induction) E[(wcm * e1)][e0] -> E[(wcm * e1)][v0]
 Otherwise, we assume by induction that 
 \[
-((\C[e_0]\,\C[E[\wcm{\hole}{e_1}]])\,\eval{\pair{\xi(E[\wcm{\hole}{e_1}])}{\chi(E[\wcm{\hole}{e_1}])}})\lvrrs(\C[E[\wcm{\hole}{e_1}]]\,\Cp[v_0])
+\app{\app{\C{e_0}}{\C{E[\wcm{\hole}{e_1}]}}}{\eval{\pair{\xi(E[\wcm{\hole}{e_1}])}{\C{\chi(E[\wcm{\hole}{e_1}])}}}}\lvrrs\app{\C{E[\wcm{\hole}{e_1}]}}{\Cp{v_0}}
 \]
 where $E[\wcm{\hole}{e_1}][e_0]\cmrrs E[\wcm{\hole}{e_1}][v_0]$, as in wcm8.
 By wcm9-wcm13,
 \[
-(\C[E[(\wcm{\hole}{e_1}]]\,\Cp[v_0])\lvrrs x
+\app{\C{E[(\wcm{\hole}{e_1}]}}{\Cp{v_0}}\lvrrs x
 \]
 From here, reduction depends on the value of $\xi(E)$.
 \begin{proof}[Case $\xi(E)=\mathbf{true}$]
@@ -1552,9 +1554,9 @@ Then
 
 $E[\wcm{v_0}{v_1}]\cmrr E[v_1]$
 
-$((\C[e_1]\,\C[E[\wcm{v_0}{\hole}]])\,\eval{\pair{\xi(E)}{\C[\chi(E)]}})\lvrrs ((\C[v_1]\,\C[E])\,\eval{\pair{\xi(E)}{\C[\chi(E)]}})$
+$\app{\app{\C{e_1}}{\C{E[\wcm{v_0}{\hole}]}}}{\eval{\pair{\xi(E)}{\C{\chi(E)}}}}\lvrrs\app{\app{\C{v_1}}{\C{E}}}{\eval{\pair{\xi(E)}{\C{\chi(E)}}}}$
 
-$((\C[\wcm{v_0}{v_1}]\,\C[E])\,\eval{\pair{\xi(E)}{\C[\chi(E)]}})\lvrrs ((\C[v_1]\,\C[E])\,\eval{\pair{\xi(E)}{\C[\chi(E)]}})$
+$\app{\app{\C{\wcm{v_0}{v_1}}}{\C{E}}}{\eval{\pair{\xi(E)}{\C{\chi(E)}}}}\lvrrs\app{\app{\C{v_1}}{\C{E}}}{\eval{\pair{\xi(E)}{\C{\chi(E)}}}}$
 
 
 % assume reduces correctly by induction
@@ -1564,20 +1566,20 @@ $((\C[\wcm{v_0}{v_1}]\,\C[E])\,\eval{\pair{\xi(E)}{\C[\chi(E)]}})\lvrrs ((\C[v_1
 
 \begin{proof}[Case $e=\ccm$]
 % prove E[(ccm)] -> v => ((C[(ccm)] C[E]) ((pair xi(E)) C[chi(E)])) -> C[v]
-Assume $E[\ccm]\cmrrs v$. Consider $((\C[\ccm]\,\C[E])\,\eval{\pair{\xi(E)}{\chi(E)}})$.
+Assume $E[\ccm]\cmrrs v$. Consider $\app{\app{\C{\ccm}}{\C{E}}}{\eval{\pair{\xi(E)}{\C{\chi(E)}}}}$.
 % -> ((C[e0] C[E[(* e1)]]) ((pair xi(E[(* e1)])) C[chi(E[(* e1)])]))
 Steps ccm1-ccm3 show
 \[
-((\C[\ccm]\,\C[E])\,\eval{\pair{\xi(E)}{\chi(E)}})\lvrrs ((\C[\chi(E)]\,\C[E])\,(\lambda\,(z)\,z))
+\app{\app{\C{\ccm}}{\C{E}}}{\eval{\pair{\xi(E)}{\C{\chi(E)}}}}\lvrrs\app{\app{\C{\chi(E)}}{\C{E}}}{\abs{z}{z}}
 \]
 Since $\chi(E)$ is a value, we appeal to the value case.
 \end{proof}
 
 \begin{proof}[Case $e=v$]
 % prove E[v] -> v' => ((C[v] C[E]) ((pair xi(E)) C[chi(E)])) -> C[v']
-Assume $E[v]\cmrrs v'$. Consider $((\C[v]\,\C[E])\,\eval{\pair{\xi(E)}{\chi(E)}})$.
+Assume $E[v]\cmrrs v'$. Consider $\app{\app{\C{v}}{\C{E}}}{\eval{\pair{\xi(E)}{\C{\chi(E)}}}}$.
 % by assumption of E
-By assumption of the correctness of $E$, $((\C[v]\,\C[E])\,\eval{\pair{\xi(E)}{\chi(E)}})\lvrr\C[v']$.
+By assumption of the correctness of $E$, $\app{\app{\C{v}}{\C{E}}}{\eval{\pair{\xi(E)}{\C{\chi(E)}}}}\lvrrs\C{v'}$.
 \end{proof}
 
 \begin{proof}[Case $e=x$]
@@ -1606,22 +1608,31 @@ By assumption on $e$, $((\C[e]\,C[E'[\app{\hole}{e_1}]])\,\eval{\pair{\xi(E'[\ap
 \end{proof}
 
 \begin{proof}{Case $E=E'[\wcm{\hole}{e_1}]$}
-Assume $E'[\wcm{\hole}{e_1}][e]\cmrrs v$.
+Assume $E'[\wcm{\hole}{e_1}][e]\cmrrs E'[\wcm{\hole}{e_1}][v']\implies\app{\app{\C{e}}{\C{E'[\wcm{\hole}{e_1}]}}}{\eval{\pair{\xi(E'[\wcm{\hole}{e_1}])}{\C{\chi(E'[\wcm{\hole}{e_1}])}}}}\lvrrs\app{\C{E'[\wcm{\hole}{e_1}]}}{\Cp{v'}}$.
 Consider $((\C[e]\,\C[E'[\wcm{\hole}{e_1}]])\,\eval{\pair{\xi(E'[\wcm{\hole}{e_1}])}{\C[\chi(E'[\wcm{\hole}{e_1}])]}})$.
 By assumption, $E'[\wcm{\hole}{e_1}][e]\cmrrs E'[\wcm{\hole}{e_1}][v']\implies((\C[e]\,\C[E'[\wcm{\hole}{e_1}]])\,\eval{\pair{\xi(E'[\wcm{\hole}{e_1}])}{\C[\chi(E'[\wcm{\hole}{e_1}])]}})\lvrr(\C[E'[\wcm{\hole}{e_1}]]\,\Cp[v'])$, as in wcm8.
 
+% wcm0  C[E[(wcm e0 e1)]]
+% wcm7  C[E[(wcm * e1)][e0]]
+% wcm8  C[E[(wcm * e1)][v0]]
+
+% wcm17 C[E[(wcm v0 *)][e1]]
+\end{proof}
+
+\begin{proof}{Case $E=E'[\wcm{v_0}{\hole}]$}
+Assume $E'[\wcm{v_0}{\hole}][e_1]\cmrrs E'[\wcm{v_0}{\hole}][v_1]\implies\app{\app{\C{e_1}}{\C{E'[\wcm{v_0}{\hole}]}}}{\eval{\pair{\xi(E'[\wcm{v_0}{\hole}])}{\C{\chi(E'[\wcm{v_0}{\hole}])}}}}\lvrrs\app{\C{E'[\wcm{v_0}{\hole}]}}{\C{v_1}}$.
 \end{proof}
 
 \newtheorem*{maintheorem}{Correctness of $\mathcal{C}$}
 \begin{maintheorem}
-For all programs $p\in\lambda_{cm}$, $\C[\mathrm{eval}_{cm}(p)]=\mathrm{eval}_{v}(\C[p])$.
+For all programs $p\in\lambda_{cm}$, $\C{\mathrm{eval}_{cm}(p)}=\mathrm{eval}_{v}(\C{p})$.
 \end{maintheorem}
 
 \begin{proof}
 
 \begin{align*}
 p\cmrrs v &\implies\mathrm{eval}_{cm}(p)=v &\text{(by definition of $\mathrm{eval}_{cm}$)}\\
-                             &\implies\C[\mathrm{eval}_{cm}(p)]=\C[v] &\text{(by well-definedness of $\mathcal{C}$)}
+                             &\implies\C{\mathrm{eval}_{cm}(p)}=\C{v} &\text{(by well-definedness of $\mathcal{C}$)}
 \end{align*}
 
 % does E[e] -> E[v] => ((C[e] C[E]) ((pair xi(E)) C[chi(E)])) -> C[E[v]] make sense?
@@ -1634,15 +1645,15 @@ p\cmrrs v &\implies\mathrm{eval}_{cm}(p)=v &\text{(by definition of $\mathrm{eva
 
 \begin{align*}
 p\cmrrs v &\implies\hole[p]\cmrrs\hole[v] &\text{(since $p\cmrr \hole[p]$ and $v$ can only be reached by $\hole[v]$)}\\
-                             &\implies((\C[p]\,\C[\hole])\,\eval{\pair{\xi(\hole)}{\C[\chi(\hole)]}})\lvrrs\C[v] &\text{(by the Great Lemma)}\\
-                             &\implies((\C[p]\,(\lambda\,(v)\,\C[v]))\,\eval{\pair{\mathbf{false}}{\C[\mathbf{nil}]}})\lvrrs\C[v] &\text{(by definitions x, y, and z)}\\
-                             &\implies\mathrm{eval}_{v}(\C[p])=\C[v] &\text{(by definition of $\mathrm{eval}_v$)}
+                             &\implies\app{\app{\C{p}}{\C{\hole}}}{\eval{\pair{\xi(\hole)}{\C{\chi(\hole)}}}}\lvrrs\C{v} &\text{(by the Great Lemma)}\\
+                             &\implies\app{\app{\C{p}}{\abs{v}{\C{v}}}}{\eval{\pair{\false}{\nil}}}\lvrrs\C{v} &\text{(by definitions x, y, and z)}\\
+                             &\implies\mathrm{eval}_{v}(\C{p})=\C{v} &\text{(by definition of $\mathrm{eval}_v$)}
 \end{align*}
 
-Therefore, $\C[\mathrm{eval}_{cm}(p)]=\mathrm{eval}_{v}(\C[p])$.
+Therefore, $\C{\mathrm{eval}_{cm}(p)}=\mathrm{eval}_{v}(\C{p})$.
 \end{proof}
 
-$\mathcal{A}$ is a transformation with the property that $\mathcal{A}[(\C[e_0]\,\C[e_1])]=\C[(e_0\,e_1)]$.
+$\mathcal{A}$ is a transformation with the property that $\mathcal{A}[\app{\C{e_0}}{\C{e_1}}]=\C{\app{e_0}{e_1}}$.
 
 \setconstant{error}
 
