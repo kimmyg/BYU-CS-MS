@@ -1252,6 +1252,13 @@ We certainly could reduce this by steps and see it work, but that would give us 
 
 \chapter{proof}
 
+% TODO
+% make overline show up in mechanized proof and definitions, where necessary
+% label mechanized proof better
+% justify each semantic rule with a lemma
+% label transition steps
+% make beta appear in Redex stuff
+
 \theoremstyle{definition}
 \newtheorem{defn}{Definition}
 
@@ -1299,7 +1306,7 @@ be observed by the original $\lambda_{cm}$ program.
 \setspecialsymbol{chiE}{$\chi(E)$}
 \setspecialsymbol{CchiE}{$\C{\chi(E)}$}
 
-
+\setconstant{error}
 
 \begin{defn}
 $\true=\abs{x}{\abs{y}{x}}$
@@ -1310,7 +1317,7 @@ $\false=\abs{x}{\abs{y}{y}}$
 \end{defn}
 
 \begin{defn}
-$\mathbf{pair}=\abs{a}{\abs{x}{\abs{z}{\app{\app{z}{a}}{b}}}}$
+$\mathbf{pair}=\abs{a}{\abs{b}{\abs{z}{\app{\app{z}{a}}{b}}}}$
 \end{defn}
 
 \begin{defn}
@@ -1330,23 +1337,14 @@ If $e\lvrrs v$, $\eval{e}=v$.
 \end{defn}
 
 \begin{defn}
-$\C{E[e]}=\app{\app{\C{e}}{\C{E}}}{\eval{\pair{\xi(E)}{\C{\chi(E)}}}}$.
+$\C{E[e]}=\app{\app{\C{e}}{\C{E}}}{\eval{\pair{\xi(E)}{\C{\chi(E)}}}}$
+\end{defn}
+
+\begin{defn}
+$\C{E[v]}=\app{\C{E}}{\Cp{v}}$
 \end{defn}
 
 \newenvironment{schemedefn}[1]{\begin{defn}$#1$\begin{singlespace}}{\end{singlespace}\end{defn}}
-
-\begin{schemedefn}{\mathcal{A}[\app{e_0}{e_1}]}
-\begin{schemedisplay}
-(lambda (k)
-  (lambda (m)
-    ((lambda (k) (k (SND m)))
-     (lambda (s) ((lambda (k) (k ((PAIR FALSE) s)))
-                  (lambda (n) ((e_0
-                                (lambda (e) ((e_1
-                                              (lambda (f) (((e f) k) m)))
-                                             n))) n)))))))
-\end{schemedisplay}
-\end{schemedefn}
 
 \begin{schemedefn}{\C{\app{e_0}{e_1}}}
 \begin{schemedisplay}
@@ -1400,10 +1398,6 @@ $\C{x}=\abs{k}{\abs{m}{\app{k}{x}}}$
 \scheme|C[error]| = \scheme|error|
 \end{defn}
 
-\begin{defn}
-$\Cp{v_0}=\Cp{\abs{x}{e_0}}=\abs{x}{\C{e_0}}$
-\end{defn}
-
 \begin{schemedefn}{\C{\hole}}
 \begin{schemedisplay}
 (lambda (v) C[v])
@@ -1442,6 +1436,43 @@ CE
 \end{schemedisplay}
 \end{schemedefn}
 
+\begin{schemedefn}{\mathcal{A}[\app{e_0}{e_1}]}
+$\mathcal{A}$ has the property that $\mathcal{A}[\app{\C{e_0}}{\C{e_1}}]=\C{\app{e_0}{e_1}}$.
+\begin{schemedisplay}
+(lambda (k)
+  (lambda (m)
+    ((lambda (k) (k (SND m)))
+     (lambda (s) ((lambda (k) (k ((PAIR FALSE) s)))
+                  (lambda (n) ((e_0
+                                (lambda (e) ((e_1
+                                              (lambda (f) (((e f) k) m)))
+                                             n))) n)))))))
+\end{schemedisplay}
+\end{schemedefn}
+
+\begin{defn}
+$\Cp{v_0}=\Cp{\abs{x}{e_0}}=\abs{x}{\C{e_0}}$
+\end{defn}
+
+\begin{defn}
+\[
+\xi(E)=\begin{cases}
+\mathbf{true} &\text{if $E=E'[\wcm{v'}{\hole}]$ for some $E'$ and $v'$}\\
+\mathbf{false} &\text{otherwise}
+\end{cases}
+\]
+\end{defn}
+
+\begin{defn}
+\begin{align*}
+\chi(\hole)               &= \nil\\
+\chi(E[\app{\hole}{e_1}]) &= \chi(E)\\
+\chi(E[\app{v_0}{\hole}]) &= \chi(E)\\
+\chi(E[\wcm{\hole}{e_1}]) &= \chi(E)\\
+\chi(E[\wcm{v_0}{\hole}]) &= \eval{\pair{v_0}{\chi(E)}}\\
+\end{align*}
+\end{defn}
+
 \begin{defn}
 \[
 \mathrm{eval}_{cm}(p)=\begin{cases}
@@ -1454,58 +1485,22 @@ v     &\text{if $p\cmrrs v$}\\
 \begin{defn}
 \[
 \mathrm{eval}_{v}(p)=\begin{cases}
-v     &\text{if $\app{\app{p}{\abs{v}{\C{v}}}}{\pair{\false}{\nil}}\lvrrs v$}\\
-\perp &\text{if $\app{\app{p}{\abs{v}{\C{v}}}}{\pair{\false}{\nil}}\lvrrs\cdots$}
-\end{cases}
-\]
-\end{defn}
-
-%    C[E[(e0 e1)]]
-% -> C[E[(* e1)][e0]]
-% -> C[E[(* e1)][v0]]
-% .. C[E[(v0 e1)]]
-% -> C[E[(v0 *)][e1]]
-% -> C[E[(v0 *)][v1]]
-% -> C[E[(v0 v1)]]
-% =  C[E[(\x.e2 v1)]]
-% -> C[E[e2[x <- v1]]
-% =  C[E[e3]]
-
-%    C[E[(wcm e0 e1)]]
-% -> C[E[(wcm * e1)][e0]]
-% -> C[E[(wcm * e1)][v0]]
-% .. C[E[(wcm v0 e1)]]
-% if E=E'[(wcm v *)]
-% .. C[E'[(wcm v0 e1)]]
-% -> C[E'[(wcm v0 *)][e1]]
-% -> C[E'[(wcm v0 *)][v1]]
-% -> C[E'[(wcm v0 v1)]
-% -> C[E'[v1]]
-
-%    C[E[v]]
-
-%    C[E[x]]
-% -> C[E[error]]
-
-
-
-\begin{defn}
-\[
-\mathrm{\xi}(E)=\begin{cases}
-\mathbf{true} &\text{if $E=E'[\wcm{v'}{\hole}]$ for some $E'$ and $v'$}\\
-\mathbf{false} &\text{otherwise}
+v     &\text{if $\app{\app{p}{\C{\hole}}}{\eval{\pair{\xi(\hole)}{\C{\chi(\hole)}}}}\lvrrs v$}\\
+\perp &\text{if $\app{\app{p}{\C{\hole}}}{\eval{\pair{\xi(\hole)}{\C{\chi(\hole)}}}}\lvrrs\cdots$}
 \end{cases}
 \]
 \end{defn}
 
 \begin{lemma}
-\label{collapse}
-For all values $\abs{x}{e_0}$ and $\abs{y}{e_1}$, $\C{e_0}[x\leftarrow \abs{y}{\C{e_1}}]=\C{e_0[x\leftarrow \abs{y}{e_1}]}$.
+\label{cm-app}
+For all values $\abs{x}{e_0}$ and $\abs{y}{e_1}$, $\app{\Cp{\abs{x}{e_0}}}{\Cp{\abs{y}{e_1}}}\lvrr\C{e_0[x\leftarrow \abs{y}{e_1}]}$.
 \end{lemma}
 
 \begin{proof}
 \begin{align*}
-\C{e_0}[x\leftarrow \abs{y}{\C{e_1}}] = &\C{e_0[x\leftarrow \abs{y}{e_1}}]
+\app{\Cp{\abs{x}{e_0}}}{\Cp{\abs{y}{e_1}}} = &\app{\abs{x}{\C{e_0}}}{\abs{y}{\C{e_1}}}\\
+                                       \lvrr &\C{e_0}[x\leftarrow \abs{y}{\C{e_1}}]\\
+                                           = &\C{e_0[x\leftarrow \abs{y}{e_1}}]
 \end{align*}
 (It's obvious.)
 \end{proof}
@@ -1522,6 +1517,19 @@ For all values $\abs{x}{e}$, $\app{\C{\hole}}{\Cp{\abs{x}{e}}}=\C{\abs{x}{e}}$.
                              \lvrr &\C{v}[v\leftarrow \abs{x}{\C{e}}]\\
                                  = &\C{v[v\leftarrow \abs{x}{e}]}\\
                                  = &\C{\abs{x}{e}}
+\end{align*}
+\end{proof}
+
+\begin{lemma}
+\label{wcm-collapse}
+If $E=E'[\wcm{v'}{\hole}]$, then $\chi(E'[\wcm{v_0}{\hole}])=\eval{\pair{v_0}{\app{\mathbf{snd}}{\chi(E)}}}$.
+\end{lemma}
+
+\begin{proof}
+\begin{align*}
+\chi(E'[\wcm{v_0}{\hole}]) &= \eval{\pair{v_0}{\chi(E')}}\\
+                           &= \eval{\pair{v_0}{\app{\mathbf{snd}}{\chi(E'[\wcm{v'}{\hole}])}}}\\
+                           &= \eval{\pair{v_0}{\app{\mathbf{snd}}{\chi(E)}}}\\
 \end{align*}
 \end{proof}
 
@@ -1557,7 +1565,7 @@ E[\app{v_0}{\hole}][e_1]\cmrrs E[\app{\hole}{e_1}][v_0]\implies\C{E[\app{v_0}{\h
 
 $\C{E[\app{v_0}{\hole}][v_1]}\lvrr\C{E[\app{v_0}{v_1}]}$, by app11.
 
-By Lemma application in C,
+By Lemma \ref{cm-app},
 \[
 E[\app{v_0}{v_1}]\cmrr E[e_2]\implies\C{E[\app{v_0}{v_1}]}\lvrrs\C{E[e_2]}
 \]
@@ -1591,13 +1599,14 @@ E'[\wcm{v_0}{\hole}][e_1]\cmrrs E'[\wcm{v_0}{\hole}][v_1]\implies\C{E'[\wcm{v_0}
 
 $\C{E'[\wcm{v_0}{\hole}][v_1]}=\C{E'[v_1]}$, by definition.
 
-now do the false case
+If $E\ne E'[\wcm{v'}{\hole}]$ for any $E'$ and $v'$, $\C{E[\wcm{v_0}{e_1}]}\lvrrs\C{E[\wcm{v_0}{\hole}][e_1]}$, by wcm13-no-tail-wcm18-no-tail.
 
+By the inductive hypothesis,
+\[
+E[\wcm{v_0}{\hole}][e_1]\cmrrs E[\wcm{v_0}{\hole}][v_1]\implies\C{E[\wcm{v_0}{\hole}][e_1]}\lvrrs\C{E[\wcm{v_0}{\hole}][v_1]}
+\]
 
-%   chi(E'[(wcm v0 *)])
-% = v0 : chi(E')
-% = v0 : snd chi(E'[(wcm v' *)])
-% = v0 : snd chi(E)
+$\C{E[\wcm{v_0}{\hole}][v_1]}=\C{E[v_1]}$, by definition.
 
 \end{proof}
 
@@ -1641,12 +1650,6 @@ By assumption on $e$, $((\C[e]\,C[E'[\app{\hole}{e_1}]])\,\eval{\pair{\xi(E'[\ap
 Assume $E'[\wcm{\hole}{e_1}][e]\cmrrs E'[\wcm{\hole}{e_1}][v']\implies\app{\app{\C{e}}{\C{E'[\wcm{\hole}{e_1}]}}}{\eval{\pair{\xi(E'[\wcm{\hole}{e_1}])}{\C{\chi(E'[\wcm{\hole}{e_1}])}}}}\lvrrs\app{\C{E'[\wcm{\hole}{e_1}]}}{\Cp{v'}}$.
 Consider $((\C[e]\,\C[E'[\wcm{\hole}{e_1}]])\,\eval{\pair{\xi(E'[\wcm{\hole}{e_1}])}{\C[\chi(E'[\wcm{\hole}{e_1}])]}})$.
 By assumption, $E'[\wcm{\hole}{e_1}][e]\cmrrs E'[\wcm{\hole}{e_1}][v']\implies((\C[e]\,\C[E'[\wcm{\hole}{e_1}]])\,\eval{\pair{\xi(E'[\wcm{\hole}{e_1}])}{\C[\chi(E'[\wcm{\hole}{e_1}])]}})\lvrr(\C[E'[\wcm{\hole}{e_1}]]\,\Cp[v'])$, as in wcm8.
-
-% wcm0  C[E[(wcm e0 e1)]]
-% wcm7  C[E[(wcm * e1)][e0]]
-% wcm8  C[E[(wcm * e1)][v0]]
-
-% wcm17 C[E[(wcm v0 *)][e1]]
 \end{proof}
 
 \begin{proof}{Case $E=E'[\wcm{v_0}{\hole}]$}
@@ -1662,76 +1665,71 @@ For all programs $p\in\lambda_{cm}$, $\C{\mathrm{eval}_{cm}(p)}=\mathrm{eval}_{v
 
 \begin{align*}
 p\cmrrs v &\implies\mathrm{eval}_{cm}(p)=v &\text{(by definition of $\mathrm{eval}_{cm}$)}\\
-                             &\implies\C{\mathrm{eval}_{cm}(p)}=\C{v} &\text{(by well-definedness of $\mathcal{C}$)}
+          &\implies\C{\mathrm{eval}_{cm}(p)}=\C{v} &\text{(by well-definedness of $\mathcal{C}$)}
 \end{align*}
 
-% does E[e] -> E[v] => ((C[e] C[E]) ((pair xi(E)) C[chi(E)])) -> C[E[v]] make sense?
-% it doesn't look like it. consider what C[E[v]] is.
-% does e -> v => C[e] -> C[v] make sense?
-% not really, unless e is at the top level (so e is p).
-% does E[e] -> v => ((C[e] C[E]) ((pair xi(E)) C[chi(E)])) -> C[v] make sense?
-% assume it works for all E, prove e by induction
-% assume it works for all e, prove E by induction
+% define C[E[e]]
+% define C[E]
+% define C[e]
+
+% E[(e0 e1)] *
+% E[(* e1)][e0] *
+% E[(* e1)][v0] *
+% E[(v0 e1)] ~
+% E[(v0 *)][e1] *
+% E[(v0 *)][v1] *
+% E[(v0 v1)] ~*
+% E[e2] * by induction
+
+% E[(wcm e0 e1)] *
+% E[(wcm * e1)][e0] *
+% E[(wcm * e1)][v0] *
+% E[(wcm v0 e1)] ~
+% E[(wcm v0 *)][e1] ~?
+% E[(wcm v0 *)][v1] ~?
+% E[(wcm v0 v1)] ~
+% E[v1] *
+
+% E'[(wcm v' *][(wcm e0 e1)] *
+% E'[(wcm v' (wcm * e1))][e0] *
+% E'[(wcm v' (wcm * e1))][v0] ~
+% E'[(wcm v' (wcm v0 e1))] ~
+% E'[(wcm v0 e1)] ~
+% E'[(wcm v0 *)][e1] ~?
+% E'[(wcm v0 *)][v1] ~
+% E'[(wcm v0 v1)] ~
+% E'[v1] *
+
+% E[(ccm)] *
+% E[chi(E)] *
+
+% define C[E[v]] (C[E] C'[v])
 
 \begin{align*}
-p\cmrrs v &\implies\hole[p]\cmrrs\hole[v] &\text{(since $p\cmrr \hole[p]$ and $v$ can only be reached by $\hole[v]$)}\\
-                             &\implies\app{\app{\C{p}}{\C{\hole}}}{\eval{\pair{\xi(\hole)}{\C{\chi(\hole)}}}}\lvrrs\C{v} &\text{(by the Great Lemma)}\\
-                             &\implies\app{\app{\C{p}}{\abs{v}{\C{v}}}}{\eval{\pair{\false}{\nil}}}\lvrrs\C{v} &\text{(by definitions x, y, and z)}\\
-                             &\implies\mathrm{eval}_{v}(\C{p})=\C{v} &\text{(by definition of $\mathrm{eval}_v$)}
+p\cmrrs v &\implies\hole[p]\cmrrs v &\text{(since $p\cmrr\hole[p]$)}\\
+          &\implies\C{\hole[p]}\lvrrs\C{v} &\text{(by the Great Lemma)}\\
+          &\implies\app{\app{\C{p}}{\C{\hole}}}{\eval{\pair{\xi(\hole)}{\C{\chi(\hole)}}}}\lvrrs\C{v}&\text{(by definition of $\mathcal{C}$)}\\
+          &\implies\mathrm{eval}_{v}(\C{p})=\C{v} &\text{(by definition of $\mathrm{eval}_v$)}
 \end{align*}
 
 Therefore, $\C{\mathrm{eval}_{cm}(p)}=\mathrm{eval}_{v}(\C{p})$.
 \end{proof}
 
-$\mathcal{A}$ is a transformation with the property that $\mathcal{A}[\app{\C{e_0}}{\C{e_1}}]=\C{\app{e_0}{e_1}}$.
-
-\setconstant{error}
+\chapter{appendix}
 
 \begin{singlespace}
 
 application
 
+app0
 \begin{schemedisplay}
 E[(e_0 e_1)]
 \end{schemedisplay}
-
-\begin{schemedisplay}
-E[(hole e_1)][e_0]
-\end{schemedisplay}
-
-\begin{schemedisplay}
-E[(hole e_1)][v_0]
-\end{schemedisplay}
-
-\begin{schemedisplay}
-E[(v_0 e_1)]
-\end{schemedisplay}
-
-\begin{schemedisplay}
-E[(v_0 hole)][e_1]
-\end{schemedisplay}
-
-\begin{schemedisplay}
-E[(v_0 hole)][v_1]
-\end{schemedisplay}
-
-\begin{schemedisplay}
-E[(v_0 v_1)]
-\end{schemedisplay}
-
-\begin{schemedisplay}
-E[((lambda (x) e_0p) v_1)]
-\end{schemedisplay}
-
-\begin{schemedisplay}
-E[e_0p_x_v_1]
-\end{schemedisplay}
-
 \begin{schemedisplay}
 ((C[(e_0 e_1)] C[E]) ((PAIR xiE) CchiE))
 \end{schemedisplay}
 
-app0
+=
 \begin{schemedisplay}
 (((lambda (k) 
     (lambda (m) 
@@ -1804,6 +1802,9 @@ app6
 
 app7
 \begin{schemedisplay}
+E[(hole e_1)][e_0]
+\end{schemedisplay}
+\begin{schemedisplay}
 ((Ce_0
   (lambda (e) ((Ce_1
            (lambda (f) (((e f) CE) ((PAIR xiE) CchiE))))
@@ -1843,12 +1844,23 @@ value
 
 app8
 \begin{schemedisplay}
+E[(hole e_1)][v_0]
+\end{schemedisplay}
+\begin{schemedisplay}
 ((lambda (e) ((Ce_1
           (lambda (f) (((e f) CE) ((PAIR xiE) CchiE))))
          ((PAIR FALSE) CchiE))) Cpv_0)
 \end{schemedisplay}
 
+find home for me
+\begin{schemedisplay}
+E[(v_0 e_1)]
+\end{schemedisplay}
+
 app9
+\begin{schemedisplay}
+E[(v_0 hole)][e_1]
+\end{schemedisplay}
 \begin{schemedisplay}
 ((Ce_1
   (lambda (f) (((Cpv_0 f) CE) ((PAIR xiE) CchiE))))
@@ -1883,68 +1895,51 @@ value
 
 app10
 \begin{schemedisplay}
+E[(v_0 hole)][v_1]
+\end{schemedisplay}
+\begin{schemedisplay}
 ((lambda (f) (((Cpv_0 f) CE) ((PAIR xiE) CchiE))) Cpv_1)
 \end{schemedisplay}
 
 app11
+\begin{schemedisplay}
+E[(v_0 v_1)]
+\end{schemedisplay}
 \begin{schemedisplay}
 (((Cpv_0 Cpv_1) CE) ((PAIR xiE) CchiE))
 \end{schemedisplay}
 
 =
 \begin{schemedisplay}
+E[((lambda (x) e_0p) v_1)]
+\end{schemedisplay}
+\begin{schemedisplay}
 ((((lambda (x) Ce_0p) Cpv_1) CE) ((PAIR xiE) CchiE))
 \end{schemedisplay}
 
-=
+app12
+
 \begin{schemedisplay}
 ((Ce_0p_x_Cpv_1 CE) ((PAIR xiE) CchiE))
 \end{schemedisplay}
 
 =
 \begin{schemedisplay}
+E[e_0p_x_v_1]
+\end{schemedisplay}
+\begin{schemedisplay}
 ((C[e_0p_x_v_1] CE) ((PAIR xiE) CchiE))
 \end{schemedisplay}
 
+wcm0
 \begin{schemedisplay}
 E[(wcm e_0 e_1)]
 \end{schemedisplay}
-
-\begin{schemedisplay}
-E[(wcm hole e_1)][e_0]
-\end{schemedisplay}
-
-\begin{schemedisplay}
-E[(wcm hole e_1)][v_0]
-\end{schemedisplay}
-
-\begin{schemedisplay}
-E[(wcm v_0 e_1)]
-\end{schemedisplay}
-
-collapse if necessary
-
-\begin{schemedisplay}
-E[(wcm v_0 hole)][e_1]
-\end{schemedisplay}
-
-\begin{schemedisplay}
-E[(wcm v_0 hole)][v_1]
-\end{schemedisplay}
-
-\begin{schemedisplay}
-E[(wcm v_0 v_1)]
-\end{schemedisplay}
-
-\begin{schemedisplay}
-E[v_1]
-\end{schemedisplay}
-
 \begin{schemedisplay}
 ((C[(wcm e_0 e_1)] CE) ((PAIR xiE) CchiE))
 \end{schemedisplay}
 
-wcm0
+=
 \begin{schemedisplay}
 (((lambda (k) 
     (lambda (m) 
@@ -2068,6 +2063,9 @@ wcm6
 
 wcm7
 \begin{schemedisplay}
+E[(wcm hole e_1)][e_0]
+\end{schemedisplay}
+\begin{schemedisplay}
 ((Ce_0
   (lambda (v) 
     ((lambda (k) (k (FST ((PAIR xiE) CchiE))))
@@ -2118,6 +2116,9 @@ value
 
 wcm8
 \begin{schemedisplay}
+E[(wcm hole e_1)][v_0]
+\end{schemedisplay}
+\begin{schemedisplay}
 ((lambda (v) 
    ((lambda (k) (k (FST ((PAIR xiE) CchiE))))
     (lambda (f) 
@@ -2125,6 +2126,18 @@ wcm8
        (lambda (a)
          ((lambda (k) (k ((PAIR TRUE) (lambda (k) (lambda (m) (k (lambda (z) T[(C[(z v)] a)])))))))
           (lambda (m) ((Ce_1 CE) m)))))))) Cpv_0)
+\end{schemedisplay}
+
+
+find home for me
+\begin{schemedisplay}
+E[(wcm v_0 e_1)]
+\end{schemedisplay}
+
+collapse if necessary
+
+\begin{schemedisplay}
+nu(E)[(wcm v_0 e_1)]
 \end{schemedisplay}
 
 wcm9
@@ -2190,41 +2203,41 @@ wcm15-tail
 \begin{schemedisplay}
 ((lambda (a)
    ((lambda (k) (k ((PAIR TRUE) (lambda (k) (lambda (m) (k (lambda (z) T[(C[(z v_0)] a)])))))))
-    (lambda (m) ((Ce_1 CE) m)))) C[vs])
+    (lambda (m) ((Ce_1 CE) m)))) C[(SND chiE)])
 \end{schemedisplay}
 
 wcm16-tail
 \begin{schemedisplay}
-((lambda (k) (k ((PAIR TRUE) (lambda (k) (lambda (m) (k (lambda (z) T[(C[(z v_0)] C[vs])])))))))
+((lambda (k) (k ((PAIR TRUE) (lambda (k) (lambda (m) (k (lambda (z) T[(C[(z v_0)] C[(SND chiE)])])))))))
  (lambda (m) ((Ce_1 CE) m)))
 \end{schemedisplay}
 
 =
 \begin{schemedisplay}
-((lambda (k) (k ((PAIR TRUE) (lambda (k) (lambda (m) (k (lambda (z) C[((z v_0) vs)])))))))
+((lambda (k) (k ((PAIR TRUE) (lambda (k) (lambda (m) (k (lambda (z) C[((z v_0) (SND chiE))])))))))
  (lambda (m) ((Ce_1 CE) m)))
 \end{schemedisplay}
 
 =
 \begin{schemedisplay}
-((lambda (k) (k ((PAIR TRUE) C[(lambda (z) ((z v_0) vs))])))
+((lambda (k) (k ((PAIR TRUE) C[(lambda (z) ((z v_0) (SND chiE)))])))
  (lambda (m) ((Ce_1 CE) m)))
 \end{schemedisplay}
 
 =
 \begin{schemedisplay}
-((lambda (k) (k ((PAIR TRUE) C[((PAIR v_0) vs)])))
+((lambda (k) (k ((PAIR TRUE) C[((PAIR v_0) (SND chiE))])))
  (lambda (m) ((Ce_1 CE) m)))
 \end{schemedisplay}
 
 wcm17-tail
 \begin{schemedisplay}
-((lambda (m) ((Ce_1 CE) m)) ((PAIR TRUE) C[((PAIR v_0) vs)]))
+((lambda (m) ((Ce_1 CE) m)) ((PAIR TRUE) C[((PAIR v_0) (SND chiE))]))
 \end{schemedisplay}
 
 wcm18-tail
 \begin{schemedisplay}
-((Ce_1 CE) ((PAIR TRUE) C[((PAIR v_0) vs)]))
+((Ce_1 CE) ((PAIR TRUE) C[((PAIR v_0) (SND chiE))]))
 \end{schemedisplay}
 
 false case not (wcm v *)
@@ -2258,30 +2271,46 @@ wcm16-not-tail
 
 =
 \begin{schemedisplay}
-((lambda (k) (k ((PAIR TRUE) (lambda (k) (lambda (m) (k (lambda (z) C[((z v_0) CchiE)])))))))
+((lambda (k) (k ((PAIR TRUE) (lambda (k) (lambda (m) (k (lambda (z) C[((z v_0) chiE)])))))))
  (lambda (m) ((Ce_1 CE) m)))
 \end{schemedisplay}
 
 =
 \begin{schemedisplay}
-((lambda (k) (k ((PAIR TRUE) C[(lambda (z) ((z v_0) CchiE))])))
+((lambda (k) (k ((PAIR TRUE) C[(lambda (z) ((z v_0) chiE))])))
  (lambda (m) ((Ce_1 CE) m)))
 \end{schemedisplay}
 
 =
 \begin{schemedisplay}
-((lambda (k) (k ((PAIR TRUE) C[((PAIR v_0) CchiE)])))
+((lambda (k) (k ((PAIR TRUE) C[((PAIR v_0) chiE)])))
  (lambda (m) ((Ce_1 CE) m)))
 \end{schemedisplay}
 
 wcm17-not-tail
 \begin{schemedisplay}
-((lambda (m) ((Ce_1 CE) m)) ((PAIR TRUE) C[((PAIR v_0) CchiE)]))
+((lambda (m) ((Ce_1 CE) m)) ((PAIR TRUE) C[((PAIR v_0) chiE)]))
 \end{schemedisplay}
 
 wcm17-not-tail
 \begin{schemedisplay}
-((Ce_1 CE) ((PAIR TRUE) C[((PAIR v_0) CchiE)]))
+((Ce_1 CE) ((PAIR TRUE) C[((PAIR v_0) chiE)]))
+\end{schemedisplay}
+
+find homes for us
+\begin{schemedisplay}
+nu(E)[(wcm v_0 hole)][e_1]
+\end{schemedisplay}
+
+\begin{schemedisplay}
+nu(E)[(wcm v_0 hole)][v_1]
+\end{schemedisplay}
+
+\begin{schemedisplay}
+nu(E)[(wcm v_0 v_1)]
+\end{schemedisplay}
+\begin{schemedisplay}
+nu(E)[v_1]
 \end{schemedisplay}
 
 ccm
