@@ -256,6 +256,7 @@ My wife is the hottest thing ever.
 \newcommand{\cmrr}{\rightarrow_{\lambda_{cm}}}
 \newcommand{\cmrrs}{\rightarrow_{\lambda_{cm}}^{*}}
 \newcommand{\C}[1]{\mathcal{C}[#1]}
+\newcommand{\Ct}[2]{\mathcal{C}[#1,#2]}
 \newcommand{\Cone}[1]{\mathcal{C}_1[#1]}
 \newcommand{\Cp}[1]{\mathcal{C}'[#1]}
 
@@ -1268,9 +1269,15 @@ We certainly could reduce this by steps and see it work, but that would give us 
 \newtheorem{case}{Case}
 
 Programs in $\lambda_{cm}$ can observe the context in which they are evaluated. Programs
-in $\lambda_v$, however, cannot. The intuition behind the transform is to explicitly
+in $\lambda_v$, however, cannot. The intuition behind $\mathcal{C}$ is to explicitly
 provide to the resultant $\lambda_v$ program any information about the context that could
 be observed by the original $\lambda_{cm}$ program.
+
+To accomplish this, the transform is defined in the spirit of CPS. Recall that in CPS, every function receives an additional formal parameter and every call site receives a corresponding argument. The definition of $\mathcal{C}$ takes this a step further under which every function receives \emph{two} additional formal parameters and every call site two additional arguments. As in CPS, the first parameter encapsulates the continuation or, for our purposes, the evaluation context. The second encapsulates all contextual information observable to the original $\lambda_{cm}$ program. 
+
+We will now set out to demonstrate that $\mathcal{C}$ preserves program meaning.
+
+First, we define some useful shorthand.
 
 \setspecialsymbol{TRUE}{$\mathbf{true}$}
 \setspecialsymbol{FALSE}{$\mathbf{false}$}
@@ -1334,10 +1341,14 @@ $\nil=\false$
 
 \begin{defn}
 If $e\lvrrs v$, $\eval{e}=v$.
+
+The intent of this definition is to preserve visual indicators of the meaning of an expression. For instance, it is used primarily to allow us to express the pair of $a$ and $b$ as $\eval{\pair{a}{b}}$ instead of the less recognizable $\abs{z}{\app{\app{z}{a}}{b}}$. However, it is dangerous since, in the case that $e$ diverges, we refer to a value that doesn't exist. We employ this definition only if it is obvious that $e$ converges.
 \end{defn}
 
 \begin{defn}
 $\C{E[e]}=\app{\app{\C{e}}{\C{E}}}{\eval{\pair{\xi(E)}{\C{\chi(E)}}}}$
+
+When applied to both a context and term, $\mathcal{C}$ is treated as a two argument function. While this in conventionally denoted $\Ct{E}{e}$ or similarly, we adopt the unorthodox notation for consistency. 
 \end{defn}
 
 \begin{defn}
@@ -1350,12 +1361,11 @@ $\C{E[v]}=\app{\C{E}}{\Cp{v}}$
 \begin{schemedisplay}
 (lambda (k)
   (lambda (m)
-    ((lambda (k) (k (SND m)))
-     (lambda (s) ((lambda (k) (k ((PAIR FALSE) s)))
-                  (lambda (n) ((Ce_0
-                                (lambda (e) ((Ce_1
-                                              (lambda (f) (((e f) k) m)))
-                                             n))) n)))))))
+    ((lambda (k) (k ((PAIR FALSE) (SND m))))
+     (lambda (n) ((Ce_0
+                   (lambda (e) ((Ce_1
+                                (lambda (f) (((e f) k) m)))
+                               n))) n)))))))
 \end{schemedisplay}
 \end{schemedefn}
 
@@ -1441,12 +1451,11 @@ $\mathcal{A}$ has the property that $\mathcal{A}[\app{\C{e_0}}{\C{e_1}}]=\C{\app
 \begin{schemedisplay}
 (lambda (k)
   (lambda (m)
-    ((lambda (k) (k (SND m)))
-     (lambda (s) ((lambda (k) (k ((PAIR FALSE) s)))
-                  (lambda (n) ((e_0
-                                (lambda (e) ((e_1
-                                              (lambda (f) (((e f) k) m)))
-                                             n))) n)))))))
+    ((lambda (k) (k ((PAIR FALSE) (SND m))))
+     (lambda (n) ((e_0
+                   (lambda (e) ((e_1
+                                (lambda (f) (((e f) k) m)))
+                               n))) n)))))))
 \end{schemedisplay}
 \end{schemedefn}
 
@@ -1485,8 +1494,8 @@ v     &\text{if $p\cmrrs v$}\\
 \begin{defn}
 \[
 \mathrm{eval}_{v}(p)=\begin{cases}
-v     &\text{if $\app{\app{p}{\C{\hole}}}{\eval{\pair{\xi(\hole)}{\C{\chi(\hole)}}}}\lvrrs v$}\\
-\perp &\text{if $\app{\app{p}{\C{\hole}}}{\eval{\pair{\xi(\hole)}{\C{\chi(\hole)}}}}\lvrrs\cdots$}
+v     &\text{if $p\lvrrs v$}\\
+\perp &\text{if $p\lvrrs\cdots$}
 \end{cases}
 \]
 \end{defn}
@@ -1498,9 +1507,9 @@ For all values $\abs{x}{e_0}$ and $\abs{y}{e_1}$, $\app{\Cp{\abs{x}{e_0}}}{\Cp{\
 
 \begin{proof}
 \begin{align*}
-\app{\Cp{\abs{x}{e_0}}}{\Cp{\abs{y}{e_1}}} = &\app{\abs{x}{\C{e_0}}}{\abs{y}{\C{e_1}}}\\
-                                       \lvrr &\C{e_0}[x\leftarrow \abs{y}{\C{e_1}}]\\
-                                           = &\C{e_0[x\leftarrow \abs{y}{e_1}}]
+\app{\Cp{\abs{x}{e_0}}}{\Cp{\abs{y}{e_1}}} = &\app{\abs{x}{\C{e_0}}}{\abs{y}{\C{e_1}}}&\text{by definition of $\mathcal{C}'$}\\
+                                       \lvrr &\C{e_0}[x\leftarrow \abs{y}{\C{e_1}}]&\text{by semantics of $\lambda_v$}\\
+                                           = &\C{e_0[x\leftarrow \abs{y}{e_1}}]&\text{Think about it.}
 \end{align*}
 (It's obvious.)
 \end{proof}
@@ -1733,66 +1742,40 @@ E[(e_0 e_1)]
 \begin{schemedisplay}
 (((lambda (k) 
     (lambda (m) 
-      ((lambda (k) (k (SND m)))
-       (lambda (s) 
-         ((lambda (k) (k ((PAIR FALSE) s)))
-          (lambda (n) ((Ce_0
-                   (lambda (e) ((Ce_1
-                            (lambda (f) (((e f) k) m))) n))) n)))))))
+      ((lambda (k) (k ((PAIR FALSE) (SND m))))
+       (lambda (n) ((Ce_0
+                (lambda (e) ((Ce_1
+                         (lambda (f) (((e f) k) m))) n))) n)))))
   CE) ((PAIR xiE) CchiE))
 \end{schemedisplay}
 
 app1
 \begin{schemedisplay}
 ((lambda (m) 
-   ((lambda (k) (k (SND m)))
-    (lambda (s) 
-      ((lambda (k) (k ((PAIR FALSE) s)))
-       (lambda (n) ((Ce_0
-                (lambda (e) ((Ce_1
-                         (lambda (f) (((e f) CE) m))) n))) n))))))
+   ((lambda (k) (k ((PAIR FALSE) (SND m))))
+    (lambda (n) ((Ce_0
+             (lambda (e) ((Ce_1
+                      (lambda (f) (((e f) CE) m))) n))) n))))
  ((PAIR xiE) CchiE))
 \end{schemedisplay}
 
 app2
 \begin{schemedisplay}
-((lambda (k) (k (SND ((PAIR xiE) CchiE))))
- (lambda (s) 
-   ((lambda (k) (k ((PAIR FALSE) s)))
-    (lambda (n) ((Ce_0
-             (lambda (e) ((Ce_1
-                      (lambda (f) (((e f) CE) ((PAIR xiE) CchiE)))) n))) n)))))
-\end{schemedisplay}
-
-app3
-\begin{schemedisplay}
-((lambda (s) 
-   ((lambda (k) (k ((PAIR FALSE) s)))
-    (lambda (n) ((Ce_0
-             (lambda (e) ((Ce_1
-                      (lambda (f) (((e f) CE) ((PAIR xiE) CchiE)))) n))) n))))
- (SND ((PAIR xiE) CchiE)))
-\end{schemedisplay}
-
-app4
-\begin{schemedisplay}
-((lambda (s) 
-   ((lambda (k) (k ((PAIR FALSE) s)))
-    (lambda (n) ((Ce_0
-             (lambda (e) ((Ce_1
-                      (lambda (f) (((e f) CE) ((PAIR xiE) CchiE)))) n))) n))))
- CchiE)
-\end{schemedisplay}
-
-app5
-\begin{schemedisplay}
-((lambda (k) (k ((PAIR FALSE) CchiE)))
+((lambda (k) (k ((PAIR FALSE) (SND ((PAIR xiE) CchiE)))))
  (lambda (n) ((Ce_0
           (lambda (e) ((Ce_1
                    (lambda (f) (((e f) CE) ((PAIR xiE) CchiE)))) n))) n)))
 \end{schemedisplay}
 
-app6
+app3
+\begin{schemedisplay}
+((lambda (n) ((Ce_0
+          (lambda (e) ((Ce_1
+                   (lambda (f) (((e f) CE) ((PAIR xiE) CchiE)))) n))) n))
+ ((PAIR FALSE) (SND ((PAIR xiE) CchiE))))
+\end{schemedisplay}
+
+app4
 \begin{schemedisplay}
 ((lambda (n) ((Ce_0
           (lambda (e) ((Ce_1
@@ -1800,7 +1783,7 @@ app6
  ((PAIR FALSE) CchiE))
 \end{schemedisplay}
 
-app7
+app5
 \begin{schemedisplay}
 E[(hole e_1)][e_0]
 \end{schemedisplay}
@@ -1812,37 +1795,7 @@ E[(hole e_1)][e_0]
  ((PAIR FALSE) CchiE))
 \end{schemedisplay}
 
-error
-
-app8-e0-error
-\begin{schemedisplay}
-((lambda (e) ((Ce_1
-          (lambda (f) (((e f) CE) ((PAIR xiE) CchiE))))
-         ((PAIR FALSE) CchiE))) error)
-\end{schemedisplay}
-
-app9-e0-error
-\begin{schemedisplay}
-error
-\end{schemedisplay}
-
-nontermination
-
-app8-e0-bottom
-\begin{schemedisplay}
-((lambda (e) ((Ce_1
-          (lambda (f) (((e f) CE) ((PAIR xiE) CchiE))))
-         ((PAIR FALSE) CchiE))) bottom)
-\end{schemedisplay}
-
-app9-e0-bottom
-\begin{schemedisplay}
-bottom
-\end{schemedisplay}
-
-value
-
-app8
+app6
 \begin{schemedisplay}
 E[(hole e_1)][v_0]
 \end{schemedisplay}
@@ -1857,7 +1810,7 @@ find home for me
 E[(v_0 e_1)]
 \end{schemedisplay}
 
-app9
+app7
 \begin{schemedisplay}
 E[(v_0 hole)][e_1]
 \end{schemedisplay}
@@ -1867,33 +1820,7 @@ E[(v_0 hole)][e_1]
  ((PAIR FALSE) CchiE))
 \end{schemedisplay}
 
-error
-
-app10-e1-error
-\begin{schemedisplay}
-((lambda (f) (((Cpv_0 f) CE) ((PAIR xiE) CchiE))) error)
-\end{schemedisplay}
-
-app11-e1-error
-\begin{schemedisplay}
-error
-\end{schemedisplay}
-
-nontermination
-
-app10-e1-bottom
-\begin{schemedisplay}
-((lambda (f) (((Cpv_0 f) CE) ((PAIR xiE) CchiE))) bottom)
-\end{schemedisplay}
-
-app11-e1-bottom
-\begin{schemedisplay}
-bottom
-\end{schemedisplay}
-
-value
-
-app10
+app8
 \begin{schemedisplay}
 E[(v_0 hole)][v_1]
 \end{schemedisplay}
@@ -1901,7 +1828,7 @@ E[(v_0 hole)][v_1]
 ((lambda (f) (((Cpv_0 f) CE) ((PAIR xiE) CchiE))) Cpv_1)
 \end{schemedisplay}
 
-app11
+app9
 \begin{schemedisplay}
 E[(v_0 v_1)]
 \end{schemedisplay}
@@ -1917,8 +1844,7 @@ E[((lambda (x) e_0p) v_1)]
 ((((lambda (x) Ce_0p) Cpv_1) CE) ((PAIR xiE) CchiE))
 \end{schemedisplay}
 
-app12
-
+app10
 \begin{schemedisplay}
 ((Ce_0p_x_Cpv_1 CE) ((PAIR xiE) CchiE))
 \end{schemedisplay}
