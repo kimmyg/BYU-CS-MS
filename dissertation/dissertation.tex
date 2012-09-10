@@ -635,7 +635,7 @@ eager languages.
 
 One final observation we should make about the $\lambda$-calculus is which terms denote
 values. A value should be, in a sense, irreducible and that criterion disqualifies
-applications from being considered as values. A value should remain indepedent of
+applications from being considered as values. A value should remain independent of
 environment, i.e., it should not merely be a placeholder for arbitrary values, and that
 criterion disqualifies lone variables from being considered as values.\footnote{In actual
 fact, a value is an irreducible $\lambda$-calculus term paired with an environment which
@@ -805,7 +805,7 @@ binding, but not the body. This allows for expressions like
   (with (x x)
     x))
 \end{schemedisplay}
-to behave as we expect (returning \scheme'5').
+to behave as we expect (evaluating to \scheme'5').
 
 Now that the syntactic forms and reduction rules of the language are defined, we can use 
 the randomized testing built into Redex to investigate properties of the language. We 
@@ -1263,15 +1263,15 @@ be observed by the original $\lambda_{cm}$ program.
 
 \setspecialsymbol{e_0}{$e_0$}
 \setspecialsymbol{e_0p}{$e'_0$}
-\setspecialsymbol{Ce_0}{$\C[e_0]$}
-\setspecialsymbol{Ce_0p}{$\C[e'_0]$}
+\setspecialsymbol{Ce_0}{$\C{e_0}$}
+\setspecialsymbol{Ce_0p}{$\C{e'_0}$}
 \setspecialsymbol{e_1}{$e_1$}
-\setspecialsymbol{Ce_1}{$\C[e_1]$}
-\setspecialsymbol{Ce_1p}{$\C[e'_1]$}
-\setspecialsymbol{Cv}{$\C[v]$}
+\setspecialsymbol{Ce_1}{$\C{e_1}$}
+\setspecialsymbol{Ce_1p}{$\C{e'_1}$}
+\setspecialsymbol{Cv}{$\C{v}$}
 \setspecialsymbol{v_0}{$v_0$}
-\setspecialsymbol{Cv_0}{$\C[v_0]$}
-\setspecialsymbol{Cv_0p}{$\C[v'_0]$}
+\setspecialsymbol{Cv_0}{$\C{v_0}$}
+\setspecialsymbol{Cv_0p}{$\C{v'_0}$}
 \setspecialsymbol{Cpv_0}{$\Cp[v_0]$}
 \setspecialsymbol{Cpv_1}{$\Cp[v_1]$}
 \setspecialsymbol{v_1}{$v_1$}
@@ -1280,13 +1280,13 @@ be observed by the original $\lambda_{cm}$ program.
 \setspecialsymbol{Cp}{$\mathcal{C}'$}
 \setspecialsymbol{hole}{$\hole$}
 \setspecialsymbol{bottom}{$\perp$}
-\setspecialsymbol{Ce_0p_x_Cpv_1}{$\C[e'_0][x\leftarrow\Cp[v_1]]$}
+\setspecialsymbol{Ce_0p_x_Cpv_1}{$\C{e'_0}[x\leftarrow\Cp{v_1}]$}
 \setspecialsymbol{e_0p_x_v_1}{$e'_0[x\leftarrow v_1]$}
-\setspecialsymbol{Cz}{$\C[z]$}
-\setspecialsymbol{CE}{$\C[E]$}
+\setspecialsymbol{Cz}{$\C{z}$}
+\setspecialsymbol{CE}{$\C{E}$}
 \setspecialsymbol{xiE}{$\xi(E)$}
 \setspecialsymbol{chiE}{$\chi(E)$}
-\setspecialsymbol{CchiE}{$\C[\chi(E)]$}
+\setspecialsymbol{CchiE}{$\C{\chi(E)}$}
 
 Define \scheme{TRUE}=\scheme|(lambda (x) (lambda (y) x))|, \scheme{FALSE}=\scheme|(lambda
 (x) (lambda (y) y))|, \scheme{PAIR}=\scheme|(lambda a (lambda b (lambda (z) ((z a) b))))|,
@@ -1439,17 +1439,19 @@ Fix $E$ and assume it works for $E$.
 
 \begin{proof}[Case $e=(e_0\,e_1)$]
 % prove E[(e0 e1)] -> v => ((C[(e0 e1)] C[E]) ((pair xi(E)) C[chi(E)])) -> C[v]
-Assume $E[(e_0\,e_1)]\cmrrs v$. Consider $((\C[(e_0\,e_1)]\,\C[E])\,pair{\xi(E)}{\chi(E)})$.
+Assume $E[(e_0\,e_1)]\cmrrs v$. Consider $\app{\app{\C{\app{e_0}{e_1}}}{\C{E}}}{\eval{\pair{\xi(E)}{\chi(E)}}}$.
 % -> ((C[e0] C[E[(* e1)]]) ((pair xi(E[(* e1)])) C[chi(E[(* e1)])]))
 Steps app1-app7 show
 \[
-((\C[(e_0\,e_1)]\,\C[E])\,pair{\xi(E)}{\chi(E)})\lvrrs ((\C[e_0]\,\C[E[(\hole\,e_1)]])\,pair{\xi(E[(\hole\,e_1)])}{\chi(E[(\hole\,e_1)])})
+\app{\app{\C{\app{e_0}{e_1}}{\C{E}}}\eval{\pair{\xi(E)}{\C{\chi(E)}}}}\lvrrs 
+\app{\app{\C{e_0}}{\C{E[\app{\hole}{e_1}]}}}
+{\eval{\pair{\xi(E[\app{\hole}{e_1}])}{\C{E[\app{\hole}{e_1}]}}}}
 \]
 From here, we must account for two contingencies:
 \begin{enumerate}
-\item Following application, evaluation of the body of $\C[e_0]$ yields \scheme'error', as in app8-e0-error.
+\item Following application, evaluation of the body of $\C{e_0}$ yields \scheme'error', as in app8-e0-error.
 The entire term evaluates to \scheme'error', as in app9-e0-error. As this term represents the entire program, the entire program evaluates to \scheme'error'.
-\item Following application, evaluation of the body of $\C[e_0]$ fails to terminate, as in app8-e0-bottom.
+\item Following application, evaluation of the body of $\C{e_0}$ fails to terminate, as in app8-e0-bottom.
 The entire term fails to evaluate, as in app9-e0-bottom. This property is lifted to the program.
 \end{enumerate}
 % assume C[e0] goes to correct value (structural induction) E[(* e1)][e0] -> E[(* e1)][v0]
@@ -1465,9 +1467,9 @@ By app9,
 \]
 From here, we must account for the same two contingencies as before:
 \begin{enumerate}
-\item Following application, evaluation of the body of $\C[e_1]$ yields \scheme'error', as in app10-e0-error.
+\item Following application, evaluation of the body of $\C{e_1}$ yields \scheme'error', as in app10-e0-error.
 The entire term evaluates to \scheme'error', as in app11-e0-error. As this term represents the entire program, the entire program evaluates to \scheme'error'.
-\item Following application, evaluation of the body of $\C[e_1]$ fails to terminate, as in app10-e0-bottom.
+\item Following application, evaluation of the body of $\C{e_1}$ fails to terminate, as in app10-e0-bottom.
 The entire term fails to evaluate, as in app11-e0-bottom. This property is lifted to the program.
 \end{enumerate}
 % assume C[e1] goes to correct value (structural induction) E[(v0 *)][e1] -> E[(v0 *)][v1]
@@ -1481,7 +1483,7 @@ By app11,
 \[
 (\C[E[\app{v_0}{\hole}]]\,\Cp[v_1])\lvrr(((\Cp[v_0]\,\Cp[v_1])\,\C[E])\,\eval{\pair{\xi(E)}{\chi(E)}})
 \]
-If $\Cp[v_0]=(\lambda\,(x)\,\C[e'_0])$, then, by lemma \ref{collapse},
+If $\Cp[v_0]=(\lambda\,(x)\,\C{e'_0})$, then, by lemma \ref{collapse},
 \begin{align*}
 (((\Cp[v_0]\,\Cp[v_1])\,\C[E])\,\eval{\pair{\xi(E)}{\chi(E)}})\lvrr &((\C[e'_0[x\leftarrow v_1]]\,\C[E])\,\eval{\pair{\xi(E)}{\chi(E)}})\\
 % assume (v0 v1) -> e2
@@ -1505,9 +1507,9 @@ Steps wcm1-wcm7 show
 \]
 From here, we must account for two contingencies:
 \begin{enumerate}
-\item Following application, evaluation of the body of $\C[e_0]$ yields \scheme'error', as in wcm8-e0-error.
+\item Following application, evaluation of the body of $\C{e_0}$ yields \scheme'error', as in wcm8-e0-error.
 The entire term evaluates to \scheme'error', as in wcm9-e0-error. As this term represents the entire program, the entire program evaluates to \scheme'error'.
-\item Following application, evaluation of the body of $\C[e_0]$ fails to terminate, as in wcm8-e0-bottom.
+\item Following application, evaluation of the body of $\C{e_0}$ fails to terminate, as in wcm8-e0-bottom.
 The entire term fails to evaluate, as in wcm9-e0-bottom. This property is lifted to the program.
 \end{enumerate}
 % assume C[e0] goes to correct value (structural induction) E[(wcm * e1)][e0] -> E[(wcm * e1)][v0]
