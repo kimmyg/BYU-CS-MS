@@ -1261,12 +1261,13 @@ We certainly could reduce this by steps and see it work, but that would give us 
 % make beta appear in Redex stuff
 
 \theoremstyle{definition}
+\newtheorem{case}{Case}
 \newtheorem{defn}{Definition}
 
 \theoremstyle{plain}
 \newtheorem{lemma}{Lemma}
 \newtheorem{theorem}{Theorem}
-\newtheorem{case}{Case}
+
 
 Programs in $\lambda_{cm}$ can observe the context in which they are evaluated. Programs
 in $\lambda_v$, however, cannot. The intuition behind $\mathcal{C}$ is to explicitly
@@ -1443,13 +1444,11 @@ $\C{x}=\abs{k}{\abs{m}{\app{k}{x}}}$
 
 \begin{namedschemedefn}{c-wcm-v-hole}{\C{E[\wcm{v_0}{\hole}]}}
 \begin{schemedisplay}
-(lambda (v)
-  (((C[hole] v) CE) ((PAIR xiE) CchiE)))
+(lambda (v) (CE v))
 \end{schemedisplay}
 \end{namedschemedefn}
 
 \begin{schemedefn}{\mathcal{A}[\app{e_0}{e_1}]}
-$\mathcal{A}$ has the property that $\mathcal{A}[\app{\C{e_0}}{\C{e_1}}]=\C{\app{e_0}{e_1}}$.
 \begin{schemedisplay}
 (lambda (k)
   (lambda (m)
@@ -1460,6 +1459,8 @@ $\mathcal{A}$ has the property that $\mathcal{A}[\app{\C{e_0}}{\C{e_1}}]=\C{\app
                                n))) n)))))))
 \end{schemedisplay}
 \end{schemedefn}
+
+This definition is used solely as an abbreviation within the definition of $\C{\wcm{e_0}{e_1}}$. Note that it is identical to $\C{\app{e_1}{e_1}}$ except that $\mathcal{C}$ does not recur in the body of $\mathcal{A}$. Because of this, $\mathcal{A}$ has the property that $\mathcal{A}[\app{\C{e_0}}{\C{e_1}}]=\C{\app{e_0}{e_1}}$. This fact is used to reinterpret particular terms at certain places in the reduction of $\C{\wcm{e_0}{e_1}}$. In particular, it is necessary to create pairs in $\mathcal{C}$ ``by hand'' when manipulating $\C{\chi(E)}$, which is defined in terms of applications in $\mathcal{C}$.
 
 \begin{defn}
 $\Cp{v_0}=\Cp{\abs{x}{e_0}}=\abs{x}{\C{e_0}}$
@@ -1586,9 +1587,9 @@ $\C{E[\app{v_0}{\hole}][v_1]}\lvrr\C{E[\app{v_0}{v_1}]}$, by app11.
 
 By Lemma \ref{cm-app},
 \[
-E[\app{v_0}{v_1}]\cmrr E[e_2]\implies\C{E[\app{v_0}{v_1}]}\lvrrs\C{E[e_2]}
+E[\app{v_0}{v_1}]\cmrr E[e']\implies\C{E[\app{v_0}{v_1}]}\lvrrs\C{E[e']}
 \]
-and $E[e']\cmrrs E[v']\implies\C{E[e']}\lvrrs\C{E[v']}$ follows by induction.
+and $\C{E[e']}\lvrrs\C{E[v']}$ follows by induction.
 \end{proof}
 
 \begin{proof}[Case $e=\wcm{e_0}{e_1}$]
@@ -1600,36 +1601,42 @@ and
 \[
 E[\wcm{\hole}{e_1}][e_0]\cmrrs E[\wcm{\hole}{e_1}][v_0]\implies\C{E[\wcm{\hole}{e_1}][e_0]}\lvrrs\C{E[\wcm{\hole}{e_1}][v_0]}
 \]
-
-Similar to the previous case, divergence is lifted to the entire program. Consider the case where $E[\wcm{\hole}{e_1}][e_0]\cmrrs E[\wcm{\hole}{e_1}][v_0]$.
+and similarly
+\[
+E[\wcm{v_0}{\hole}][e_1]\cmrrs\cdots\implies\C{E[\wcm{v_0}{\hole}][e_1]}\lvrrs\cdots
+\]
+and
+\[
+E[\wcm{v_0}{\hole}][e_1]\cmrrs E[\wcm{v_0}{\hole}][v_1]\implies\C{E[\wcm{v_0}{\hole}][e_1]}\lvrrs\C{E[\wcm{v_0}{\hole}][v_1]}
+\]
+Similar to the case of application, divergence is lifted to the entire program. Consider the case where $E[\wcm{\hole}{e_1}][e_0]\cmrrs E[\wcm{\hole}{e_1}][v_0]$ and $E[\wcm{v_0}{\hole}][e_1]\cmrrs E[\wcm{v_0}{\hole}][v_1]$.
 
 
 $\C{E[\wcm{e_0}{e_1}]}\lvrrs\C{E[\wcm{\hole}{e_1}][e_0]}$, by wcm1-wcm7.
 
 $\C{E[\wcm{\hole}{e_1}][e_0]}\lvrrs\C{E[\wcm{\hole}{e_1}][v_0]}$, by the induction hypothesis.
 
-$\C{E[\wcm{\hole}{e_1}][v_0]}\lvrrs\C{E[\wcm{v_0}{e_1}]}$, by wcm9-wcm12.
+\begin{case}{$E=E'[\wcm{v'}{\hole}]$ for some $E'$ and $v'$}
 
-\begin{proof}{Case $E=E'[\wcm{v'}{\hole}]$ for some $E'$ and $v'$}
+$\C{E'[\wcm{v'}{\wcm{\hole}{e_1}}][v_0]}\lvrrs\C{E'[\wcm{v_0}{\hole}][e_1]}$, by wcm9-wcm18-tail.
+\end{case}
 
-If $E=E'[\wcm{v'}{\hole}]$ for some $E'$ and $v'$, $\C{E'[\wcm{v'}{\wcm{v_0}{e_1}}]}\lvrrs\C{E'[\wcm{v_0}{\hole}][e_1]}$, by wcm13-tail-wcm18-tail.
+\begin{case}{$E\ne E'[\wcm{v'}{\hole}]$ for any $E'$ and $v'$}
 
-By the inductive hypothesis,
+$\C{E[\wcm{v_0}{e_1}]}\lvrrs\C{E[\wcm{v_0}{\hole}][e_1]}$, by wcm9-wcm18-no-tail.
+\end{case}
+
+Now let 
 \[
-E'[\wcm{v_0}{\hole}][e_1]\cmrrs E'[\wcm{v_0}{\hole}][v_1]\implies\C{E'[\wcm{v_0}{\hole}][e_1]}\lvrrs\C{E'[\wcm{v_0}{\hole}][v_1]}
+E''=\begin{cases}
+E' &\text{if $E=E'[\wcm{v'}{\hole}]$ for some $E'$ and $v'$}\\
+E  &\text{otherwise}
+\end{cases}
 \]
 
-$\C{E'[\wcm{v_0}{\hole}][v_1]}=\C{E'[v_1]}$, by definition.
-\end{proof}
+$\C{E''[\wcm{v_0}{\hole}][e_1]}\lvrrs\C{E''[\wcm{v_0}{\hole}][v_1]}$, by the inductive hypothesis.
 
-If $E\ne E'[\wcm{v'}{\hole}]$ for any $E'$ and $v'$, $\C{E[\wcm{v_0}{e_1}]}\lvrrs\C{E[\wcm{v_0}{\hole}][e_1]}$, by wcm13-no-tail-wcm18-no-tail.
-
-By the inductive hypothesis,
-\[
-E[\wcm{v_0}{\hole}][e_1]\cmrrs E[\wcm{v_0}{\hole}][v_1]\implies\C{E[\wcm{v_0}{\hole}][e_1]}\lvrrs\C{E[\wcm{v_0}{\hole}][v_1]}
-\]
-
-$\C{E[\wcm{v_0}{\hole}][v_1]}=\C{E[v_1]}$, by definition.
+$\C{E''[\wcm{v_0}{\hole}][v_1]}=\C{E''[v_1]}$, by wcm19.
 
 \end{proof}
 
@@ -1694,13 +1701,14 @@ $\C{E'[\wcm{\hole}{e_1}][v_0]}\lvrrs\C{E''[\wcm{v_0}{\hole}][e_1]}$, by wcm9-wcm
 $\C{E'[\wcm{\hole}{e_1}][v_0]}\lvrrs\C{E'[\wcm{v_0}{\hole}][e_1]}$, by wcm9-wcm18-not-tail.
 \end{case}
 
+We defer to the inductive hypothesis.
 \end{proof}
 
 \begin{proof}{Case $E=E'[\wcm{v'}{\hole}]$}
 
 $\C{E'[\wcm{v'}{\hole}][e]}\lvrrs\C{E'[\wcm{v'}{\hole}][v]}$, by assumption.
 
-$\C{E'[\wcm{v'}{\hole}][v]}=\C{E'[v]}$, by definition \ref{c-wcm-v-hole}. 
+$\C{E'[\wcm{v'}{\hole}][v]}\lvrr \C{E'[v]}$, by wcm19. 
 \end{proof}
 
 \newtheorem*{maintheorem}{Correctness of $\mathcal{C}$}
@@ -1918,7 +1926,7 @@ E[(wcm e_0 e_1)]
                    ((lambda (k) (k ((((f T[(C[SND] s)]) s) C[hole]) (lambda (z) z))))
                     (lambda (a)
                       ((lambda (k) (k ((PAIR TRUE) (lambda (k) (lambda (m) (k (lambda (z) T[(C[(z v)] a)])))))))
-                       (lambda (m) ((Ce_1 k) m))))))))) u))))))) CE) ((PAIR xiE) CchiE))
+                       (lambda (m) ((Ce_1 (lambda (v) (k v))) m))))))))) u))))))) CE) ((PAIR xiE) CchiE))
 \end{schemedisplay}
 
 wcm1
@@ -1935,7 +1943,7 @@ wcm1
                 ((lambda (k) (k ((((f T[(C[SND] s)]) s) C[hole]) (lambda (z) z))))
                  (lambda (a)
                    ((lambda (k) (k ((PAIR TRUE) (lambda (k) (lambda (m) (k (lambda (z) T[(C[(z v)] a)])))))))
-                    (lambda (m) ((Ce_1 CE) m))))))))) u)))))) ((PAIR xiE) CchiE))
+                    (lambda (m) ((Ce_1 (lambda (v) (CE v))) m))))))))) u)))))) ((PAIR xiE) CchiE))
 \end{schemedisplay}
 
 wcm2
@@ -1951,7 +1959,7 @@ wcm2
              ((lambda (k) (k ((((f T[(C[SND] s)]) s) C[hole]) (lambda (z) z))))
               (lambda (a)
                 ((lambda (k) (k ((PAIR TRUE) (lambda (k) (lambda (m) (k (lambda (z) T[(C[(z v)] a)])))))))
-                 (lambda (m) ((Ce_1 CE) m))))))))) u)))))
+                 (lambda (m) ((Ce_1 (lambda (v) (CE v))) m))))))))) u)))))
 \end{schemedisplay}
 
 wcm3
@@ -1966,7 +1974,7 @@ wcm3
              ((lambda (k) (k ((((f T[(C[SND] s)]) s) C[hole]) (lambda (z) z))))
               (lambda (a)
                 ((lambda (k) (k ((PAIR TRUE) (lambda (k) (lambda (m) (k (lambda (z) T[(C[(z v)] a)])))))))
-                 (lambda (m) ((Ce_1 CE) m))))))))) u)))) (SND ((PAIR xiE) CchiE)))
+                 (lambda (m) ((Ce_1 (lambda (v) (CE v))) m))))))))) u)))) (SND ((PAIR xiE) CchiE)))
 \end{schemedisplay}
 
 wcm4
@@ -1981,7 +1989,7 @@ wcm4
              ((lambda (k) (k ((((f T[(C[SND] s)]) s) C[hole]) (lambda (z) z))))
               (lambda (a)
                 ((lambda (k) (k ((PAIR TRUE) (lambda (k) (lambda (m) (k (lambda (z) T[(C[(z v)] a)])))))))
-                 (lambda (m) ((Ce_1 CE) m))))))))) u)))) CchiE)
+                 (lambda (m) ((Ce_1 (lambda (v) (CE v))) m))))))))) u)))) CchiE)
 \end{schemedisplay}
 
 wcm5
@@ -1995,7 +2003,7 @@ wcm5
           ((lambda (k) (k ((((f T[(C[SND] CchiE)]) CchiE) C[hole]) (lambda (z) z))))
            (lambda (a)
              ((lambda (k) (k ((PAIR TRUE) (lambda (k) (lambda (m) (k (lambda (z) T[(C[(z v)] a)])))))))
-              (lambda (m) ((Ce_1 CE) m))))))))) u)))
+              (lambda (m) ((Ce_1 (lambda (v) (CE v))) m))))))))) u)))
 \end{schemedisplay}
 
 =
@@ -2009,7 +2017,7 @@ wcm5
           ((lambda (k) (k ((((f C[(SND chiE)]) CchiE) C[hole]) (lambda (z) z))))
            (lambda (a)
              ((lambda (k) (k ((PAIR TRUE) (lambda (k) (lambda (m) (k (lambda (z) T[(C[(z v)] a)])))))))
-              (lambda (m) ((Ce_1 CE) m))))))))) u)))
+              (lambda (m) ((Ce_1 (lambda (v) (CE v))) m))))))))) u)))
 \end{schemedisplay}
 
 wcm6
@@ -2022,7 +2030,7 @@ wcm6
           ((lambda (k) (k ((((f C[(SND chiE)]) CchiE) C[hole]) (lambda (z) z))))
            (lambda (a)
              ((lambda (k) (k ((PAIR TRUE) (lambda (k) (lambda (m) (k (lambda (z) T[(C[(z v)] a)])))))))
-              (lambda (m) ((Ce_1 CE) m))))))))) u)) ((PAIR FALSE) CchiE))
+              (lambda (m) ((Ce_1 (lambda (v) (CE v))) m))))))))) u)) ((PAIR FALSE) CchiE))
 \end{schemedisplay}
 
 wcm7
@@ -2037,7 +2045,7 @@ E[(wcm hole e_1)][e_0]
        ((lambda (k) (k ((((f C[(SND chiE)]) CchiE) C[hole]) (lambda (z) z))))
         (lambda (a)
           ((lambda (k) (k ((PAIR TRUE) (lambda (k) (lambda (m) (k (lambda (z) T[(C[(z v)] a)])))))))
-           (lambda (m) ((Ce_1 CE) m))))))))) ((PAIR FALSE) CchiE))
+           (lambda (m) ((Ce_1 (lambda (v) (CE v))) m))))))))) ((PAIR FALSE) CchiE))
 \end{schemedisplay}
 
 error
@@ -2050,7 +2058,7 @@ wcm8-e0-error
       ((lambda (k) (k ((((f C[(SND chiE)]) CchiE) C[hole]) (lambda (z) z))))
        (lambda (a)
          ((lambda (k) (k ((PAIR TRUE) (lambda (k) (lambda (m) (k (lambda (z) T[(C[(z v)] a)])))))))
-          (lambda (m) ((Ce_1 CE) m)))))))) error)
+          (lambda (m) ((Ce_1 (lambda (v) (CE v))) m)))))))) error)
 \end{schemedisplay}
 
 wcm9-e0-error
@@ -2068,7 +2076,7 @@ wcm8-e0-bottom
       ((lambda (k) (k ((((f C[(SND chiE)]) CchiE) C[hole]) (lambda (z) z))))
        (lambda (a)
          ((lambda (k) (k ((PAIR TRUE) (lambda (k) (lambda (m) (k (lambda (z) T[(C[(z v)] a)])))))))
-          (lambda (m) ((Ce_1 CE) m)))))))) bottom)
+          (lambda (m) ((Ce_1 (lambda (v) (CE v))) m)))))))) bottom)
 \end{schemedisplay}
 
 wcm9-e0-bottom
@@ -2089,7 +2097,7 @@ E[(wcm hole e_1)][v_0]
       ((lambda (k) (k ((((f C[(SND chiE)]) CchiE) C[hole]) (lambda (z) z))))
        (lambda (a)
          ((lambda (k) (k ((PAIR TRUE) (lambda (k) (lambda (m) (k (lambda (z) T[(C[(z v)] a)])))))))
-          (lambda (m) ((Ce_1 CE) m)))))))) Cpv_0)
+          (lambda (m) ((Ce_1 (lambda (v) (CE v))) m)))))))) Cpv_0)
 \end{schemedisplay}
 
 
@@ -2111,7 +2119,7 @@ wcm9
    ((lambda (k) (k ((((f C[(SND chiE)]) CchiE) C[hole]) (lambda (z) z))))
     (lambda (a)
       ((lambda (k) (k ((PAIR TRUE) (lambda (k) (lambda (m) (k (lambda (z) T[(C[(z v_0)] a)])))))))
-       (lambda (m) ((Ce_1 CE) m)))))))
+       (lambda (m) ((Ce_1 (lambda (v) (CE v))) m)))))))
 \end{schemedisplay}
 
 wcm10
@@ -2120,7 +2128,7 @@ wcm10
    ((lambda (k) (k ((((f C[(SND chiE)]) CchiE) C[hole]) (lambda (z) z))))
     (lambda (a)
       ((lambda (k) (k ((PAIR TRUE) (lambda (k) (lambda (m) (k (lambda (z) T[(C[(z v_0)] a)])))))))
-       (lambda (m) ((Ce_1 CE) m)))))) (FST ((PAIR xiE) CchiE)))
+       (lambda (m) ((Ce_1 (lambda (v) (CE v))) m)))))) (FST ((PAIR xiE) CchiE)))
 \end{schemedisplay}
 
 wcm11
@@ -2129,7 +2137,7 @@ wcm11
    ((lambda (k) (k ((((f C[(SND chiE)]) CchiE) C[hole]) (lambda (z) z))))
     (lambda (a)
       ((lambda (k) (k ((PAIR TRUE) (lambda (k) (lambda (m) (k (lambda (z) T[(C[(z v_0)] a)])))))))
-       (lambda (m) ((Ce_1 CE) m)))))) xiE)
+       (lambda (m) ((Ce_1 (lambda (v) (CE v))) m)))))) xiE)
 \end{schemedisplay}
 
 wcm12
@@ -2137,14 +2145,14 @@ wcm12
 ((lambda (k) (k ((((xiE C[(SND chiE)]) CchiE) C[hole]) (lambda (z) z))))
  (lambda (a)
    ((lambda (k) (k ((PAIR TRUE) (lambda (k) (lambda (m) (k (lambda (z) T[(C[(z v_0)] a)])))))))
-    (lambda (m) ((Ce_1 CE) m)))))
+    (lambda (m) ((Ce_1 (lambda (v) (CE v))) m)))))
 \end{schemedisplay}
 
 wcm13
 \begin{schemedisplay}
 ((lambda (a)
    ((lambda (k) (k ((PAIR TRUE) (lambda (k) (lambda (m) (k (lambda (z) T[(C[(z v_0)] a)])))))))
-    (lambda (m) ((Ce_1 CE) m)))) ((((xiE C[(SND chiE)]) CchiE) C[hole]) (lambda (z) z)))
+    (lambda (m) ((Ce_1 (lambda (v) (CE v))) m)))) ((((xiE C[(SND chiE)]) CchiE) C[hole]) (lambda (z) z)))
 \end{schemedisplay}
 
 true case (wcm v *)
@@ -2153,55 +2161,55 @@ wcm13-tail
 \begin{schemedisplay}
 ((lambda (a)
    ((lambda (k) (k ((PAIR TRUE) (lambda (k) (lambda (m) (k (lambda (z) T[(C[(z v_0)] a)])))))))
-    (lambda (m) ((Ce_1 CE) m)))) ((((TRUE C[(SND chiE)]) CchiE) C[hole]) (lambda (z) z)))
+    (lambda (m) ((Ce_1 (lambda (v) (CE v))) m)))) ((((TRUE C[(SND chiE)]) CchiE) C[hole]) (lambda (z) z)))
 \end{schemedisplay}
 
 wcm14-tail
 \begin{schemedisplay}
 ((lambda (a)
    ((lambda (k) (k ((PAIR TRUE) (lambda (k) (lambda (m) (k (lambda (z) T[(C[(z v_0)] a)])))))))
-    (lambda (m) ((Ce_1 CE) m)))) ((C[(SND chiE)] C[hole]) (lambda (z) z)))
+    (lambda (m) ((Ce_1 (lambda (v) (CE v))) m)))) ((C[(SND chiE)] C[hole]) (lambda (z) z)))
 \end{schemedisplay}
 
 wcm15-tail
 \begin{schemedisplay}
 ((lambda (a)
    ((lambda (k) (k ((PAIR TRUE) (lambda (k) (lambda (m) (k (lambda (z) T[(C[(z v_0)] a)])))))))
-    (lambda (m) ((Ce_1 CE) m)))) C[(SND chiE)])
+    (lambda (m) ((Ce_1 (lambda (v) (CE v))) m)))) C[(SND chiE)])
 \end{schemedisplay}
 
 wcm16-tail
 \begin{schemedisplay}
 ((lambda (k) (k ((PAIR TRUE) (lambda (k) (lambda (m) (k (lambda (z) T[(C[(z v_0)] C[(SND chiE)])])))))))
- (lambda (m) ((Ce_1 CE) m)))
+ (lambda (m) ((Ce_1 (lambda (v) (CE v))) m)))
 \end{schemedisplay}
 
 =
 \begin{schemedisplay}
 ((lambda (k) (k ((PAIR TRUE) (lambda (k) (lambda (m) (k (lambda (z) C[((z v_0) (SND chiE))])))))))
- (lambda (m) ((Ce_1 CE) m)))
+ (lambda (m) ((Ce_1 (lambda (v) (CE v))) m)))
 \end{schemedisplay}
 
 =
 \begin{schemedisplay}
 ((lambda (k) (k ((PAIR TRUE) C[(lambda (z) ((z v_0) (SND chiE)))])))
- (lambda (m) ((Ce_1 CE) m)))
+ (lambda (m) ((Ce_1 (lambda (v) (CE v))) m)))
 \end{schemedisplay}
 
 =
 \begin{schemedisplay}
 ((lambda (k) (k ((PAIR TRUE) C[((PAIR v_0) (SND chiE))])))
- (lambda (m) ((Ce_1 CE) m)))
+ (lambda (m) ((Ce_1 (lambda (v) (CE v))) m)))
 \end{schemedisplay}
 
 wcm17-tail
 \begin{schemedisplay}
-((lambda (m) ((Ce_1 CE) m)) ((PAIR TRUE) C[((PAIR v_0) (SND chiE))]))
+((lambda (m) ((Ce_1 (lambda (v) (CE v))) m)) ((PAIR TRUE) C[((PAIR v_0) (SND chiE))]))
 \end{schemedisplay}
 
 wcm18-tail
 \begin{schemedisplay}
-((Ce_1 CE) ((PAIR TRUE) C[((PAIR v_0) (SND chiE))]))
+((Ce_1 (lambda (v) (CE v))) ((PAIR TRUE) C[((PAIR v_0) (SND chiE))]))
 \end{schemedisplay}
 
 false case not (wcm v *)
@@ -2210,55 +2218,60 @@ wcm13-not-tail
 \begin{schemedisplay}
 ((lambda (a)
    ((lambda (k) (k ((PAIR TRUE) (lambda (k) (lambda (m) (k (lambda (z) T[(C[(z v_0)] a)])))))))
-    (lambda (m) ((Ce_1 CE) m)))) ((((FALSE C[(SND chiE)]) CchiE) C[hole]) (lambda (z) z)))
+    (lambda (m) ((Ce_1 (lambda (v) (CE v))) m)))) ((((FALSE C[(SND chiE)]) CchiE) C[hole]) (lambda (z) z)))
 \end{schemedisplay}
 
 wcm14-not-tail
 \begin{schemedisplay}
 ((lambda (a)
    ((lambda (k) (k ((PAIR TRUE) (lambda (k) (lambda (m) (k (lambda (z) T[(C[(z v_0)] a)])))))))
-    (lambda (m) ((Ce_1 CE) m)))) ((CchiE C[hole]) (lambda (z) z)))
+    (lambda (m) ((Ce_1 (lambda (v) (CE v))) m)))) ((CchiE C[hole]) (lambda (z) z)))
 \end{schemedisplay}
 
 wcm15-not-tail
 \begin{schemedisplay}
 ((lambda (a)
    ((lambda (k) (k ((PAIR TRUE) (lambda (k) (lambda (m) (k (lambda (z) T[(C[(z v_0)] a)])))))))
-    (lambda (m) ((Ce_1 CE) m)))) CchiE)
+    (lambda (m) ((Ce_1 (lambda (v) (CE v))) m)))) CchiE)
 \end{schemedisplay}
 
 wcm16-not-tail
 \begin{schemedisplay}
 ((lambda (k) (k ((PAIR TRUE) (lambda (k) (lambda (m) (k (lambda (z) T[(C[(z v_0)] CchiE)])))))))
- (lambda (m) ((Ce_1 CE) m)))
+ (lambda (m) ((Ce_1 (lambda (v) (CE v))) m)))
 \end{schemedisplay}
 
 =
 \begin{schemedisplay}
 ((lambda (k) (k ((PAIR TRUE) (lambda (k) (lambda (m) (k (lambda (z) C[((z v_0) chiE)])))))))
- (lambda (m) ((Ce_1 CE) m)))
+ (lambda (m) ((Ce_1 (lambda (v) (CE v))) m)))
 \end{schemedisplay}
 
 =
 \begin{schemedisplay}
 ((lambda (k) (k ((PAIR TRUE) C[(lambda (z) ((z v_0) chiE))])))
- (lambda (m) ((Ce_1 CE) m)))
+ (lambda (m) ((Ce_1 (lambda (v) (CE v))) m)))
 \end{schemedisplay}
 
 =
 \begin{schemedisplay}
 ((lambda (k) (k ((PAIR TRUE) C[((PAIR v_0) chiE)])))
- (lambda (m) ((Ce_1 CE) m)))
+ (lambda (m) ((Ce_1 (lambda (v) (CE v))) m)))
 \end{schemedisplay}
 
 wcm17-not-tail
 \begin{schemedisplay}
-((lambda (m) ((Ce_1 CE) m)) ((PAIR TRUE) C[((PAIR v_0) chiE)]))
+((lambda (m) ((Ce_1 (lambda (v) (CE v))) m)) ((PAIR TRUE) C[((PAIR v_0) chiE)]))
 \end{schemedisplay}
 
-wcm17-not-tail
+wcm18-not-tail
 \begin{schemedisplay}
-((Ce_1 CE) ((PAIR TRUE) C[((PAIR v_0) chiE)]))
+((Ce_1 (lambda (v) (CE v))) ((PAIR TRUE) C[((PAIR v_0) chiE)]))
+\end{schemedisplay}
+
+wcm19
+\begin{schemedisplay}
+(CE Cpv_1)
 \end{schemedisplay}
 
 find homes for us
