@@ -1356,6 +1356,7 @@ $\C{E[v]}=\app{\C{E}}{\Cp{v}}$
 \end{defn}
 
 \newenvironment{schemedefn}[1]{\begin{defn}$#1$\begin{singlespace}}{\end{singlespace}\end{defn}}
+\newenvironment{namedschemedefn}[2]{\begin{defn}\label{#1}$#2$\begin{singlespace}}{\end{singlespace}\end{defn}}
 
 \begin{schemedefn}{\C{\app{e_0}{e_1}}}
 \begin{schemedisplay}
@@ -1440,11 +1441,12 @@ $\C{x}=\abs{k}{\abs{m}{\app{k}{x}}}$
 \end{schemedisplay}
 \end{schemedefn}
 
-\begin{schemedefn}{\C{E[\wcm{v_0}{\hole}]}}
+\begin{namedschemedefn}{c-wcm-v-hole}{\C{E[\wcm{v_0}{\hole}]}}
 \begin{schemedisplay}
-CE
+(lambda (v)
+  (((C[hole] v) CE) ((PAIR xiE) CchiE)))
 \end{schemedisplay}
-\end{schemedefn}
+\end{namedschemedefn}
 
 \begin{schemedefn}{\mathcal{A}[\app{e_0}{e_1}]}
 $\mathcal{A}$ has the property that $\mathcal{A}[\app{\C{e_0}}{\C{e_1}}]=\C{\app{e_0}{e_1}}$.
@@ -1544,15 +1546,17 @@ If $E=E'[\wcm{v'}{\hole}]$, then $\chi(E'[\wcm{v_0}{\hole}])=\eval{\pair{v_0}{\a
 
 \newtheorem*{eqtheorem}{Equivalence Theorem}
 \begin{eqtheorem}
-For all contexts $E\in\lambda_{cm}$ and expressions $e\in\lambda_{cm}$, $E[e]\cmrrs v\implies\C{E[e]}\lvrrs \C{v}$.
+For all contexts $E\in\lambda_{cm}$ and expressions $e\in\lambda_{cm}$, $E[e]\cmrrs\cdots\implies\C{E[e]}\lvrrs\cdots$ and $E[e]\cmrrs v\implies\C{E[e]}\lvrrs \C{v}$.
 \end{eqtheorem}
 
-Fix $E$ and assume it works for $E$. (That is, assume that $E[v]\cmrrs v'\implies\C{E[v]}\lvrrs v'$.)
+We will reason by structural induction on both contexts $E$ and terms $e$. Instead of nesting the induction, which requires the consideration of $|E|\cdot|e|$ cases, we will take first $E$ and then $e$ in isolation, in each assuming the correctness of the other, which requires the consideration of only $|E|+|e|$ cases. 
+
+First, we will prove the correctness for terms $e$. Assume that for all contexts $E$, $E[v']\cmrrs v\implies\C{E[v']}\lvrrs v$.
+
+In each case, let $E$ be an arbitrary context.
 
 \begin{proof}[Case $e=\app{e_0}{e_1}$]
-$\C{E[\app{e_0}{e_1}]}\lvrrs\C{E[\app{\hole}{e_1}][e_0]}$, by app1-app7.
-
-By our inductive hypothesis, 
+By structural induction, assume that 
 \[
 E[\app{\hole}{e_1}][e_0]\cmrrs\cdots\implies\C{E[\app{\hole}{e_1}][e_0]}\lvrrs\cdots
 \]
@@ -1560,17 +1564,23 @@ and
 \[
 E[\app{\hole}{e_1}][e_0]\cmrrs E[\app{\hole}{e_1}][v_0]\implies\C{E[\app{\hole}{e_1}][e_0]}\lvrrs\C{E[\app{\hole}{e_1}][v_0]}
 \]
-
-$\C{E[\app{\hole}{e_1}][v_0]}\lvrrs\C{E[\app{v_0}{\hole}][e_1]}$, by app8-app9.
-
-By our inductive hypothesis, 
+and similarly
 \[
 E[\app{v_0}{\hole}][e_1]\cmrrs\cdots\implies\C{E[\app{v_0}{\hole}][e_1]}\lvrrs\cdots
 \]
 and
 \[
-E[\app{v_0}{\hole}][e_1]\cmrrs E[\app{\hole}{e_1}][v_0]\implies\C{E[\app{v_0}{\hole}][e_1]}\lvrrs\C{E[\app{v_0}{\hole}][v_1]}
+E[\app{v_0}{\hole}][e_1]\cmrrs E[\app{v_0}{\hole}][v_1]\implies\C{E[\app{v_0}{\hole}][e_1]}\lvrrs\C{E[\app{v_0}{\hole}][v_1]}
 \]
+In each case, divergence is lifted to the entire program. Consider the case where $E[\app{\hole}{e_1}][e_0]\cmrrs E[\app{\hole}{e_1}][v_0]$ and $E[\app{v_0}{\hole}][e_1]\cmrrs E[\app{v_0}{\hole}][v_1]$.
+
+$\C{E[\app{e_0}{e_1}]}\lvrrs\C{E[\app{\hole}{e_1}][e_0]}$, by app1-app7.
+
+$\C{E[\app{\hole}{e_1}][e_0]}\lvrrs\C{E[\app{\hole}{e_1}][v_0]}$, by the induction hypothesis.
+
+$\C{E[\app{\hole}{e_1}][v_0]}\lvrrs\C{E[\app{v_0}{\hole}][e_1]}$, by app8-app9.
+
+$\C{E[\app{v_0}{\hole}][e_1]}\lvrrs\C{E[\app{v_0}{\hole}][v_1]}$, by the induction hypothesis.
 
 $\C{E[\app{v_0}{\hole}][v_1]}\lvrr\C{E[\app{v_0}{v_1}]}$, by app11.
 
@@ -1578,17 +1588,11 @@ By Lemma \ref{cm-app},
 \[
 E[\app{v_0}{v_1}]\cmrr E[e_2]\implies\C{E[\app{v_0}{v_1}]}\lvrrs\C{E[e_2]}
 \]
-
-By the inductive hypothesis,
-\[
-E[e_2]\cmrrs E[v_2]\implies\C{E[e_2]}\lvrrs\C{E[v_2]}
-\]
+and $E[e']\cmrrs E[v']\implies\C{E[e']}\lvrrs\C{E[v']}$ follows by induction.
 \end{proof}
 
 \begin{proof}[Case $e=\wcm{e_0}{e_1}$]
-$\C{E[\wcm{e_0}{e_1}]}\lvrrs\C{E[\wcm{\hole}{e_1}][e_0]}$, by wcm1-wcm7.
-
-By inductive hypothesis,
+By structural induction, assume that 
 \[
 E[\wcm{\hole}{e_1}][e_0]\cmrrs\cdots\implies\C{E[\wcm{\hole}{e_1}][e_0]}\lvrrs\cdots
 \]
@@ -1597,7 +1601,16 @@ and
 E[\wcm{\hole}{e_1}][e_0]\cmrrs E[\wcm{\hole}{e_1}][v_0]\implies\C{E[\wcm{\hole}{e_1}][e_0]}\lvrrs\C{E[\wcm{\hole}{e_1}][v_0]}
 \]
 
+Similar to the previous case, divergence is lifted to the entire program. Consider the case where $E[\wcm{\hole}{e_1}][e_0]\cmrrs E[\wcm{\hole}{e_1}][v_0]$.
+
+
+$\C{E[\wcm{e_0}{e_1}]}\lvrrs\C{E[\wcm{\hole}{e_1}][e_0]}$, by wcm1-wcm7.
+
+$\C{E[\wcm{\hole}{e_1}][e_0]}\lvrrs\C{E[\wcm{\hole}{e_1}][v_0]}$, by the induction hypothesis.
+
 $\C{E[\wcm{\hole}{e_1}][v_0]}\lvrrs\C{E[\wcm{v_0}{e_1}]}$, by wcm9-wcm12.
+
+\begin{proof}{Case $E=E'[\wcm{v'}{\hole}]$ for some $E'$ and $v'$}
 
 If $E=E'[\wcm{v'}{\hole}]$ for some $E'$ and $v'$, $\C{E'[\wcm{v'}{\wcm{v_0}{e_1}}]}\lvrrs\C{E'[\wcm{v_0}{\hole}][e_1]}$, by wcm13-tail-wcm18-tail.
 
@@ -1607,6 +1620,7 @@ E'[\wcm{v_0}{\hole}][e_1]\cmrrs E'[\wcm{v_0}{\hole}][v_1]\implies\C{E'[\wcm{v_0}
 \]
 
 $\C{E'[\wcm{v_0}{\hole}][v_1]}=\C{E'[v_1]}$, by definition.
+\end{proof}
 
 If $E\ne E'[\wcm{v'}{\hole}]$ for any $E'$ and $v'$, $\C{E[\wcm{v_0}{e_1}]}\lvrrs\C{E[\wcm{v_0}{\hole}][e_1]}$, by wcm13-no-tail-wcm18-no-tail.
 
@@ -1624,7 +1638,7 @@ $\C{E[\ccm]}\lvrrs\C{E[\chi(E)]}$, by ccm1-ccm3.
 \end{proof}
 
 \begin{proof}[Case $e=v$]
-% what here?
+$\C{E[v]}\lvrrs\C{E[v]}$, by v1-v2.
 \end{proof}
 
 \begin{proof}[Case $e=x$]
@@ -1635,34 +1649,58 @@ $\C{E[x]}\lvrrs$\scheme'C[error]', by x1-x4.
 % prove E[error] -> error => ((C[error] C[E]) ((pair xi(E)) C[chi(E)])) -> C[error]
 \end{proof}
 
-Fix $e$ and assume it works for $e$. (That is, assume that $E[e]\cmrrs E[v]\implies\C{E[e]}\lvrrs\C{E[v]}$.)
+Now, we will prove the correctness for contexts $E$. Assume that for all terms $e$, $E[e]\cmrrs E[v]\implies\C{E[e]}\lvrrs \C{E[v]}$.
+
+In each case, let $e$ be an arbitrary term which evaluates to $v$.
 
 \begin{proof}{Case $E=\hole$}
-$\hole[e]\cmrrs\hole[v]\implies\C{\hole[e]}\lvrrs\C{\hole[v]}$, by assumption.
+
+$\C{\hole[e]}\lvrrs\C{\hole[v]}$, by assumption.
 
 $\C{\hole[v]}\lvrr\C{v}$, by [a lemma].
 \end{proof}
 
 \begin{proof}{Case $E=E'[\app{\hole}{e_1}]$}
-$E[\app{\hole}{e_1}][e_0]\cmrrs E[\app{\hole}{e_1}][v_0]\implies\C{E[\app{\hole}{e_1}][e_0]}\lvrrs\C{E[\app{\hole}{e_1}][v_0]}$, by assumption.
 
-$\C{E[\app{\hole}{e_1}][v_0]}\lvrrs\C{E[\app{v_0}{\hole}][e_1]}$, by app8-app9.
+$\C{E'[\app{\hole}{e_1}][e_0]}\lvrrs\C{E'[\app{\hole}{e_1}][v_0]}$, by assumption.
 
-The rest follows from induction.
+$\C{E'[\app{\hole}{e_1}][v_0]}\lvrr\C{E'[\app{v_0}{\hole}][e_1]}$, by app8.
 
-Assume $E'[\app{\hole}{e_1}][e]\cmrrs v$. Consider $((\C[e]\,C[E'[\app{\hole}{e_1}]])\,\eval{\pair{\xi(E'[\app{\hole}{e_1}])}{\chi(E'[\app{\hole}{e_1}])}})$.
+We defer to the inductive hypothesis.
+\end{proof}
 
-By assumption on $e$, $((\C[e]\,C[E'[\app{\hole}{e_1}]])\,\eval{\pair{\xi(E'[\app{\hole}{e_1}])}{\chi(E'[\app{\hole}{e_1}])}})\lvrrs (\C[E'[\app{\hole}{e_1}]]\,\Cp[v])$. $(\C[E'[\app{\hole}{e_1}]]\,\Cp[v])\lvrr(C[e_1()$We assume, by induction, 
+\begin{proof}{Case $E=E'[\app{v_0}{\hole}]$}
+
+$\C{E'[\app{v_0}{\hole}][e_1]}\lvrrs\C{E'[\app{v_0}{\hole}][v_1]}$, by assumption.
+
+$\C{E'[\app{v_0}{\hole}][v_1]}\lvrr\C{E'[\app{v_0}{v_1}]}$, by app9.
+
+$\C{E'[\app{v_0}{v_1}]}\lvrr\C{E'[e]}$ for some $e$, by assumption.
+
+We defer to the inductive hypothesis.
 \end{proof}
 
 \begin{proof}{Case $E=E'[\wcm{\hole}{e_1}]$}
-Assume $E'[\wcm{\hole}{e_1}][e]\cmrrs E'[\wcm{\hole}{e_1}][v']\implies\app{\app{\C{e}}{\C{E'[\wcm{\hole}{e_1}]}}}{\eval{\pair{\xi(E'[\wcm{\hole}{e_1}])}{\C{\chi(E'[\wcm{\hole}{e_1}])}}}}\lvrrs\app{\C{E'[\wcm{\hole}{e_1}]}}{\Cp{v'}}$.
-Consider $((\C[e]\,\C[E'[\wcm{\hole}{e_1}]])\,\eval{\pair{\xi(E'[\wcm{\hole}{e_1}])}{\C[\chi(E'[\wcm{\hole}{e_1}])]}})$.
-By assumption, $E'[\wcm{\hole}{e_1}][e]\cmrrs E'[\wcm{\hole}{e_1}][v']\implies((\C[e]\,\C[E'[\wcm{\hole}{e_1}]])\,\eval{\pair{\xi(E'[\wcm{\hole}{e_1}])}{\C[\chi(E'[\wcm{\hole}{e_1}])]}})\lvrr(\C[E'[\wcm{\hole}{e_1}]]\,\Cp[v'])$, as in wcm8.
+
+$\C{E'[\wcm{\hole}{e_1}][e_0]}\lvrrs\C{E'[\wcm{\hole}{e_1}][v_0]}$, by assumption.
+
+\begin{case}{$E'=E''[\wcm{v'}{\hole}]$ for some $E''$ and $v'$}
+
+$\C{E'[\wcm{\hole}{e_1}][v_0]}\lvrrs\C{E''[\wcm{v_0}{\hole}][e_1]}$, by wcm9-wcm18-tail.
+\end{case}
+
+\begin{case}{$E'\ne E''[\wcm{v'}{\hole}]$ for any $E''$ and $v'$}
+
+$\C{E'[\wcm{\hole}{e_1}][v_0]}\lvrrs\C{E'[\wcm{v_0}{\hole}][e_1]}$, by wcm9-wcm18-not-tail.
+\end{case}
+
 \end{proof}
 
-\begin{proof}{Case $E=E'[\wcm{v_0}{\hole}]$}
-Assume $E'[\wcm{v_0}{\hole}][e_1]\cmrrs E'[\wcm{v_0}{\hole}][v_1]\implies\app{\app{\C{e_1}}{\C{E'[\wcm{v_0}{\hole}]}}}{\eval{\pair{\xi(E'[\wcm{v_0}{\hole}])}{\C{\chi(E'[\wcm{v_0}{\hole}])}}}}\lvrrs\app{\C{E'[\wcm{v_0}{\hole}]}}{\C{v_1}}$.
+\begin{proof}{Case $E=E'[\wcm{v'}{\hole}]$}
+
+$\C{E'[\wcm{v'}{\hole}][e]}\lvrrs\C{E'[\wcm{v'}{\hole}][v]}$, by assumption.
+
+$\C{E'[\wcm{v'}{\hole}][v]}=\C{E'[v]}$, by definition \ref{c-wcm-v-hole}. 
 \end{proof}
 
 \newtheorem*{maintheorem}{Correctness of $\mathcal{C}$}
