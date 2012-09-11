@@ -285,7 +285,8 @@ continuation marks into the plain \lc\ in a semantics-preserving way.
 
 The \lc\ is a Turing-complete formal logic based on variable binding and substitution.
 Where the Turing machine model of computation is machine-centric, the \lc\ model is 
-language-centric. 
+language-centric. Thus, it conveniently serves as an intermediate representation for a 
+compiler or a base from which to define higher-level languages.
 The de facto standard reference is Barendregt \cite{barendregt1984lambda}.
 
 Continuation marks \cite{clements2006portable} are a language feature that provides a
@@ -308,22 +309,21 @@ by representing all control
 and data transfer uniformly and explicitly. In general, the ``spirit'' of the 
 CPS transformation is to represent all transfers of control uniformly \cite{sabry1994formal}.
 
-It is our interest to understand the essence of continuation marks--their behavior in the 
-absense of other language features and implementation details. For this, we take the core 
-of computation, the \lc, and add facilities to manipulate continuation 
-marks. These two together comprise a language which we term \cm. By expressing 
-\cm\ in terms of the plain \lc, we uncover the meaning of 
-continuation marks in a pure computational language. We arrive at this expression by 
-performing a transformation in the spirit of CPS from \cm\ to the \lc\ 
-verified to preserve the meaning of the source language.
-
-Instead of above paragraph, talk about making a Redex model and then formal proof.
+We take the core of computation, the \lc, and add facilities to manipulate continuation 
+marks. These two together comprise a language which we term \cm. By expressing \cm\ in 
+terms of the plain \lc, we uncover the meaning of continuation marks in a pure 
+computational language absent other language features and implementation details. To do 
+this, we construct $\mathcal{C}$, a transformation from \cm\ programs to \lc\ programs 
+in the spirit of CPS. We use Redex \cite{findler2010redex} to test candidate transformations 
+for correctness. This allows us to increase our confidence in a functioning transformation 
+but cannot demonstrate correctness. We address this shortcoming by providing and proving a 
+meaning preservation theorem.
 
 \chapter{\lc}
 
 The \lc\ is a Turing-complete system of logic extensively used as a formal
 system for expressing computation. Terms in the \lc\ are defined
-inductively. Terms take the form of variables $x$ drawn from an infinite set, abstractions
+inductively; they take the form of variables $x$ drawn from an infinite set, abstractions
 $\abs{x}{M}$ where $M$ is itself a \lc\ term, and applications $\app{M}{N}$ where
 $M$ and $N$ are \lc\ terms.
 
@@ -332,16 +332,20 @@ the lone variable $x$, $x$ is free, meaning that its value is determined solely 
 environment. If we abstract $x$ to create $\abs{x}{x}$, we bind it.
 Bound variables play a special part in the role of the \lc\ as a computation
 substrate. Terms with no free variables can be called closed terms, combinators, or programs.
+The fact that variables are drawn from an infinite set means that, given an arbitrary 
+\lc\ term, we can always obtain a \emph{fresh variable}, a variable not present 
+in the term at hand. This has much utility, which we will see shortly.
 
 To a first approximation, abstractions are functions. For instance, the identity function
 can be expressed as $\abs{x}{x}$ where $x$ is \emph{any} variable. Thus, there are an
 infinite number of ways to express the identity function: $\abs{x}{x}$, $\abs{y}{y}$,
-$\abs{z}{z}$, etc. These terms are not syntactically equivalent, but they denote the same
-function. This fact gives rise to the notion of $\alpha$-equivalence which captures the
-idea that arbitrary, consistent renaming does not change the essence of a term. One
+$\abs{z}{z}$, etc. It is important to note that, while these terms are not syntactically 
+equivalent, they denote the same function. This fact gives rise to the notion of 
+$\alpha$-equivalence which captures the
+idea that consistent renaming of bound variables does not change the meaning of a term. One
 subtlety here (which we will also encounter later) is \emph{variable capture} which can
-occur when the new name of a variable is already present in the term. For instance, in the
-term $\abs{x}{\abs{y}{x}}$, if each $x$ is renamed to $y$, we obtain the term $\abs{y}{\abs{y}{y}}$, 
+occur when the new name of a binding instance is identical to that of some variable already present in the body. For instance, in the
+term $\abs{x}{\abs{y}{y}}$, if each $x$ is renamed to $y$, we obtain the term $\abs{y}{\abs{y}{y}}$, 
 a fundamentally different term. For this reason, we need to take special 
 care when we rename variables (which we will need to do regularly).
 
