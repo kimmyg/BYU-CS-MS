@@ -280,88 +280,89 @@ My wife is the hottest thing ever.
 
 \chapter{Introduction}
 
-Thesis: A CPS-like global transformation can compile the \lc\ with
-continuation marks into the plain \lc\ in a semantics-preserving way.
+Thesis: A CPS-like global transformation can compile the \lc\ with continuation marks into
+the plain \lc\ in a semantics-preserving way.
 
 The \lc\ is a Turing-complete formal logic based on variable binding and substitution.
-Where the Turing machine model of computation is machine-centric, the \lc\ model is 
-language-centric. Thus, it conveniently serves as an intermediate representation for a 
-compiler or a base from which to define higher-level languages.
-The de facto standard reference is Barendregt \cite{barendregt1984lambda}.
+Where the Turing machine model of computation is machine-centric, the \lc\ model is
+language-centric. Thus, it conveniently serves as an intermediate representation for a
+compiler or a base from which to define higher-level languages. The de facto standard
+reference is Barendregt \cite{barendregt1984lambda}.
 
 Continuation marks \cite{clements2006portable} are a language feature that provides a
-mechanism to annotate the evaluation context of a program. This feature allows
-arbitrary keys to be associated with arbitrary values for the lifetime of an evaluation
-context and the inquiry of these values for a given set of
-keys. This is advantageous for programs that require dynamic information about a program
-execution such as debuggers, profilers, and steppers because it allows them to be defined
-at the same level as the language instead of some level below.
+mechanism to annotate the evaluation context of a program. This feature allows arbitrary
+keys to be associated with arbitrary values for the lifetime of an evaluation context and
+the inquiry of these values for a given set of keys. This is advantageous for programs
+that require dynamic information about a program execution such as debuggers, profilers,
+and steppers because it allows them to be defined at the same level as the language
+instead of some level below.
 
-The continuation-passing style (CPS) transformation is actually a family of 
-transformations designed to make certain analyses simpler. Every member of this 
-family shares a common trait: their performance augments each function 
-with an additional formal parameter, the \emph{continuation}, a functional representation 
-of currently pending computation. Functions in CPS 
-never explicitly return; instead, they call the continuation argument with their 
-result. Because no function ever returns, function calls are the final act of the 
-caller. Thus, all calls are tail calls. The CPS transformation then simplifies programs 
-by representing all control 
-and data transfer uniformly and explicitly. In general, the ``spirit'' of the 
-CPS transformation is to represent all transfers of control uniformly \cite{sabry1994formal}.
+The continuation-passing style (CPS) transformation is actually a family of
+transformations designed to make certain analyses simpler. Every member of this family
+shares a common trait: their performance augments each function with an additional formal
+parameter, the \emph{continuation}, a functional representation of currently pending
+computation. Functions in CPS never explicitly return; instead, they call the continuation
+argument with their result. Because no function ever returns, function calls are the final
+act of the caller. Thus, all calls are tail calls. The CPS transformation then simplifies
+programs by representing all control and data transfer uniformly and explicitly. In
+general, the ``spirit'' of the CPS transformation is to represent all transfers of control
+uniformly \cite{sabry1994formal}.
 
-We take the core of computation, the \lc, and add facilities to manipulate continuation 
-marks. These two together comprise a language which we term \cm. By expressing \cm\ in 
-terms of the plain \lc, we uncover the meaning of continuation marks in a pure 
-computational language absent other language features and implementation details. To do 
-this, we construct $\mathcal{C}$, a transformation from \cm\ programs to \lc\ programs 
-in the spirit of CPS. We use Redex \cite{findler2010redex} to test candidate transformations 
-for correctness. This allows us to increase our confidence in a functioning transformation 
-but cannot demonstrate correctness. We address this shortcoming by providing and proving a 
+We take the core of computation, the \lc, and add facilities to manipulate continuation
+marks. These two together comprise a language which we term \cm. By expressing \cm\ in
+terms of the plain \lc, we uncover the meaning of continuation marks in a pure
+computational language absent other language features and implementation details. To do
+this, we construct $\mathcal{C}$, a transformation from \cm\ programs to \lc\ programs in
+the spirit of CPS. We use Redex \cite{findler2010redex} to test candidate transformations
+for correctness. This allows us to increase our confidence in a functioning transformation
+but cannot demonstrate correctness. We address this shortcoming by providing and proving a
 meaning preservation theorem.
 
 \chapter{\lc}
 
-The \lc\ is a Turing-complete system of logic extensively used as a formal
-system for expressing computation. Terms in the \lc\ are defined
-inductively; they take the form of variables $x$ drawn from an infinite set, abstractions
-$\abs{x}{M}$ where $M$ is itself a \lc\ term, and applications $\app{M}{N}$ where
-$M$ and $N$ are \lc\ terms.
+The \lc\ is a Turing-complete system of logic extensively used as a formal system for
+expressing computation. Terms in the \lc\ are defined inductively; they take the form of
+variables $x$ drawn from an infinite set, abstractions $\abs{x}{M}$ where $M$ is itself a
+\lc\ term, and applications $\app{M}{N}$ where $M$ and $N$ are \lc\ terms.
 
-Variables in the \lc\ are either free or bound. In the term consisting of
-the lone variable $x$, $x$ is free, meaning that its value is determined solely by its
-environment. If we abstract $x$ to create $\abs{x}{x}$, we bind it.
-Bound variables play a special part in the role of the \lc\ as a computation
-substrate. Terms with no free variables can be called closed terms, combinators, or programs.
-The fact that variables are drawn from an infinite set means that, given an arbitrary 
-\lc\ term, we can always obtain a \emph{fresh variable}, a variable not present 
-in the term at hand. This has much utility, which we will see shortly.
+Variables in the \lc\ are either free or bound. A variable $x$ is free if it does not
+reside in the scope of a \emph{binding instance} of $x$. Otherwise, $x$ is bound. Bound
+variables play a special part in the role of the \lc\ as a computation substrate. Terms
+with no free variables can be called closed terms, combinators, or programs. The fact that
+variables are drawn from an infinite set means that, given an arbitrary \lc\ term, we can
+always obtain a \emph{fresh variable}, a variable not present in the term at hand. This is
+critical as we will see shortly.
 
-To a first approximation, abstractions are functions. For instance, the identity function
-can be expressed as $\abs{x}{x}$ where $x$ is \emph{any} variable. Thus, there are an
-infinite number of ways to express the identity function: $\abs{x}{x}$, $\abs{y}{y}$,
-$\abs{z}{z}$, etc. It is important to note that, while these terms are not syntactically 
-equivalent, they denote the same function. This fact gives rise to the notion of 
-$\alpha$-equivalence which captures the
-idea that consistent renaming of bound variables does not change the meaning of a term. One
-subtlety here (which we will also encounter later) is \emph{variable capture} which can
-occur when the new name of a binding instance is identical to that of some variable already present in the body. For instance, in the
-term $\abs{x}{\abs{y}{y}}$, if each $x$ is renamed to $y$, we obtain the term $\abs{y}{\abs{y}{y}}$, 
-a fundamentally different term. For this reason, we need to take special 
-care when we rename variables (which we will need to do regularly).
+In an abstraction of the form $\abs{x}{M}$, $x$ is a binding instance which binds all free
+occurrences of $x$ in the body $M$. To a first approximation, abstractions are functions.
+For instance, the identity function can be expressed as $\abs{x}{x}$ where $x$ is
+\emph{any} variable. Thus, there are an infinite number of ways to express the identity
+function: $\abs{x}{x}$, $\abs{y}{y}$, $\abs{z}{z}$, etc. It is important to note that,
+while these terms are not syntactically equivalent, they denote the same function. This
+fact gives rise to the notion of $\alpha$-equivalence which captures the idea that
+consistent renaming of bound variables does not change the meaning of a term. There is
+some subtlety in valid renaming as there is the possibility of \emph{variable capture}
+which occurs when the new name of a binding instance is identical to that of some variable
+already present in the body. For instance, in the term $\abs{x}{y}$, if each $x$ is
+renamed to $y$, we obtain the term $\abs{y}{y}$, a fundamentally different term. For this
+reason, we need to take special care when we rename variables (which we will need to do
+regularly).
 
 One of the ways abstractions approximate functions is that we can apply them to arguments.
 This is signified simply by juxtaposition of function (or operator) and argument (or
-operand). In the correct context, an application of the form $\app{M}{N}$ can be \emph{reduced}
-in which the operator $M$ is applied to the operand $N$. For $M$ of the form $\abs{x}{M'}$, 
-this entails the substitution of every free occurrence of $x$ in $M'$ with $N$. The notation 
-we adopt for this is $M'[x\leftarrow N]$. For instace, the term $\app{\abs{x}{x}}{y}$ signifies 
-$x[x\leftarrow y]$ and so reduces to $y$. We must take care when reducing a term such as 
-$\app{\abs{x}{\abs{y}{x}}}{y}$. If we reduce naively, we obtain $\abs{y}{y}$ which does not 
-reflect the intended meaning of the reduction--the argument $y$ has been captured by the 
-abstraction, an act which disregards the original meaning of the application. In order to 
-avoid this, we can rename capturing abstractions in $M$ to be outside the set of free 
-variables of $N$. In $\app{\abs{x}{\abs{y}{x}}}{y}$, we rename $y$ to $z$ in $\abs{x}{\abs{y}{x}}$ 
-obtaining $\abs{x}{\abs{z}{x}}$. The subsequent reduction of $\app{\abs{x}{\abs{z}{x}}}{y}$ to 
+operand). In the correct context, an application of the form $\app{M}{N}$ can be
+\emph{reduced} in which the operator $M$ is applied to the operand $N$. For $M$ of the
+form $\abs{x}{M'}$ for some $M'$, this entails the substitution of every free occurrence
+of $x$ in $M'$ with $N$. The notation we adopt for this is $M'[x\leftarrow N]$. For
+instance, the application $\app{\abs{x}{x}}{y}$ signifies $x[x\leftarrow y]$ and so
+reduces to $y$. Here, we must protect against another strain of variable capture. As an
+example, consider the reduction of $\app{\abs{x}{\abs{y}{x}}}{y}$. If we reduce naively,
+we obtain $\abs{y}{y}$ which does not reflect the intended meaning of the reduction--the
+argument $y$ has been captured by the abstraction, an act which destroys its meaning
+within the environment. In order to avoid this, we must rename capturing abstractions in
+$M$ to be outside the set of free variables of $N$. Within the greater term
+$\app{\abs{x}{\abs{y}{x}}}{y}$, we rename $y$ to $z$ in $\abs{x}{\abs{y}{x}}$ obtaining
+$\abs{x}{\abs{z}{x}}$. The subsequent reduction of $\app{\abs{x}{\abs{z}{x}}}{y}$ to
 $\abs{z}{y}$ correctly reflects the intended meaning of the original term.
 
 In the \lc, evaluation occurs during reduction, and reduction is merely
@@ -391,31 +392,29 @@ regimes and fail to reduce completely in others! Historically at least, the call
 and call-by-value reduction regimes underlie the distinction between so-called lazy and
 eager languages.
 
-One final observation we should make about the \lc\ is which terms denote
-values. A value should be, in a sense, irreducible and that criterion disqualifies
-applications from being considered as values. A value should remain indepedent of
-environment, i.e., it should not merely be a placeholder for arbitrary values, and that
-criterion disqualifies lone variables from being considered as values.\footnote{In actual
-fact, a value is an irreducible \lc\ term paired with an environment which
-provides values for constituent free variables.} Thus, we shall consider abstractions to
-be the sole form values can take in the \lc, habituating ourselves to the
-idea that functions are data.
+One final observation we should make about the \lc\ is which terms denote values. A value
+should be, in a sense, irreducible and that criterion disqualifies applications from being
+considered as values. A value should remain indepedent of environment, i.e., it should not
+merely be a placeholder for arbitrary values, and that criterion disqualifies lone
+variables from being considered as values.\footnote{In actual fact, a value is an
+irreducible \lc\ term paired with an environment which provides values for constituent
+free variables.} Thus, we shall consider abstractions to be the sole form values can take
+in the \lc, habituating ourselves to the idea that functions are data.
 
 \chapter{Continuation marks}
 
 There are certain tools that are indispensable to some programmers that concern the
 behavior of their programs: debuggers, profilers, steppers, etc. Without these tools,
 these programmers cannot justify the adoption of a language, however compelling it might
-otherwise be. Traditionally, these tools are developed at the same level the 
-language is, privy to incidental implementation detail, precisely because that detail 
-enables these tools to function. This is problematic for at least two reasons. First, 
-it couples the implementation of the tool with the implementation of the language, which
-increases the cost to port to other platforms. If users become dependent upon these tools,
-it can stall the advancement of the language and the adoption of new language features.
-Second and more critical, it makes these tools unsound. For instance, debuggers typically
-examine programs which have been compiled without optimizations. In general, this means 
-that the debugged program has different behavior than the deployed program. This is 
-obviously undesirable.
+otherwise be. Traditionally, these tools are developed at the same level the language is,
+privy to incidental implementation detail, precisely because that detail enables these
+tools to function. This is problematic for at least two reasons. First, it couples the
+implementation of the tool with the implementation of the language, which increases the
+cost to port to other platforms. If users become dependent upon these tools, it can stall
+the advancement of the language and the adoption of new language features. Second and more
+critical, it makes these tools unsound. For instance, debuggers typically examine programs
+which have been compiled without optimizations. In general, this means that the debugged
+program has different behavior than the deployed program. This is obviously undesirable.
 
 It is desirable to implement such tools at the same level as the language, removing
 dependency upon the implementation and instead relying on definitional and behavioral
@@ -435,26 +434,27 @@ experimental addition to \emph{JavaScript} \cite{clements2008implementing}.
 The feature of continuation marks itself is accessible via two surface level syntactic
 forms: \scheme{with-continuation-mark} and \scheme{current-continuation-marks}.
 
-In Scheme-like syntax, a \scheme{with-continuation-mark} expression appears as 
-\scheme|(with-continuation-mark key-expr value-expr body-expr)|. The evaluation of 
-this expression proceeds by first evaluating \scheme{key-expr} to \scheme{key} and 
-\scheme{value-expr} to \scheme{value}. Thereafter, \scheme{body-expr} is evaluated 
-within the extent of which \scheme'value' is associated with \scheme 'key'.
+In Scheme-like syntax, a \scheme{with-continuation-mark} expression appears as
+\scheme|(with-continuation-mark key-expr value-expr body-expr)|. The evaluation of this
+expression proceeds by first evaluating \scheme{key-expr} to \scheme{key} and
+\scheme{value-expr} to \scheme{value}. Thereafter, \scheme{body-expr} is evaluated within
+the extent of which \scheme'value' is associated with \scheme 'key'.
 
-For instance, in the expression \scheme|(with-continuation-mark 'fun 'cons (cons 0 empty))|, the value 
-\scheme{'+} is associated with the key \scheme{'fun} during the evaluation of \scheme|(+ 2 2)|. 
+For instance, in the expression \scheme|(with-continuation-mark 'fun 'cons (cons 0
+empty))|, the value \scheme{'+} is associated with the key \scheme{'fun} during the
+evaluation of \scheme|(+ 2 2)|.
 
-In the same Scheme-like syntax, a \scheme{current-continuation-marks} expression appears as 
-\scheme|(current-continuation-marks key-list)|. This expression evaluates to a list of all 
-the present key-value associations referenced in \scheme{key-list}. The 
-\scheme{with-continuation-mark} form admits a notion of ordering--inner associations are 
-more recent than outer ones--and this in reflected in the list yielded by the 
+In the same Scheme-like syntax, a \scheme{current-continuation-marks} expression appears
+as \scheme|(current-continuation-marks key-list)|. This expression evaluates to a list of
+all the present key-value associations referenced in \scheme{key-list}. The
+\scheme{with-continuation-mark} form admits a notion of ordering--inner associations are
+more recent than outer ones--and this in reflected in the list yielded by the
 \scheme{current-continuation-marks}.
 
-Importantly, the result of \scheme{current-continuation-marks} provides no evidence of any portion of the
-dynamic context lacking continuation marks with the specified keys. This preserves the
-ability to perform optimizations without exposing details which would render the
-optimizations unsound. This also requires special consideration of a language that
+Importantly, the result of \scheme{current-continuation-marks} provides no evidence of any
+portion of the dynamic context lacking continuation marks with the specified keys. This
+preserves the ability to perform optimizations without exposing details which would render
+the optimizations unsound. This also requires special consideration of a language that
 supports tail call optimization (which is not an optimization in the above sense since its
 behavior is defined in the semantics of the language).
 
@@ -540,33 +540,30 @@ This difference is due to the growing continuation in the definitionally recursi
 \scheme{fac}. Each call to \scheme{fac} has a pending computation--namely, the
 multiplication--after the recursive call and so each necessitates the creation of
 additional evaluation context. The effect of this additional context is that each
-annotation is applied to new, ``blank'' context, so all the previous annotations are preserved. 
-In the tail-recursive variant, there is no pending computation and therefore no additional
-evaluation context. In this instance, the previous mark is overwritten with the new.
-
-
-
+annotation is applied to new, ``blank'' context, so all the previous annotations are
+preserved. In the tail-recursive variant, there is no pending computation and therefore no
+additional evaluation context. In this instance, the previous mark is overwritten with the
+new.
 
 
 \chapter{\cm}
 
-We consider an extension of the call-by-value \lc\ with facilities to
-manipulate continuation marks, introduced by Pettyjohn et al.
-\cite{pettyjohn2005continuations}, which we term \cm.
+We consider an extension of the call-by-value \lc\ with facilities to manipulate
+continuation marks, introduced by Pettyjohn et al. \cite{pettyjohn2005continuations},
+which we term \cm.
 
 \section{Definition of \cm}
 
-Figure \ref{language-syntax} presents the syntactic definition of \cm.
-Definitions of $E$ and $F$ signify evaluation contexts. The non-terminal $E$ is simply any
-term in the language but for the constraint that $\wcm{v}{F}$ contexts cannot be
-directly nested, to enforce proper tail-call behavior. The definition of $e$ establishes
-the forms of valid expressions in the language: applications, variables, values,
-\emph{wcm} forms, and \emph{ccm} forms. The definition of $v$ denotes that values in the
-language are $\lambda$-abstractions. (Also, notice that \emph{wcm} and \emph{ccm} have one
-parameter fewer than the forms introduced earlier. This is because \cm
-expresses unkeyed marks. While it can be shown that a language with keyed marks can be
-expressed in terms of a language with unkeyed marks, such as \cm, this is not
-our concern.)
+Figure \ref{language-syntax} presents the syntactic definition of \cm. Definitions of $E$
+and $F$ signify evaluation contexts. The non-terminal $E$ is simply any term in the
+language but for the constraint that $\wcm{v}{F}$ contexts cannot be directly nested, to
+enforce proper tail-call behavior. The definition of $e$ establishes the forms of valid
+expressions in the language: applications, variables, values, \emph{wcm} forms, and
+\emph{ccm} forms. The definition of $v$ denotes that values in the language are
+$\lambda$-abstractions. (Also, notice that \emph{wcm} and \emph{ccm} have one parameter
+fewer than the forms introduced earlier. This is because \cm\ expresses unkeyed marks.
+While it can be shown that a language with keyed marks can be expressed in terms of a
+language with unkeyed marks, such as \cm, this is not our concern.)
 
 \begin{figure}
 \begin{align*}
@@ -575,21 +572,20 @@ E = &\wcm{v}{F} & e = &\app{e}{e}\\
 F = &[]         &     &v\\
     &\app{E}{e} &     &\wcm{e}{e}\\
     &\app{v}{E} &     &\ccm\\
-    &\wcm{E}{e} & v = & \lambda x. e
+    &\wcm{E}{e} & v = & \abs{x}{e}
 \end{align*}
 \caption{\cm\ syntax}
 \label{language-syntax}
 \end{figure}
 
-Figure \ref{language-semantics} presents the semantics of \cm. The definitions
-therein establish the proper interpretation of various expressions. The first follows the
-typical definition of application. The second defines the tail behavior of the \emph{wcm}
-form. The third expresses that the \emph{wcm} form takes on the value of its body.
-Finally, the fourth defines the value of the \emph{ccm} form in terms of the $\chi$
-metafunction which definition is given in figure \ref{chi-metafunction}. The $\chi$
-metafunction is defined over syntactic forms of the language, so its definition
-corresponds closely to the definition of \cm\ found in figure
-\ref{language-syntax}.
+Figure \ref{language-semantics} presents the semantics of \cm. The definitions therein
+establish the proper interpretation of various expressions. The first follows the typical
+definition of application. The second defines the tail behavior of the \emph{wcm} form.
+The third expresses that the \emph{wcm} form takes on the value of its body. Finally, the
+fourth defines the value of the \emph{ccm} form in terms of the $\chi$ metafunction which
+definition is given in figure \ref{chi-metafunction}. The $\chi$ metafunction is defined
+over syntactic forms of the language, so its definition corresponds closely to the
+definition of \cm\ found in figure \ref{language-syntax}.
 
 \begin{figure}
 \begin{align*}
@@ -643,28 +639,210 @@ Steps 1 and 2 denote the insertion of a value into the hole in the context.
 
 \section{Language translation}
 
-\cm\ is a strict superset of \lv; there are within \cm\
-syntactic forms inscrutable to a \lv\ interpreter. Additionally, evaluation order
-within these forms is significant and a naive treatment of these forms by \lv\
-will most likely be incorrect (which is to say, we cannot simply inherit its reduction
-order). Plotkin \cite{plotkin1975call} demonstrated that the CPS transform can be used to
-control evaluation order. We will use this facility in our transformation to express terms
-in \cm\ in terms of \lv. [Other analysis which the CPS transformation
-affords us \cite{appel2007compiling} is incidental.]
+\cm\ is a strict superset of \lv; there are within \cm\ syntactic forms inscrutable to a
+\lv\ interpreter. Additionally, evaluation order within these forms is significant and a
+naive treatment of these forms by \lv\ will most likely be incorrect (which is to say, we
+cannot simply inherit its reduction order). Plotkin \cite{plotkin1975call} demonstrated
+that the CPS transform can be used to control evaluation order. We will use this facility
+in our transformation to express terms in \cm\ in terms of \lv. [Other analysis which the
+CPS transformation affords us \cite{appel2007compiling} is incidental.]
 
-The work of the transformation then is to express the five syntactic forms of
-\cm\ ($e$-terms in figure \ref{language-syntax}) in the three syntactic forms of
-\lv\ (the first three $e$-terms of that same figure) in a semantics-preserving
-way. Much of the effort of our analysis and justification will be in demonstrating that
-the semantics are indeed preserved, namely the tail-call behavior.
+The work of the transformation then is to express the five syntactic forms of \cm\
+($e$-terms in figure \ref{language-syntax}) in the three syntactic forms of \lv\ (the
+first three $e$-terms of that same figure) in a semantics-preserving way. Much of the
+effort of our analysis and justification will be in demonstrating that the semantics are
+indeed preserved, namely the tail-call behavior.
 
 In continuation-passing style, every term takes an additional argument, the continuation,
 into which the evaluation is passed. Our approach to a semantics-preserving
 transformation, which we call $\mathcal{C}$, takes this a step further. Intuitively, we
-will pass not only a continuation but also the value of $\chi(E)$, a list of the current 
-continuation marks. As specified by the definition of $\chi$, the \emph{wcm} form will 
-add a mark to this list and the \emph{ccm} form will simply return it.
+will pass not only a continuation but also the value of $\chi(E)$, a list of the current
+continuation marks. As specified by the definition of $\chi$, the \emph{wcm} form will add
+a mark to this list and the \emph{ccm} form will simply return it.
 
+
+\chapter{CPS transformation}
+
+\section{Introduction}
+
+The CPS transform is actually a family of language transformations derived from Plotkin
+\cite{plotkin1975call} designed to simplify  programs by representing all data and control
+flow uniformly and explicitly. This, in turn, simplifies compiler construction and
+analyses such as optimization and verification \cite{sabry1994formal}. The standard
+variation of CPS adds a formal parameter to every function definition and an argument to
+every call site.
+
+As an example, consider once again the two variants of the factorial function, sans
+continuation marks, given earlier. In CPS, the properly-recursive variant can be expressed
+as
+\begin{schemedisplay}
+(define (fac n k) 
+  (if (= n 0)
+      (k 1)
+      (fac (- n 1) (lambda (acc) (k (* n acc))))))
+\end{schemedisplay}
+and the tail-recursive variant as
+\begin{schemedisplay}
+(define (fac-tr n acc k)
+  (if (= n 0)
+      (k acc)
+      (fac-tr (- n 1) (* n acc) k)))
+\end{schemedisplay}
+(For clarity, we have treated ``primitive'' functions--equality comparison, subtraction,
+and multiplication--in a direct manner. In contrast, a full CPS transformation would
+affect \emph{every} function.)
+
+Notice that, in the first variation, each recursive call receives a newly-constructed
+\scheme{k} encapsulating additional work to be performed at the completion of the
+recursive computation. In the second, \scheme{k} is passed unmodified, so while
+computation occurs within each context, no \emph{additional} computation pends. From this
+example, we see that the CPS representation is ideal for understanding tail-call behavior
+as it is explicit that the continuation is preserved by the tail call.
+
+The purpose of CPS does not lie solely in pedagogy, however. The reification of and
+consequent ability to directly manipulate the continuation is powerful, analogous in power
+to the ability to \emph{capture} a continuation which some languages provide. In Scheme,
+this is accomplished with \scheme{call/cc}, short for ``call with current continuation''.
+This call takes one argument which itself is a function of one argument. \scheme{call/cc}
+calls its argument, passing in a functional representation of the current
+continuation--the continuation present when \scheme{call/cc} was invoked. This
+continuation function takes one argument which is treated as the result of
+\scheme{call/cc} and runs this continuation to completion.
+
+As a simple example,
+\begin{schemedisplay}
+(+ 1 (call/cc
+       (lambda (k)
+         (k 1))))
+\end{schemedisplay}
+returns \scheme'2'. In effect, invoking \scheme{k} with \scheme'1' is the same 
+as replacing the entire \scheme{call/cc} invocation with \scheme'1'.
+
+Much of the power of \scheme{call/cc} lies in the manifestation of the continuation as a
+function, giving it first-class status. It can be passed as an argument in function calls,
+invoked, and, amazingly, reinvoked at leisure. It is this reinvokeability that makes
+\scheme{call/cc} the fundamental unit of control from which all other control structures can
+be built, including generators, coroutines, and threads.
+
+%\emph{call/cc} is erroneously seen as incredibly heavyweight and overkill for control
+%(cite something). This conception probably comes from the conceptualization of the
+%continuation as the call stack and continuation capture as stack copy while continuation
+%call is stack installation. It is also seen as a form of \emph{goto} which is known to
+%obfuscate control flow and impede analysis (cite something). [Can't and shouldn't talk
+%much about the second. Probably take it out.] Bearing in mind that the CPS transformation
+%aids compilers, it is useful to investigate the characterization of \emph{call/cc} within
+%the standard CPS transformation.
+
+In direct style, the definition of \scheme{call/cc} is conceptually 
+\begin{schemedisplay}
+(define call/cc
+  (lambda (f)
+    (f (get-function-representing-continuation))))
+\end{schemedisplay}
+where \scheme{get-function-representing-continuation} is an opaque function which leverages
+sweeping knowledge of the language implementation. The CPS definition is notably simpler:
+\begin{schemedisplay}
+(define call/cc
+  (lambda (f k)
+    (f (lambda (x w) (k x)) k)))
+\end{schemedisplay}
+
+Variations on the standard CPS transformation can make the expression of certain control
+structures more straightforward. For instance, the ``double-barrelled'' CPS transformation
+is a variation wherein each function signature receives not one but two additional formal
+parameters, each a continuation. One application of this particular variation is error
+handling with one continuation argument representing the remainder of a successful
+computation and the other representing the failure contingency. It is especially useful in
+modelling exceptions and other non-local transfers of control in situations where the
+computation might fail. In general, the nature of the CPS transformation allows it to
+untangle complicated, intricate control structures.
+
+Similar transformations exist which express other programming language features such as
+security annotations \cite{wallach2000safkasi} and control structures such as procedures,
+exceptions, labelled jumps, coroutines, and backtracking. On top of other offerings, this
+places it in a category of tools to describe and analyze programming language features.
+(This category is also occupied by Moggi's computational lambda calculus--monads
+\cite{moggi1989computational}.)
+
+\section{Example}
+
+We will now focus our attention on a CPS transform defined over the \lc.
+Before doing so, we offer a brief primer on the relevant parts of the \lc.
+
+
+
+\subsubsection{CPS transform}
+
+A CPS transformation is a global syntactic transformation of language terms. Recall that
+terms in the \lc\ take the form of lone variables $x$,
+$\lambda$-abstractions $\lambda x.M$, and applications $M\,N$ where $M$ and $N$ are
+themselves \lc\ terms. A comprehensive CPS transform definition need only
+specify transformations for these three categories. As an example, consider Fischer's CPS
+transform \cite{fischer1972lambda}:
+\begin{align*}
+\mathcal{F}[x]          &= \abs{k}{\app{k}{x}}\\
+\mathcal{F}[\abs{x}{M}] &= \abs{k}{\app{k}{\abs{x}{\mathcal{F}[M]}}}\\
+\mathcal{F}[\app{M}{N}] &= \abs{k}{\app{\mathcal{F}[M]}{\abs{m}{\app{\mathcal{F}[N]}{\abs{n}{\app{\app{m}{n}}{k}}}}}}
+\end{align*}
+Fischer's CPS transform abstracts each term in the \lc: lone variables wait on a
+continuation, abstractions receive a degree of indirection, and even applications, the
+sole reduction facility of the \lc, become abstractions. In essence, terms become
+suspended in wait of a continuation argument. By priming a term so-transformed with a
+continuation function--even as simple as the identity--we instigate a cascade of
+computation.
+
+In the case of lone variables and applications, this transformation ultimately has no
+effect on the result of the computation. However, abstractions, the values of the
+\lc, are contaminated by the transform. For example, consider the
+transformation of $\lambda x.x$
+\begin{align*}
+\mathcal{F}[\lambda x.x] &= \lambda k.k\,(\lambda x.\mathcal{F}[x])\\
+                         &= \lambda k.(k\,\lambda x.\lambda k.(k\,x))
+\end{align*}
+If we apply this term to the identity function, it reduces as
+\begin{align*}
+                        &\lambda k.(k \lambda x.\lambda k.(k\,x))\,\lambda y.y\\
+\lvrr &\lambda y.y\,\lambda x.\lambda k.(k\,x)\\
+\lvrr &\lambda x.\lambda k.(k\,x)
+\end{align*}
+The result of this reduction, in common with most others, contains residual terms from the
+CPS transform. We will need to account for this particular property of Fischer's CPS
+transform.
+
+One of the many reasons continuation-passing style is useful is that is allows evaluation
+order to be controlled. In fact, Plotkin \cite{plotkin1975call} showed that it can be used
+to simulate the call-by-value \lc\ with the call-by-name \lc
+and vice versa. We can show that, in the call-by-value \lc, the passed
+continuation is applied only to fully-reduced terms. This can be done by verifying this
+property for each case of the CPS transform definition. Before doing so, we remind that no
+reduction is performed by effect of the transformation.
+\[
+T[x]=\lambda k.(k\,x)
+\]
+Variables are irreducible, so the property holds immediately here.
+\[
+T[\lambda x.E]=\lambda k.(k\,\lambda x.T[E])
+\]
+Here we reason inductively by assuming that the property holds for E. Abstractions are
+irreducible in a call-by-value regime, so the property holds in this case also.
+\[
+T[E\,F]=\lambda k.(T[E]\,\lambda e.(T[F]\,\lambda f.((e\,f)\,k))))
+\]
+In this case, we observe that the continuation $k$ provided is not directly applied.
+Instead, the operator is evaluated and a continuation is constructed into which its value
+may be passed. The operand is treated similarly. Finally, the operator is applied to the
+operand and $k$ is not invoked but passed to the result.
+
+Notice that $k$, which represents the rest of the continuation, is passed unmodified.
+Specifically, a new continuation which employs $k$ as a subcontinuation has not been
+constructed. This quality is characteristic of a tail call in which the evaluation context
+for the arguments, no longer necessary, is subsumed by the evaluation context of the newly
+formed application.
+
+Finally, we observe that every transformed application passes--rather than invokes--the
+provided continuation and that occurs only after reduction. Then continuations can be
+invoked only as in the cases of variables and abstractions and we can see that they are 
+only applied to fully-reduced terms.
 
 
 \chapter{Redex}
@@ -915,188 +1093,22 @@ the approach we will ultimately take to verify certain transformation properties
    error])
 \end{schemedisplay}
 
-\chapter{CPS transformation}
+Programs in \cm\ can observe the context in which they are evaluated. Programs in \lv,
+however, cannot. The intuition behind $\mathcal{C}$ is to explicitly provide to the
+resultant \lv\ program any information about the context that could be observed by the
+original \cm\ program.
 
-\section{Introduction}
+%Two data comprise this information: first, a list of continuation marks corresponding to the one provided to the original program; second, whether 
 
-The CPS transform is actually a family of language transformations derived from Plotkin
-\cite{plotkin1975call} designed to simplify  programs by representing all data and
-control flow uniformly and explicitly. This, in turn, simplifies compiler construction and
-analyses such as optimization and verification \cite{sabry1994formal}. The standard
-variation of CPS adds a formal parameter to every function definition and an argument to every
-call site.
+%This information is not directly observable to the original program. Indirectly, however, it can be observed by ...
 
-As an example, consider once again the two variants of the factorial function, sans
-continuation marks, given earlier. In CPS, the properly-recursive variant can be expressed
-as
-\begin{schemedisplay}
-(define (fac n k) 
-  (if (= n 0)
-      (k 1)
-      (fac (- n 1) (lambda (acc) (k (* n acc))))))
-\end{schemedisplay}
-and the tail-recursive variant as
-\begin{schemedisplay}
-(define (fac-tr n acc k)
-  (if (= n 0)
-      (k acc)
-      (fac-tr (- n 1) (* n acc) k)))
-\end{schemedisplay}
-(For clarity, we have treated ``primitive'' functions--equality comparison, subtraction,
-and multiplication--in a direct manner. In contrast, a full CPS transformation would
-affect \emph{every} function.)
-
-Notice that, in the first variation, each recursive call receives a newly-constructed \scheme{k}
-encapsulating additional work to be performed at the completion of the recursive
-computation. In the second, \scheme{k} is passed unmodified, so while computation occurs within
-each context, no \emph{additional} computation pends. From this example, we see that the
-CPS representation is ideal for understanding tail-call behavior as it is explicit that
-the continuation is preserved by the tail call.
-
-The purpose of CPS does not lie solely in pedagogy, however. The reification of and
-consequent ability to directly manipulate the continuation is powerful,
-analogous in power to the ability to \emph{capture} a continuation which some languages
-provide. In Scheme, this is accomplished with \scheme{call/cc}, short for ``call with
-current continuation''. This call takes one argument which itself is a function of one
-argument. \scheme{call/cc} calls its argument, passing in a functional representation of the
-current continuation--the continuation present when \scheme{call/cc} was invoked. This
-continuation function takes one argument which is treated as the result of \scheme{call/cc}
-and runs this continuation to completion.
-
-As a simple example,
-\begin{schemedisplay}
-(+ 1 (call/cc
-       (lambda (k)
-         (k 1))))
-\end{schemedisplay}
-returns \scheme'2'. In effect, invoking \scheme{k} with \scheme'1' is the same 
-as replacing the entire \scheme{call/cc} invocation with \scheme'1'.
-
-Much of the power of \scheme{call/cc} lies in the manifestation of the continuation as a
-function, giving it first-class status. It can be passed as an argument in function calls,
-invoked, and, amazingly, reinvoked at leisure. It is this reinvokeability that makes
-\scheme{call/cc} the fundamental unit of control from which all other control structures can
-be built, including generators, coroutines, and threads.
-
-%\emph{call/cc} is erroneously seen as incredibly heavyweight and overkill for control
-%(cite something). This conception probably comes from the conceptualization of the
-%continuation as the call stack and continuation capture as stack copy while continuation
-%call is stack installation. It is also seen as a form of \emph{goto} which is known to
-%obfuscate control flow and impede analysis (cite something). [Can't and shouldn't talk
-%much about the second. Probably take it out.] Bearing in mind that the CPS transformation
-%aids compilers, it is useful to investigate the characterization of \emph{call/cc} within
-%the standard CPS transformation.
-
-In direct style, the definition of \scheme{call/cc} is conceptually 
-\begin{schemedisplay}
-(define call/cc
-  (lambda (f)
-    (f (get-function-representing-continuation))))
-\end{schemedisplay}
-where \scheme{get-function-representing-continuation} is an opaque function which leverages
-sweeping knowledge of the language implementation. The CPS definition is notably simpler:
-\begin{schemedisplay}
-(define call/cc
-  (lambda (f k)
-    (f (lambda (x w) (k x)) k)))
-\end{schemedisplay}
-
-Variations on the standard CPS transformation can make the expression of certain control
-structures more straightforward. For instance, the ``double-barrelled'' CPS transformation
-is a variation wherein each function signature receives not one but two additional formal
-parameters, each a continuation. One application of this particular variation is error
-handling with one continuation argument representing the remainder of a successful
-computation and the other representing the failure contingency. It is especially useful in
-modelling exceptions and other non-local transfers of control in situations where the
-computation might fail. In general, the nature of the CPS transformation allows it to
-untangle complicated, intricate control structures.
-
-Similar transformations exist which express other programming language features such as
-security annotations \cite{wallach2000safkasi} and control structures such as procedures,
-exceptions, labelled jumps, coroutines, and backtracking. On top of other offerings, this
-places it in a category of tools to describe and analyze programming language features.
-(This category is also occupied by Moggi's computational lambda calculus--monads
-\cite{moggi1989computational}.)
-
-\section{Example}
-
-We will now focus our attention on a CPS transform defined over the \lc.
-Before doing so, we offer a brief primer on the relevant parts of the \lc.
-
-
-
-\subsubsection{CPS transform}
-
-A CPS transformation is a global syntactic transformation of language terms. Recall that
-terms in the \lc\ take the form of lone variables $x$,
-$\lambda$-abstractions $\lambda x.M$, and applications $M\,N$ where $M$ and $N$ are
-themselves \lc\ terms. A comprehensive CPS transform definition need only
-specify transformations for these three categories. As an example, consider Fischer's CPS
-transform \cite{fischer1972lambda}:
-\begin{align*}
-\mathcal{F}[x]          &= \abs{k}{\app{k}{x}}\\
-\mathcal{F}[\abs{x}{M}] &= \abs{k}{\app{k}{\abs{x}{\mathcal{F}[M]}}}\\
-\mathcal{F}[\app{M}{N}] &= \abs{k}{\app{\mathcal{F}[M]}{\abs{m}{\app{\mathcal{F}[N]}{\abs{n}{\app{\app{m}{n}}{k}}}}}}
-\end{align*}
-Fischer's CPS transform abstracts each term in the \lc: lone variables
-wait on a continuation, abstractions receive a degree of indirection, and even
-applications, the sole reduction facility of the \lc, become abstractions.
-In essence, terms become suspended in wait of a continuation argument. By priming a term
-so-transformed with a continuation function--even as simple as the identity--we instigate
-a cascade of computation.
-
-In the case of lone variables and applications, this transformation ultimately has no
-effect on the result of the computation. However, abstractions, the values of the
-\lc, are contaminated by the transform. For example, consider the
-transformation of $\lambda x.x$
-\begin{align*}
-\mathcal{F}[\lambda x.x] &= \lambda k.k\,(\lambda x.\mathcal{F}[x])\\
-                         &= \lambda k.(k\,\lambda x.\lambda k.(k\,x))
-\end{align*}
-If we apply this term to the identity function, it reduces as
-\begin{align*}
-                        &\lambda k.(k \lambda x.\lambda k.(k\,x))\,\lambda y.y\\
-\lvrr &\lambda y.y\,\lambda x.\lambda k.(k\,x)\\
-\lvrr &\lambda x.\lambda k.(k\,x)
-\end{align*}
-The result of this reduction, in common with most others, contains residual terms from the
-CPS transform. We will need to account for this particular property of Fischer's CPS
-transform.
-
-One of the many reasons continuation-passing style is useful is that is allows evaluation
-order to be controlled. In fact, Plotkin \cite{plotkin1975call} showed that it can be used
-to simulate the call-by-value \lc\ with the call-by-name \lc
-and vice versa. We can show that, in the call-by-value \lc, the passed
-continuation is applied only to fully-reduced terms. This can be done by verifying this
-property for each case of the CPS transform definition. Before doing so, we remind that no
-reduction is performed by effect of the transformation.
-\[
-T[x]=\lambda k.(k\,x)
-\]
-Variables are irreducible, so the property holds immediately here.
-\[
-T[\lambda x.E]=\lambda k.(k\,\lambda x.T[E])
-\]
-Here we reason inductively by assuming that the property holds for E. Abstractions are
-irreducible in a call-by-value regime, so the property holds in this case also.
-\[
-T[E\,F]=\lambda k.(T[E]\,\lambda e.(T[F]\,\lambda f.((e\,f)\,k))))
-\]
-In this case, we observe that the continuation $k$ provided is not directly applied.
-Instead, the operator is evaluated and a continuation is constructed into which its value
-may be passed. The operand is treated similarly. Finally, the operator is applied to the
-operand and $k$ is not invoked but passed to the result.
-
-Notice that $k$, which represents the rest of the continuation, is passed unmodified.
-Specifically, a new continuation which employs $k$ as a subcontinuation has not been
-constructed. This quality is characteristic of a tail call in which the evaluation context
-for the arguments, no longer necessary, is subsumed by the evaluation context of the newly
-formed application.
-
-Finally, we observe that every transformed application passes--rather than invokes--the
-provided continuation and that occurs only after reduction. Then continuations can be
-invoked only as in the cases of variables and abstractions and we can see that they are 
-only applied to fully-reduced terms.
+To accomplish this, the transform is defined in the spirit of CPS. Recall that in CPS,
+every function receives an additional formal parameter and every call site receives a
+corresponding argument. The definition of $\mathcal{C}$ takes this a step further under
+which every function receives \emph{two} additional formal parameters and every call site
+two additional arguments. As in CPS, the first parameter encapsulates the continuation or,
+for our purposes, the evaluation context. The second encapsulates all contextual
+information observable to the original \cm\ program.
 
 \chapter{proof}
 
@@ -1115,19 +1127,15 @@ only applied to fully-reduced terms.
 \newtheorem{lemma}{Lemma}
 \newtheorem{theorem}{Theorem}
 
-
-Programs in \cm\ can observe the context in which they are evaluated. Programs
-in \lv, however, cannot. The intuition behind $\mathcal{C}$ is to explicitly
-provide to the resultant \lv\ program any information about the context that could
-be observed by the original \cm\ program.
-
-%Two data comprise this information: first, a list of continuation marks corresponding to the one provided to the original program; second, whether 
-
-%This information is not directly observable to the original program. Indirectly, however, it can be observed by ...
-
-To accomplish this, the transform is defined in the spirit of CPS. Recall that in CPS, every function receives an additional formal parameter and every call site receives a corresponding argument. The definition of $\mathcal{C}$ takes this a step further under which every function receives \emph{two} additional formal parameters and every call site two additional arguments. As in CPS, the first parameter encapsulates the continuation or, for our purposes, the evaluation context. The second encapsulates all contextual information observable to the original \cm\ program. 
-
-Before setting out on a formal proof, it may be useful to discuss certain invariants that suggest the transform is correct. In general, there is a direct correspondence between evaluation states--a context coupled with a possible redex--in \cm\ programs and their transformations under $\mathcal{C}$. There is also necessarily a correspondence between the behavior of the original program and its transform. For instance, once an expression has been decomposed from its context, it is only recomposed with a value or more context. This is exhibited in the transformed program by the application of the value to the context, an artifact of the CPS transform which is semantically equivalent to ``filling the hole''.
+Before setting out on a formal proof, it may be useful to discuss certain invariants that
+suggest the transform is correct. In general, there is a direct correspondence between
+evaluation states--a context coupled with a possible redex--in \cm\ programs and their
+transformations under $\mathcal{C}$. There is also necessarily a correspondence between
+the behavior of the original program and its transform. For instance, once an expression
+has been decomposed from its context, it is only recomposed with a value or more context.
+This is exhibited in the transformed program by the application of the value to the
+context, an artifact of the CPS transform which is semantically equivalent to ``filling
+the hole''.
 
 We will now set out to demonstrate that $\mathcal{C}$ preserves program meaning.
 
@@ -1196,13 +1204,20 @@ $\nil=\false$
 \begin{defn}
 If $e\lvrrs v$, $\eval{e}=v$.
 
-The intent of this definition is to preserve visual indicators of the meaning of an expression. For instance, it is used primarily to allow us to express the pair of $a$ and $b$ as $\eval{\pair{a}{b}}$ instead of the less recognizable $\abs{z}{\app{\app{z}{a}}{b}}$. However, it is dangerous since, in the case that $e$ diverges, we refer to a value that doesn't exist. We employ this definition only if it is obvious that $e$ converges.
+The intent of this definition is to preserve visual indicators of the meaning of an
+expression. For instance, it is used primarily to allow us to express the pair of $a$ and
+$b$ as $\eval{\pair{a}{b}}$ instead of the less recognizable
+$\abs{z}{\app{\app{z}{a}}{b}}$. However, it is dangerous since, in the case that $e$
+diverges, we refer to a value that doesn't exist. We employ this definition only if it is
+obvious that $e$ converges.
 \end{defn}
 
 \begin{defn}
 $\C{E[e]}=\app{\app{\C{e}}{\C{E}}}{\eval{\pair{\xi(E)}{\C{\chi(E)}}}}$
 
-When applied to both a context and term, $\mathcal{C}$ is treated as a two argument function. While this in conventionally denoted $\Ct{E}{e}$ or similarly, we adopt the unorthodox notation for consistency. 
+When applied to both a context and term, $\mathcal{C}$ is treated as a two argument
+function. While this in conventionally denoted $\Ct{E}{e}$ or similarly, we adopt the
+unorthodox notation for consistency.
 \end{defn}
 
 \begin{defn}
@@ -1313,7 +1328,14 @@ $\C{x}=\abs{k}{\abs{m}{\app{k}{x}}}$
 \end{schemedisplay}
 \end{schemedefn}
 
-This definition is used solely as an abbreviation within the definition of $\C{\wcm{e_0}{e_1}}$. Note that it is identical to $\C{\app{e_1}{e_1}}$ except that $\mathcal{C}$ does not recur in the body of $\mathcal{A}$. Because of this, $\mathcal{A}$ has the property that $\mathcal{A}[\app{\C{e_0}}{\C{e_1}}]=\C{\app{e_0}{e_1}}$. This fact is used to reinterpret particular terms at certain places in the reduction of $\C{\wcm{e_0}{e_1}}$. In particular, it is necessary to create pairs in $\mathcal{C}$ ``by hand'' when manipulating $\C{\chi(E)}$, which is defined in terms of applications in $\mathcal{C}$.
+This definition is used solely as an abbreviation within the definition of
+$\C{\wcm{e_0}{e_1}}$. Note that it is identical to $\C{\app{e_1}{e_1}}$ except that
+$\mathcal{C}$ does not recur in the body of $\mathcal{A}$. Because of this, $\mathcal{A}$
+has the property that $\mathcal{A}[\app{\C{e_0}}{\C{e_1}}]=\C{\app{e_0}{e_1}}$. This fact
+is used to reinterpret particular terms at certain places in the reduction of
+$\C{\wcm{e_0}{e_1}}$. In particular, it is necessary to create pairs in $\mathcal{C}$ ``by
+hand'' when manipulating $\C{\chi(E)}$, which is defined in terms of applications in
+$\mathcal{C}$.
 
 \begin{defn}
 $\Cp{v_0}=\Cp{\abs{x}{e_0}}=\abs{x}{\C{e_0}}$
@@ -1403,9 +1425,13 @@ If $E=E'[\wcm{v'}{\hole}]$, then $\chi(E'[\wcm{v_0}{\hole}])=\eval{\pair{v_0}{\a
 For all contexts $E\in\lambda_{cm}$ and expressions $e\in\lambda_{cm}$, $E[e]\cmrrs\cdots\implies\C{E[e]}\lvrrs\cdots$ and $E[e]\cmrrs v\implies\C{E[e]}\lvrrs \C{v}$.
 \end{eqtheorem}
 
-We will reason by structural induction on both contexts $E$ and terms $e$. Instead of nesting the induction, which requires the consideration of $|E|\cdot|e|$ cases, we will take first $E$ and then $e$ in isolation, in each assuming the correctness of the other, which requires the consideration of only $|E|+|e|$ cases. 
+We will reason by structural induction on both contexts $E$ and terms $e$. Instead of
+nesting the induction, which requires the consideration of $|E|\cdot|e|$ cases, we will
+take first $E$ and then $e$ in isolation, in each assuming the correctness of the other,
+which requires the consideration of only $|E|+|e|$ cases.
 
-First, we will prove the correctness for terms $e$. Assume that for all contexts $E$, $E[v']\cmrrs v\implies\C{E[v']}\lvrrs v$.
+First, we will prove the correctness for terms $e$. Assume that for all contexts $E$,
+$E[v']\cmrrs v\implies\C{E[v']}\lvrrs v$.
 
 In each case, let $E$ be an arbitrary context.
 
@@ -1509,7 +1535,8 @@ $\C{E[x]}\lvrrs$\scheme'C[error]', by x1-x4.
 % prove E[error] -> error => ((C[error] C[E]) ((pair xi(E)) C[chi(E)])) -> C[error]
 \end{proof}
 
-Now, we will prove the correctness for contexts $E$. Assume that for all terms $e$, $E[e]\cmrrs E[v]\implies\C{E[e]}\lvrrs \C{E[v]}$.
+Now, we will prove the correctness for contexts $E$. Assume that for all terms $e$,
+$E[e]\cmrrs E[v]\implies\C{E[e]}\lvrrs \C{E[v]}$.
 
 In each case, let $e$ be an arbitrary term which evaluates to $v$.
 
@@ -1623,6 +1650,7 @@ p\cmrrs v &\implies\hole[p]\cmrrs v &\text{(since $p\cmrr\hole[p]$)}\\
 Therefore, $\C{\mathrm{eval}_{cm}(p)}=\mathrm{eval}_{v}(\C{p})$.
 \end{proof}
 
+\chapter{Conclusion}
 
 \bibliographystyle{plainnat}
 \bibliography{dissertation}
