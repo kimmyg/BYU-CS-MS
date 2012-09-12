@@ -645,30 +645,6 @@ E[\app{e_0}{e_1}]\cmrr &E[\app{\hole}{e_1}][e_0]\\
 
 Steps 1 and 2 denote the insertion of a value into the hole in the context.
 
-\section{Language translation}
-
-\cm\ is a strict superset of \lv; there are within \cm\ syntactic forms inscrutable to a
-\lv\ interpreter. Additionally, evaluation order within these forms is significant and a
-naive treatment of these forms by \lv\ will most likely be incorrect (which is to say, we
-cannot simply inherit its reduction order). Plotkin \cite{plotkin1975call} demonstrated
-that the CPS transform can be used to control evaluation order. We will use this facility
-in our transformation to express terms in \cm\ in terms of \lv. [Other analysis which the
-CPS transformation affords us \cite{appel2007compiling} is incidental.]
-
-The work of the transformation then is to express the five syntactic forms of \cm\
-($e$-terms in figure \ref{language-syntax}) in the three syntactic forms of \lv\ (the
-first three $e$-terms of that same figure) in a semantics-preserving way. Much of the
-effort of our analysis and justification will be in demonstrating that the semantics are
-indeed preserved, namely the tail-call behavior.
-
-In continuation-passing style, every term takes an additional argument, the continuation,
-into which the evaluation is passed. Our approach to a semantics-preserving
-transformation, which we call $\mathcal{C}$, takes this a step further. Intuitively, we
-will pass not only a continuation but also the value of $\chi(E)$, a list of the current
-continuation marks. As specified by the definition of $\chi$, the \emph{wcm} form will add
-a mark to this list and the \emph{ccm} form will simply return it.
-
-
 \chapter{CPS transformation}
 
 \section{Introduction}
@@ -774,19 +750,9 @@ places it in a category of tools to describe and analyze programming language fe
 
 \section{Example}
 
-We will now focus our attention on a CPS transform defined over the \lc.
-Before doing so, we offer a brief primer on the relevant parts of the \lc.
+We will now focus our attention on a CPS transform defined over \lv.
 
-
-
-\subsubsection{CPS transform}
-
-A CPS transformation is a global syntactic transformation of language terms. Recall that
-terms in the \lc\ take the form of lone variables $x$,
-$\lambda$-abstractions $\lambda x.M$, and applications $M\,N$ where $M$ and $N$ are
-themselves \lc\ terms. A comprehensive CPS transform definition need only
-specify transformations for these three categories. As an example, consider Fischer's CPS
-transform \cite{fischer1972lambda}:
+A CPS transformation is a global syntactic transformation of language terms. Recall that terms in the \lc\ take the form of lone variables $x$, $\lambda$-abstractions $\abs{x}{M}$, and applications $\app{M}{N}$ where $M$ and $N$ are themselves \lc\ terms. A comprehensive CPS transform definition then need only specify transformations for these three categories. As an example, consider Fischer's CPS transform \cite{fischer1972lambda}:
 \begin{align*}
 \mathcal{F}[x]          &= \abs{k}{\app{k}{x}}\\
 \mathcal{F}[\abs{x}{M}] &= \abs{k}{\app{k}{\abs{x}{\mathcal{F}[M]}}}\\
@@ -796,7 +762,7 @@ Fischer's CPS transform abstracts each term in the \lc: lone variables wait on a
 continuation, abstractions receive a degree of indirection, and even applications, the
 sole reduction facility of the \lc, become abstractions. In essence, terms become
 suspended in wait of a continuation argument. By priming a term so-transformed with a
-continuation function--even as simple as the identity--we instigate a cascade of
+continuation function--even as simple as the identity function--we instigate a cascade of
 computation.
 
 In the case of lone variables and applications, this transformation ultimately has no
@@ -854,6 +820,29 @@ only applied to fully-reduced terms.
 
 
 \chapter{$\mathcal{C}$}
+
+\section{Language translation}
+
+\cm\ is a strict superset of \lv; there are within \cm\ syntactic forms inscrutable to a
+\lv\ interpreter. Additionally, evaluation order within these forms is significant and a
+naive treatment of these forms by \lv\ will most likely be incorrect (which is to say, we
+cannot simply inherit its reduction order). Plotkin \cite{plotkin1975call} demonstrated
+that the CPS transform can be used to control evaluation order. We will use this facility
+in our transformation to express terms in \cm\ in terms of \lv. [Other analysis which the
+CPS transformation affords us \cite{appel2007compiling} is incidental.]
+
+The work of the transformation then is to express the five syntactic forms of \cm\
+($e$-terms in figure \ref{language-syntax}) in the three syntactic forms of \lv\ (the
+first three $e$-terms of that same figure) in a semantics-preserving way. Much of the
+effort of our analysis and justification will be in demonstrating that the semantics are
+indeed preserved, namely the tail-call behavior.
+
+In continuation-passing style, every term takes an additional argument, the continuation,
+into which the evaluation is passed. Our approach to a semantics-preserving
+transformation, which we call $\mathcal{C}$, takes this a step further. Intuitively, we
+will pass not only a continuation but also the value of $\chi(E)$, a list of the current
+continuation marks. As specified by the definition of $\chi$, the \emph{wcm} form will add
+a mark to this list and the \emph{ccm} form will simply return it.
 
 For all programs $p\in\lambda_{cm}$,
 \[
