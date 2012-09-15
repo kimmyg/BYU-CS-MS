@@ -802,6 +802,8 @@ suspended in wait of a continuation argument. By priming a term so-transformed w
 continuation function--even as simple as the identity function--we instigate a cascade of
 computation.
 
+GO OVER THE REST OF THIS SECTION
+
 In the case of lone variables and applications, this transformation ultimately has no
 effect on the result of the computation. However, abstractions, the values of the
 \lc, are contaminated by the transform. For example, consider the
@@ -874,6 +876,35 @@ p & \cmrrs & v\\
 for any program $p\in\lambda_{cm}$.
 
 The burden of demonstration is then reduced to the existence of $\mathcal{C}$. We do this by construction.
+
+\section{Intuition}
+
+A comprehensive language transformation need only be defined over each syntactic form of the language. Thus, our full transformation definition will comprise transformation definitions for each of the five syntactic forms of \cm.
+
+As variables, abstractions, and applications exist in the target language, we imagine that their transformation will be relatively straightforward. The essence of \cm\ is that programs within can apply information to and observe information about the context in which they are evaluated. The work of the transform is then to propagate contextual information to each expression, manipulating it appropriately as the context changes.
+
+The treatment of \scheme'wcm' will require care as it is especially sensitive to evaluation order. Assuming termination for all constituent evaluations, consider
+\begin{align*}
+       &E[\wcm{e_0}{\wcm{e_1}{e_2}}]\\
+\cmrrs &E[\wcm{v_0}{\wcm{e_1}{e_2}}]\\
+\cmrrs &E[\wcm{v_0}{\wcm{v_1}{e_2}}]\\
+\cmrr  &E[\wcm{v_1}{e_2}]\\
+\cmrrs &E[\wcm{v_1}{v_2}]\\
+\cmrr  &E[v_2]
+\end{align*}
+It is not obvious how, if at all, this evaluation corresponds to the call-by-value evaluation scheme of \lv. We surmise that we will need fine control over evaluation order  to construct a correct transformation.
+
+The treatment of \scheme'ccm' simply needs access to the evaluation of $\chi$ on the current context. As \lv\ lacks any facility to observe the context, the transformation needs to explicitly provide this information to each \scheme'ccm' expression. The $\chi$ metafunction is continuous in the sense that a small change in the prefix of the input results in a small change in the prefix of the output, a consequence of its particular recursive definition. This fact means that it is possible to $\chi$ incrementally. The transform would then need to ensure that each expression had access to information about its own context.
+
+Finally, we consider the preservation of proper tail-call behavior. Even though tail calls exist in \lv--indeed, they are prevalent--we cannot rely on their behavior to honor proper tail-call behavior through the transform. Thus, we would need to maintain information about the immediate context of the program: specifically, whether evaluation is occurring directly within the body of a \scheme'wcm' expression or not.
+
+To accomplish each of these, the transform is defined in the spirit of CPS. Recall that in
+CPS, every function receives an additional formal parameter and every call site receives a
+corresponding argument. The definition of $\mathcal{C}$ takes this a step further under
+which every function receives \emph{two} additional formal parameters and every call site
+two additional arguments. As in CPS, the first parameter encapsulates the continuation or,
+for our purposes, the evaluation context. The second encapsulates all contextual
+information observable to the original \cm\ program.
 
 \chapter{Testing}
 
@@ -1220,51 +1251,8 @@ The \scheme{lambdacm-subst} metafunction is extended to accommodate the addition
 
 Finally, we define the $\chi$ metafunction. Its definition does not map directly to the formal definition, but matches the intuitive definition that underlies it.
 
-\section{Language translation}
-
-\cm\ is a strict superset of \lv; there are within \cm\ syntactic forms inscrutable to a
-\lv\ interpreter. Additionally, evaluation order within these forms is significant and a
-naive treatment of these forms by \lv\ will most likely be incorrect (which is to say, we
-cannot simply inherit its reduction order). Plotkin \cite{plotkin1975call} demonstrated
-that the CPS transform can be used to control evaluation order. We will use this facility
-in our transformation to express terms in \cm\ in terms of \lv. [Other analysis which the
-CPS transformation affords us \cite{appel2007compiling} is incidental.]
-
-The work of the transformation then is to express the five syntactic forms of \cm\
-($e$-terms in figure \ref{language-syntax}) in the three syntactic forms of \lv\ (the
-first three $e$-terms of that same figure) in a semantics-preserving way. Much of the
-effort of our analysis and justification will be in demonstrating that the semantics are
-indeed preserved, namely the tail-call behavior.
-
-In continuation-passing style, every term takes an additional argument, the continuation,
-into which the evaluation is passed. Our approach to a semantics-preserving
-transformation, which we call $\mathcal{C}$, takes this a step further. Intuitively, we
-will pass not only a continuation but also the value of $\chi(E)$, a list of the current
-continuation marks. As specified by the definition of $\chi$, the \emph{wcm} form will add
-a mark to this list and the \emph{ccm} form will simply return it.
-
-For all programs $p\in\lambda_{cm}$,
-\[
-p\cmrrs v\implies\C{p}\lvrrs\C{v}
-\].
-% put the theorem in here; restate it in the proof section and prove it
-
-Programs in \cm\ can observe the context in which they are evaluated. Programs in \lv,
-however, cannot. The intuition behind $\mathcal{C}$ is to explicitly provide to the
-resultant \lv\ program any information about the context that could be observed by the
-original \cm\ program.
-
-%Two data comprise this information: first, a list of continuation marks corresponding to the one provided to the original program; second, whether 
-
-%This information is not directly observable to the original program. Indirectly, however, it can be observed by ...
-
-To accomplish this, the transform is defined in the spirit of CPS. Recall that in CPS,
-every function receives an additional formal parameter and every call site receives a
-corresponding argument. The definition of $\mathcal{C}$ takes this a step further under
-which every function receives \emph{two} additional formal parameters and every call site
-two additional arguments. As in CPS, the first parameter encapsulates the continuation or,
-for our purposes, the evaluation context. The second encapsulates all contextual
-information observable to the original \cm\ program.
+\section{Transformation testing}
+\section{Transformation definition}
 
 \chapter{Proof}
 
