@@ -190,12 +190,11 @@
 
 \documentabstract{%
 Continuation marks are a programming language feature which generalize stack inspection.
-Continuation marks currently lack a meaning-preserving transformation to the
-$\lambda$-calculus, a useful and widely-used computation model. Such a transformation
-would simplify the construction of compilers which treat continuation marks correctly. We
-present a CPS-like transformation from the call-by-value $\lambda$-calculus augmented with
-continuation marks to the pure call-by-value $\lambda$-calculus and verify that the
-transformation indeed preserves meaning.
+We present a CPS-like transformation from the call-by-value $\lambda$-calculus augmented
+with continuation marks to the pure call-by-value $\lambda$-calculus. We document an
+iterative, feedback-based approach using Redex. We accompany the transformation with a
+meaning-preservation theorem. Finally, we discuss how uch a transformation would simplify
+the construction of compilers which treat continuation marks correctly.
 }
 
 \documentkeywords{%
@@ -298,7 +297,7 @@ The \lc\ is a Turing-complete formal logic based on variable binding and substit
 Where the Turing machine model of computation is machine-centric, the \lc\ model is
 language-centric. Thus, it conveniently serves as an intermediate representation for a
 compiler or a base from which to define higher-level languages. The de facto standard
-reference is Barendregt \cite{barendregt1984lambda}.
+reference to the \lc\ is Barendregt \cite{barendregt1984lambda}.
 
 The continuation-passing style (CPS) transformation is actually a family of
 transformations designed to make certain analyses simpler. Every member of this family
@@ -492,8 +491,8 @@ some subtlety in valid renaming as there is the possibility of \emph{variable ca
 which occurs when the new name of a binding instance is identical to that of some variable
 already present in the body. For instance, in the term $\abs{x}{y}$, if each $x$ is
 renamed to $y$, we obtain the term $\abs{y}{y}$, a fundamentally different term. For this
-reason, we need to take special care when we rename variables (which we will need to do
-regularly).
+reason, we need to take special care when we rename variables, which we will need to do
+regularly.
 
 One of the ways abstractions approximate functions is that we can apply them to arguments.
 This is signified simply by juxtaposition of function (or operator) and argument (or
@@ -512,9 +511,11 @@ $\app{\abs{x}{\abs{y}{x}}}{y}$, we rename $y$ to $z$ in $\abs{x}{\abs{y}{x}}$ ob
 $\abs{x}{\abs{z}{x}}$. The subsequent reduction of $\app{\abs{x}{\abs{z}{x}}}{y}$ to
 $\abs{z}{y}$ correctly reflects the intended meaning of the original term.
 
-In the \lc, evaluation occurs during reduction, and reduction is merely application. There is, however, yet more subtlety of which we must be aware: namely, in which contexts applications are performed and terms evaluated. In the call-by-value \lc, denoted \lv, evaluation of operands occurs before application. In contrast, in the call-by-name \lc, denoted \la, application is performed as soon as the operator is resolved.
-
-% \x.x (\y.y \z.z)
+In the \lc, evaluation occurs during reduction, and reduction is merely application. There
+is, however, yet more subtlety of which we must be aware: namely, in which contexts
+applications are performed and terms evaluated. In the call-by-value \lc, denoted \lv,
+evaluation of operands occurs before application. In contrast, in the call-by-name \lc,
+denoted \la, application is performed as soon as the operator is resolved.
 
 For instance, in $\app{\abs{x}{x}}{\app{\abs{y}{y}}{\abs{z}{z}}}$,
 \begin{align*}
@@ -528,7 +529,10 @@ whereas
 \lvrr &\app{\abs{y}{y}}{\abs{z}{z}}\\
 \lvrr &\abs{z}{z}
 \end{align*}
-Although both terms reduce to the same term in this example, this distinction is not merely pedantic: terms may reduce definitively in one reduction regime and fail to reduce completely in the other! Consider $\app{\abs{x}{\abs{y}{y}}}{\app{\abs{x}{\app{x}{x}}}{\abs{x}{\app{x}{x}}}}$ where
+Although both terms reduce to the same term in this example, this distinction is not
+merely pedantic: terms may reduce definitively in one reduction regime and fail to reduce
+completely in the other! Consider
+$\app{\abs{x}{\abs{y}{y}}}{\app{\abs{x}{\app{x}{x}}}{\abs{x}{\app{x}{x}}}}$ where
 \[
 \app{\abs{x}{\abs{y}{y}}}{\app{\abs{x}{\app{x}{x}}}{\abs{x}{\app{x}{x}}}}\larr\abs{y}{y}
 \]
@@ -538,9 +542,17 @@ but
 \lvrr &\app{\abs{x}{\abs{y}{y}}}{\app{\abs{x}{\app{x}{x}}}{\abs{x}{\app{x}{x}}}}\\
 \lvrr &\cdots
 \end{align*}
-Historically at least, the call-by-name and call-by-value reduction regimes underlie the distinction between so-called lazy and eager languages.
+Historically at least, the call-by-name and call-by-value reduction regimes underlie the
+distinction between so-called lazy and eager languages.
 
-One final observation we should make about the \lc\ is which terms denote values. A value should be, in a sense, irreducible and that criterion disqualifies applications from being considered as values. A value should should not merely be a placeholder for arbitrary values, and that criterion disqualifies lone variables from being considered as values.\footnote{In actual fact, a value is an irreducible \lc\ term paired with an environment which provides values for constituent free variables.} Thus, we shall consider abstractions to be the sole form values can take in the \lc, habituating ourselves to the idea that functions are data.
+One final observation we should make about the \lc\ is which terms denote values. A value
+should be, in a sense, irreducible and that criterion disqualifies applications from being
+considered as values. A value should should not merely be a placeholder for arbitrary
+values, and that criterion disqualifies lone variables from being considered as
+values.\footnote{In actual fact, a value is an irreducible \lc\ term paired with an
+environment which provides values for constituent free variables.} Thus, we shall consider
+abstractions to be the sole form values can take in the \lc, habituating ourselves to the
+idea that functions are data.
 
 \chapter{\lv\ and \cm}
 
@@ -548,7 +560,12 @@ One final observation we should make about the \lc\ is which terms denote values
 
 The \lv\ language is merely the call-by-value \lc.
 
-Figure \ref{lv-language-forms} presents the language terms and evaluation contexts of \lv. The definition of $e$ specifies the form of terms in \lv\ similar to our previous discussion of the \lc. The definition of $E$ specifies evaluation contexts which, like terms, are defined inductively. An evaluation context is either empty (denoted by $\hole$), an application wherein the operator is being evaluated, or an application wherein the operand is being evaluated.
+Figure \ref{lv-language-forms} presents the language terms and evaluation contexts of \lv.
+The definition of $e$ specifies the form of terms in \lv\ similar to our previous
+discussion of the \lc. The definition of $E$ specifies evaluation contexts which, like
+terms, are defined inductively. An evaluation context is either empty (denoted by
+$\hole$), an application wherein the operator is being evaluated, or an application
+wherein the operand is being evaluated.
 
 \begin{figure}
 \begin{align*}
@@ -561,7 +578,8 @@ E = &\app{E}{e} & e = &\app{e}{e}\\
 \label{lv-language-forms}
 \end{figure}
 
-Figure \ref{lv-language-semantics} presents the sole semantic definition of \lv, the meaning of application.
+Figure \ref{lv-language-semantics} presents the sole semantic definition of \lv, the
+meaning of application.
 
 \begin{figure}
 \begin{align*}
@@ -578,7 +596,14 @@ marks, introduced by Pettyjohn et al. \cite{pettyjohn2005continuations}, which
 we term \cm. As an extension of \lv, it inherits its definitions of language 
 terms, evaluation contexts, and semantics.
 
-Figure \ref{cm-language-forms} presents the syntactic forms of \cm.  Definitions of $E$ and $F$ signify evaluation contexts. The separation of $E$ from $F$ prevents $\wcm{v}{F}$ contexts from directly nesting within the entire evaluation context to enforce proper tail-call behavior. The definition of $e$ is identical to that of \lv\ with the addition of contionuation mark forms $\wcm{e}{e}$ and $\ccm$. (\cm\ expresses unkeyed marks which obviates the need to specify a key to which a value will be associated. Hence, the \scheme'wcm' and \scheme'ccm' forms need one parameter fewer than their Scheme counterparts.)
+Figure \ref{cm-language-forms} presents the syntactic forms of \cm.  Definitions of $E$
+and $F$ signify evaluation contexts. The separation of $E$ from $F$ prevents $\wcm{v}{F}$
+contexts from directly nesting within the entire evaluation context to enforce proper
+tail-call behavior. The definition of $e$ is identical to that of \lv\ with the addition
+of contionuation mark forms $\wcm{e}{e}$ and $\ccm$. (\cm\ expresses unkeyed marks which
+obviates the need to specify a key to which a value will be associated. Hence, the
+\scheme'wcm' and \scheme'ccm' forms need one parameter fewer than their Scheme
+counterparts.)
 
 \begin{figure}
 \begin{align*}
@@ -593,7 +618,11 @@ F = &\hole      &     &v\\
 \label{cm-language-forms}
 \end{figure}
 
-Figure \ref{cm-language-semantics} presents the semantics of \cm\ in the form of a list of reduction rules. Rule 1 defines the meaning of application as inherited from \lv. Rule 2 defines the tail behavior of the \scheme'wcm' form. Rule 3 expresses that the \scheme'wcm' form takes on the value of its body. Finally, rule 4 defines the value of the \scheme'ccm' form in terms of the $\chi$ metafunction.
+Figure \ref{cm-language-semantics} presents the semantics of \cm\ in the form of a list of
+reduction rules. Rule 1 defines the meaning of application as inherited from \lv. Rule 2
+defines the tail behavior of the \scheme'wcm' form. Rule 3 expresses that the \scheme'wcm'
+form takes on the value of its body. Finally, rule 4 defines the value of the \scheme'ccm'
+form in terms of the $\chi$ metafunction.
 
 \begin{figure}
 \begin{align*}
@@ -606,7 +635,11 @@ E[\ccm]                 &\rightarrow E[\chi(E)]\tag{4}
 \label{cm-language-semantics}
 \end{figure}
 
-The definition of the $\chi$-metafunction is given in figure \ref{cm-chi-metafunction}. Conceptually, the $\chi$-metafunction traverses the context from the outside in, accumulating values as it encounters $\wcm{v}{E}$ contexts. Since the $\chi$ metafunction is defined over evaluation contexts of \cm, its definition corresponds closely to the definitions in figure \ref{cm-language-forms}.
+The definition of the $\chi$-metafunction is given in figure \ref{cm-chi-metafunction}.
+Conceptually, the $\chi$-metafunction traverses the context from the outside in,
+accumulating values as it encounters $\wcm{v}{E}$ contexts. Since the $\chi$ metafunction
+is defined over evaluation contexts of \cm, its domain corresponds to the definitions of
+$E$ and $F$ in figure \ref{cm-language-forms}.
 
 \begin{figure}
 \begin{align*}
@@ -673,8 +706,8 @@ and the tail-recursive variant as
       (fac-tr (- n 1) (* n acc) k)))
 \end{schemedisplay}
 (For clarity, we have treated ``primitive'' functions--equality comparison, subtraction,
-and multiplication--in a direct manner. In contrast, a full CPS transformation would
-affect \emph{every} function.)
+and multiplication--in a direct manner. In contrast, a comprehensive CPS transformation
+would affect \emph{every} function.)
 
 Notice that, in the first variation, each recursive call receives a newly-constructed
 \scheme{k} encapsulating additional work to be performed at the completion of the
@@ -752,7 +785,11 @@ places it in a category of tools to describe and analyze programming language fe
 
 We will now focus our attention on a CPS transform defined over \lv.
 
-A CPS transformation is a global syntactic transformation of language terms. Recall that terms in the \lc\ take the form of lone variables $x$, $\lambda$-abstractions $\abs{x}{M}$, and applications $\app{M}{N}$ where $M$ and $N$ are themselves \lc\ terms. A comprehensive CPS transform definition then need only specify transformations for these three categories. As an example, consider Fischer's CPS transform \cite{fischer1972lambda}:
+A CPS transformation is a global syntactic transformation of language terms. Recall that
+terms in the \lc\ take the form of lone variables $x$, $\lambda$-abstractions
+$\abs{x}{M}$, and applications $\app{M}{N}$ where $M$ and $N$ are themselves \lc\ terms. A
+comprehensive CPS transform definition then need only specify transformations for these
+three categories. As an example, consider Fischer's CPS transform \cite{fischer1972lambda}:
 \begin{align*}
 \mathcal{F}[x]          &= \abs{k}{\app{k}{x}}\\
 \mathcal{F}[\abs{x}{M}] &= \abs{k}{\app{k}{\abs{x}{\mathcal{F}[M]}}}\\
@@ -821,45 +858,38 @@ only applied to fully-reduced terms.
 
 \chapter{$\mathcal{C}$}
 
-\section{Language translation}
+A CPS-like global transformation can compile the \lc\ with continuation marks into
+the plain \lc\ in a semantics-preserving way.
 
-\cm\ is a strict superset of \lv; there are within \cm\ syntactic forms inscrutable to a
-\lv\ interpreter. Additionally, evaluation order within these forms is significant and a
-naive treatment of these forms by \lv\ will most likely be incorrect (which is to say, we
-cannot simply inherit its reduction order). Plotkin \cite{plotkin1975call} demonstrated
-that the CPS transform can be used to control evaluation order. We will use this facility
-in our transformation to express terms in \cm\ in terms of \lv. [Other analysis which the
-CPS transformation affords us \cite{appel2007compiling} is incidental.]
-
-The work of the transformation then is to express the five syntactic forms of \cm\
-($e$-terms in figure \ref{language-syntax}) in the three syntactic forms of \lv\ (the
-first three $e$-terms of that same figure) in a semantics-preserving way. Much of the
-effort of our analysis and justification will be in demonstrating that the semantics are
-indeed preserved, namely the tail-call behavior.
-
-In continuation-passing style, every term takes an additional argument, the continuation,
-into which the evaluation is passed. Our approach to a semantics-preserving
-transformation, which we call $\mathcal{C}$, takes this a step further. Intuitively, we
-will pass not only a continuation but also the value of $\chi(E)$, a list of the current
-continuation marks. As specified by the definition of $\chi$, the \emph{wcm} form will add
-a mark to this list and the \emph{ccm} form will simply return it.
-
-For all programs $p\in\lambda_{cm}$,
+In order to demonstrate this, we must first clarify (and later, formalize) the
+semantics-preservation property. By this, we mean that the transformation commutes with
+evaluation. Call a satisfactory transformation $\mathcal{C}$. Then $\mathcal{C}$ satisfies 
 \[
-p\cmrrs v\implies\C{p}\lvrrs\C{v}
-\].
-% put the theorem in here; restate it in the proof section and prove it
+\begin{array}{ccc}
+p & \cmrrs & v\\
+\downarrow_\mathcal{C} & & \downarrow_\mathcal{C}\\
+\C{p} & \lvrrs & \C{v}
+\end{array}
+\]
+for any program $p\in\lambda_{cm}$.
+
+The burden of demonstration is then reduced to the existence of $\mathcal{C}$. We do this by construction.
 
 \chapter{Testing}
 
-Typically, a correct transformation involving a non-trivial language is not constructed 
-\emph{ex nihilo}, and this process has not deviated from the typical. A pragmatic approach 
-to the discovery of a correct transformation involves consistent feedback
+We do not attempt to construct a correct transformation \emph{ex nihilo}. A pragmatic
+approach to the discovery of a correct transformation involves consistent feedback and
+testing to validate candidate transforms. Testing is no substitute for proof, but, as
+Klein et al. \cite{klein2012run} show, proof is no substitute for testing. Lightweight
+mechanization is a fruitful middle ground between pencil-and-paper analysis and fully
+mechanized formal proof. We use Redex to provide feedback, thoroughly exercise candidates,
+and perform exploratory analysis.
 
 \section{Redex}
 
 Redex \cite{findler2010redex} is a domain-specific language for exploring language
-semantics. It lives very close to the semantics notation we have used in this discussion.
+semantics. It lives very close to the semantics notation we have used so far in this
+discussion.
 
 \subsection{Toy Language}
 To illustrate how easily langagues can be defined in Redex, we will examine a Redex
@@ -867,8 +897,10 @@ program which defines a toy language. In contrast to a Redex tutorial, we will n
 ourselves with the syntax and structure of roads not taken and will instead briefly
 explain each component of the program.
 
-\setkeyword{define-language variable-not-otherwise-mentioned number reduction-relation in-hole substitute term define-metafunction reduces-to-one-value? value? redex-match length apply-reduction-relation* first redex-check}
+\setkeyword{define-language define-extended-language variable-not-otherwise-mentioned number reduction-relation extend-reduction-relation in-hole substitute term define-metafunction define-metafunction/extension reduces-to-one-value? value? redex-match length apply-reduction-relation* first redex-check}
 \setconstant{toy toy-rr undefined hole}
+\setspecialsymbol{-->}{$\rightarrow$}
+\begin{singlespace}
 \begin{schemedisplay}
 (define-language toy
   (x variable-not-otherwise-mentioned)
@@ -876,6 +908,7 @@ explain each component of the program.
   (e (+ e e) (with (x e) e) x v)
   (E hole (+ E e) (+ v E) (with (x E) e)))
 \end{schemedisplay}
+\end{singlespace}
 
 This expression defines the abstract syntactic structure of a language named \emph{toy}.
 There are four categories of structures: \scheme'x', \scheme'v', \scheme'e', and
@@ -892,6 +925,7 @@ evaluation of the second; the composition of these contexts imposes an order on 
 evaluation of the arguments. The final context, a \scheme{with} context, specifies a
 variable, a value, and an expression within which that variable is bound to that value.
 
+\begin{singlespace}
 \begin{schemedisplay}
 (define toy-rr
   (reduction-relation toy
@@ -911,6 +945,7 @@ variable, a value, and an expression within which that variable is bound to that
         (in-hole E undefined)
         "undefined in second position")))
 \end{schemedisplay}
+\end{singlespace}
 
 This term defines a reduction relation on the \scheme{toy} language. The five defined
 reductions, signalled by \scheme{-->}, match specified patterns and manipulate them
@@ -918,6 +953,7 @@ according to the defined rules. These define: the addition of two numbers; the
 substitution of a \scheme{with} expression; a lone variable; the addition of an undefined
 value on the left; and the addition of an undefined value on the right.
 
+\begin{singlespace}
 \begin{schemedisplay}
 (define-metafunction toy
   substitute : x v e -> e
@@ -934,47 +970,53 @@ value on the left; and the addition of an undefined value on the right.
   [(substitute x_1 v_1 v_2)
    v_2])
 \end{schemedisplay}
+\end{singlespace}
 
 The definition of the \scheme{with} reduction rule relies on the \scheme{substitute}
 metafunction. (The language used to define \scheme'toy' (Redex) is the metalanguage. 
 As functions are in the language, metafunctions are in the metalanguage.) The
-\scheme{substitute} metafunction recursively substitutes a variable in an expression with a 
-value. The substitution is only propagated as long as a binding with the same name is not 
-encountered. At that point, the substitution is performed in the value expression of the 
-binding, but not the body. This allows for expressions like
+\scheme{substitute} metafunction recursively substitutes a variable in an expression with
+a value. The substitution is only propagated as long as a binding with the same name is
+not encountered. At that point, the substitution is performed in the value expression of
+the binding, but not the body. This allows for expressions like
+\begin{singlespace}
 \begin{schemedisplay}
 (with (x 5)
   (with (x x)
     x))
 \end{schemedisplay}
+\end{singlespace}
 to behave as we expect (returning \scheme'5').
 
 \subsubsection{Testing}
 
 Now that the syntactic forms and reduction rules of the language are defined, we can use 
 the randomized testing built into Redex to investigate properties of the language. We 
-start by defining the helper function \scheme{reduces-to-one-value?} (which has its own 
-helper function \scheme{value?}).
+start by defining the helper function 
+\begin{singlespace}
 \begin{schemedisplay}
-(define value? (redex-match toy v))
-
 (define (reduces-to-one-value? e)
   (let ((results (apply-reduction-relation* toy-rr e)))
     (and (= (length results) 1)
          (value? (first results)))))
 \end{schemedisplay}
-The \scheme{*} at the end of the function name \scheme{apply-reduction-relation*} signifies
-that all possible reduction rules will be applied as many times as possible. If some of
-the reduction rules don't actually reduce terms, the relation may produce a reducible term
-indefinitely. The function \scheme{apply-reduction-relation*} is in a sense strict in the
-reduction relation and will likewise run indefinitely if this is the case.
+\end{singlespace}
+which has its own helper function 
+\begin{singlespace}
+\begin{schemedisplay}
+(define value? (redex-match toy v))
+\end{schemedisplay}
+\end{singlespace}
+The \scheme{*} at the end of the function name \scheme{apply-reduction-relation*}
+signifies that all possible reduction rules will be applied as many times as possible. If
+some of the reduction rules don't actually reduce terms, the relation may produce a
+reducible term indefinitely. The function \scheme{apply-reduction-relation*} is in a sense
+strict in the reduction relation and will likewise run indefinitely if this is the case.
 
 After the language and some properties have been established, the randomized testing, 
 initiated by
 \begin{schemedisplay}
-(redex-check toy
-             e
-             (reduces-to-one-value? (term e)))
+(redex-check toy e (reduces-to-one-value? (term e)))
 \end{schemedisplay}
 is simple. We merely provide the name of the language we wish to work with, the
 nonterminal in the grammar we wish to use to generate language terms, and a predicate that
@@ -1023,98 +1065,23 @@ This property is fairly trivial and its proof is similarly trivial, but it is a 
 the approach we will ultimately take to verify certain transformation properties.
 
 \setspecialsymbol{lambda}{$\lambda$}
+\setspecialsymbol{-->}{$\rightarrow$}
 \setspecialsymbol{betav}{$\beta$v}
 \setconstant{error}
 \setkeyword{subst}
+\setkeyword{chi}
 
+\section{Flavors of $\lambda$}
 
-\subsection{\cm}
+Our first task in developing a testing environment for transformations is to define interpreters for \cm\ and \lv.
 
-\setspecialsymbol{lambdacm}{$\lambda$cm}
-\setspecialsymbol{lambdacm-rr}{$\lambda$cm-rr}
-
-\begin{schemedisplay}
-(define-language lambdacm
-  (e (e e) (wcm e e) (ccm) x v error)
-  (x variable-not-otherwise-mentioned)
-  (v (lambda (x) e))
-  (E (wcm v F) F)
-  (F (E e) (v E) (wcm E e) hole))
-
-(define lambdacm-rr
-  (reduction-relation
-   lambdacm
-   (--> (in-hole E ((lambda (x) e) v))
-        (in-hole E (subst x v e))
-        "betav")
-   (--> (in-hole E (error e))
-        (in-hole E error)
-        "error in operator")
-   (--> (in-hole E (v error))
-        (in-hole E error)
-        "error in operand")
-   (--> (in-hole E (wcm v_1 v_2))
-        (in-hole E v_2)
-        "wcm")
-   (--> (in-hole E (wcm v_1 (wcm v_2 e)))
-        (in-hole E (wcm v_2 e))
-        "wcm-collapse")
-   (--> (in-hole E (wcm error e))
-        (in-hole E error)
-        "error in wcm mark expression")
-   (--> (in-hole E (wcm v error))
-        (in-hole E error)
-        "error in wcm body expression")
-   (--> (in-hole E (ccm))
-        (in-hole E (chi E (lambda (x) (lambda (y) y))))
-        "chi")
-   (--> (in-hole E x)
-        (in-hole E error)
-        "error: unbound identifier")))
-
-(define-metafunction lambdacm
-  subst : x v e -> e
-  ;; 1. substitute in application
-  [(subst x_1 v_1 (e_1 e_2))
-   ((subst x_1 v_1 e_1) (subst x_1 v_1 e_2))]
-  ;; 2. substitute in wcm form
-  [(subst x_1 v_1 (wcm e_1 e_2))
-   (wcm (subst x_1 v_1 e_1) (subst x_1 v_1 e_2))]
-  ;; 3. substitute in ccm form
-  [(subst x_1 v_1 (ccm))
-   (ccm)]
-  ;; 4a. substitute in variable (same)
-  [(subst x_1 v_1 x_1)
-   v_1]
-  ;; 4b. substitute in variable (different)
-  [(subst x_1 v_1 x_2)
-   x_2]
-  ;; 5a. substitute in abstraction (bound)
-  [(subst x_1 v_1 (lambda (x_1) e_1))
-   (lambda (x_1) e_1)]
-  ;; 5b. substitute in abstraction (free)
-  [(subst x_1 v_1 (lambda (x_2) e_1))
-   (lambda (x_2) (subst x_1 v_1 e_1))]
-  ;; 6. substitute in error
-  [(subst x_1 v_1 error)
-   error])
-
-(define-metafunction lambdacm
-  chi : E v -> v
-  [(chi hole v_ms)      v_ms]
-  [(chi (E e) v_ms)     (chi E v_ms)]
-  [(chi (v E) v_ms)     (chi E v_ms)]
-  [(chi (wcm E e) v_ms) (chi E v_ms)]
-  [(chi (wcm v E) v_ms) (chi E (lambda (p) ((p v) v_ms)))])
-\end{schemedisplay}
+We begin with \lv, the simpler language.
 
 \subsection{\lv}
 
 \setspecialsymbol{lambdav}{$\lambda$v}
 \setspecialsymbol{lambdav-rr}{$\lambda$v-rr}
-
-We first present a model of the source language.
-We first present a model of the source language.
+\setspecialsymbol{lambdav-subst}{$\lambda$v-subst}
 
 To begin, we define language terms and evaluation contexts.
 
@@ -1128,47 +1095,159 @@ To begin, we define language terms and evaluation contexts.
 \end{schemedisplay}
 \end{singlespace}
 
+The characterization of \lv\ seen in figures \ref{lv-language-forms} and
+\ref{lv-language-semantics} was influenced by the knowledge that an interpreter would need
+to be built. Because Redex lives so close to this characterization, the only change we
+make in translation is the addition of \scheme'error'.
+
 \begin{singlespace}
 \begin{schemedisplay}
 (define lambdav-rr
-  (reduction-relation
-   lambdav
+  (reduction-relation lambdav
    (--> (in-hole E ((lambda (x) e) v))
-        (in-hole E (subst x v e))
+        (in-hole E (lambdav-subst x v e))
         "betav")
+   (--> (in-hole E x)
+        (in-hole E error)
+        "error: unbound identifier")
    (--> (in-hole E (error e))
         (in-hole E error)
         "error in operator")
    (--> (in-hole E (v error))
         (in-hole E error)
-        "error in operand")
-   (--> (in-hole E x)
-        (in-hole E error)
-        "error: unbound identifier")))
+        "error in operand")))
+\end{schemedisplay}
+\end{singlespace}
 
+The first rule in the reduction relation corresponds with the sole semantic rule found in \ref{lv-language-semantics}. The remaining handle cases introduced by \scheme'error'.
+
+\begin{singlespace}
+\begin{schemedisplay}
 (define-metafunction lambdav
-  subst : x v e -> e
+  lambdav-subst : x v e -> e
   ;; 1. substitute in application
-  [(subst x_1 v_1 (e_1 e_2))
-   ((subst x_1 v_1 e_1) (subst x_1 v_1 e_2))]
+  [(lambdav-subst x_1 v_1 (e_1 e_2))
+   ((lambdav-subst x_1 v_1 e_1) (lambdav-subst x_1 v_1 e_2))]
   ;; 2a. substitute in variable (same)
-  [(subst x_1 v_1 x_1)
+  [(lambdav-subst x_1 v_1 x_1)
    v_1]
   ;; 2b. substitute in variable (different)
-  [(subst x_1 v_1 x_2)
+  [(lambdav-subst x_1 v_1 x_2)
    x_2]
   ;; 3a. substitute in abstraction (bound)
-  [(subst x_1 v_1 (lambda (x_1) e_1))
+  [(lambdav-subst x_1 v_1 (lambda (x_1) e_1))
    (lambda (x_1) e_1)]
   ;; 3b. substitute in abstraction (free)
-  [(subst x_1 v_1 (lambda (x_2) e_1))
-   (lambda (x_2) (subst x_1 v_1 e_1))]
+  [(lambdav-subst x_1 v_1 (lambda (x_2) e_1))
+   (lambda (x_2) (lambdav-subst x_1 v_1 e_1))]
   ;; 4. substitute in error
-  [(subst x_1 v_1 error)
+  [(lambdav-subst x_1 v_1 error)
    error])
 \end{schemedisplay}
 \end{singlespace}
 
+The \scheme{lambdav-subst} metafunction presents the conceptual definition of substitution. We omit the capture-avoidance facilities for clarity.
+
+\subsection{\cm}
+
+\setspecialsymbol{lambdacm}{$\lambda$cm}
+\setspecialsymbol{lambdacm-rr}{$\lambda$cm-rr}
+\setspecialsymbol{lambdacm-subst}{$\lambda$cm-subst}
+
+Since \cm\ is a superset of \lv, we need only extend the definition of the \lv\ interpreter to accommodate the additions \cm\ brings.
+
+\begin{singlespace}
+\begin{schemedisplay}
+(define-extended-language lambdacm lambdav
+  (e .... (wcm e e) (ccm))
+  (E (wcm v F) F)
+  (F (E e) (v E) (wcm E e) hole))
+\end{schemedisplay}
+\end{singlespace}
+
+Redex allows us to easily define a proper extension of a language, inheriting anything left unspecified. As similar as the \lv\ interpeter definition is to the \lv\ definition in figure \ref{lv-language-forms}, this \cm\ interpreter definition is to the \cm\ definition in figure \ref{cm-language-forms}.
+
+\begin{singlespace}
+\begin{schemedisplay}
+(define lambdacm-rr
+  (extend-reduction-relation lambdav-rr lambdacm
+   (--> (in-hole E (wcm v_1 (wcm v_2 e)))
+        (in-hole E (wcm v_2 e))
+        "wcm-collapse")
+   (--> (in-hole E (wcm v_1 v_2))
+        (in-hole E v_2)
+        "wcm")
+   (--> (in-hole E (ccm))
+        (in-hole E (chi E (lambda (x) (lambda (y) y))))
+        "chi")
+   (--> (in-hole E (wcm error e))
+        (in-hole E error)
+        "error in wcm mark expression")
+   (--> (in-hole E (wcm v error))
+        (in-hole E error)
+        "error in wcm body expression")))
+\end{schemedisplay}
+\end{singlespace}
+
+The first three rules in the reduction relation correspond with the three additional semantic rules found in \ref{cm-language-semantics}. The remaining handle cases introduced by the the new language forms' interaction with \scheme'error'.
+
+\begin{singlespace}
+\begin{schemedisplay}
+(define-metafunction/extension lambdav-subst lambdacm
+  lambdacm-subst : x v e -> e
+  ;; 1. substitute in wcm form
+  [(lambdacm-subst x_1 v_1 (wcm e_1 e_2))
+   (wcm (lambdacm-subst x_1 v_1 e_1) (lambdacm-subst x_1 v_1 e_2))]
+  ;; 2. substitute in ccm form
+  [(lambdacm-subst x_1 v_1 (ccm))
+   (ccm)])
+\end{schemedisplay}
+\end{singlespace}
+
+The \scheme{lambdacm-subst} metafunction is extended to accommodate the additional forms in \cm.
+
+\begin{singlespace}
+\begin{schemedisplay}
+(define-metafunction lambdacm
+  chi : E v -> v
+  [(chi hole v_ms)      v_ms]
+  [(chi (E e) v_ms)     (chi E v_ms)]
+  [(chi (v E) v_ms)     (chi E v_ms)]
+  [(chi (wcm E e) v_ms) (chi E v_ms)]
+  [(chi (wcm v E) v_ms) (chi E (lambda (p) ((p v) v_ms)))])
+\end{schemedisplay}
+\end{singlespace}
+
+Finally, we define the $\chi$ metafunction. Its definition does not map directly to the formal definition, but matches the intuitive definition that underlies it.
+
+\section{Language translation}
+
+\cm\ is a strict superset of \lv; there are within \cm\ syntactic forms inscrutable to a
+\lv\ interpreter. Additionally, evaluation order within these forms is significant and a
+naive treatment of these forms by \lv\ will most likely be incorrect (which is to say, we
+cannot simply inherit its reduction order). Plotkin \cite{plotkin1975call} demonstrated
+that the CPS transform can be used to control evaluation order. We will use this facility
+in our transformation to express terms in \cm\ in terms of \lv. [Other analysis which the
+CPS transformation affords us \cite{appel2007compiling} is incidental.]
+
+The work of the transformation then is to express the five syntactic forms of \cm\
+($e$-terms in figure \ref{language-syntax}) in the three syntactic forms of \lv\ (the
+first three $e$-terms of that same figure) in a semantics-preserving way. Much of the
+effort of our analysis and justification will be in demonstrating that the semantics are
+indeed preserved, namely the tail-call behavior.
+
+In continuation-passing style, every term takes an additional argument, the continuation,
+into which the evaluation is passed. Our approach to a semantics-preserving
+transformation, which we call $\mathcal{C}$, takes this a step further. Intuitively, we
+will pass not only a continuation but also the value of $\chi(E)$, a list of the current
+continuation marks. As specified by the definition of $\chi$, the \emph{wcm} form will add
+a mark to this list and the \emph{ccm} form will simply return it.
+
+For all programs $p\in\lambda_{cm}$,
+\[
+p\cmrrs v\implies\C{p}\lvrrs\C{v}
+\].
+% put the theorem in here; restate it in the proof section and prove it
 
 Programs in \cm\ can observe the context in which they are evaluated. Programs in \lv,
 however, cannot. The intuition behind $\mathcal{C}$ is to explicitly provide to the
@@ -1735,19 +1814,20 @@ Therefore, $\C{\mathrm{eval}_{cm}(p)}=\mathrm{eval}_{v}(\C{p})$.
 \appendix
 \chapter{Mechanical Proof}
 
+\newcommand{\trans}[2]{#1#2}
+
 \begin{singlespace}
 
 application
 
-app0
+\trans{app}{0}
 \begin{schemedisplay}
 E[(e_0 e_1)]
 \end{schemedisplay}
 \begin{schemedisplay}
 ((C[(e_0 e_1)] C[E]) ((PAIR xiE) CchiE))
 \end{schemedisplay}
-
-=
+\trans{=}{0}
 \begin{schemedisplay}
 (((lambda (k) 
     (lambda (m) 
@@ -1757,8 +1837,7 @@ E[(e_0 e_1)]
                          (lambda (f) (((e f) k) m))) n))) n)))))
   CE) ((PAIR xiE) CchiE))
 \end{schemedisplay}
-
-app1
+\trans{app}{1}
 \begin{schemedisplay}
 ((lambda (m) 
    ((lambda (k) (k ((PAIR FALSE) (SND m))))
