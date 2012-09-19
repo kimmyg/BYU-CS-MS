@@ -1,6 +1,7 @@
 #lang racket
 
-#;(define (substitute-app e1 e2)
+;; paired flag and marks
+(define (substitute-app e0 e1)
     (let ((k (gensym 'k))
           (m (gensym 'm))
           (s (gensym 's))
@@ -9,12 +10,13 @@
           (f (gensym 'f)))
       `(λ (,k) (λ (,m) ((λ (,k) (,k ((λ (z) (z (λ (x) (λ (y) y)))) ,m)))
                         (λ (,s) ((λ (,k) (,k (λ (z) ((z (λ (x) (λ (y) y))) ,s))))
-                                 (λ (,n) ((,e1
-                                           (λ (,e) ((,e2
+                                 (λ (,n) ((,e0
+                                           (λ (,e) ((,e1
                                                      (λ (,f) (((,e ,f) ,k) ,m)))
                                                     ,n)))
                                           ,n)))))))))
 
+;; separate flag and marks
 #;(define (substitute-app e0 e1)
     (let ([k (gensym 'k)]
           [f (gensym 'f)]
@@ -34,7 +36,9 @@
                (λ (x) (λ (y) y)))
               ,m))))))
 
-(define (substitute-app e0 e1)
+
+;; no continuation
+#;(define (substitute-app e0 e1)
   (let ([k (gensym 'k)]
         [f (gensym 'f)]
         [m (gensym 'm)]
@@ -47,7 +51,9 @@
            ,f)
           ,m)))))
 
-#;(define (transform e)
+
+;; paired flag and marks
+(define (transform e)
     (let ((k (gensym 'k))
           (m (gensym 'm))
           (s (gensym 's))
@@ -80,6 +86,7 @@
         [x1
          `(λ (,k) (λ (,m) (,k ,x1)))])))
 
+;; separate flag and marks
 #;(define (transform e)
     (let ((k (gensym 'k))
           (f (gensym 'f))
@@ -107,7 +114,9 @@
         [x0
          `(λ (,k) (λ (,f) (λ (,m) (,k ,x0))))])))
 
-(define (transform e)
+
+;; no continuation
+#;(define (transform e)
   (let ([f (gensym 'f)]
         [m (gensym 'm)]
         [a (gensym 'a)]
@@ -134,18 +143,22 @@
       [x0
        `(λ (,f) (λ (,m) ,x0))])))
 
-#;(define (init e)
+;; paired flag and marks
+(define (init e)
     (let ([k (gensym 'k)]
           [m (gensym 'm)])
       `((,e (λ (v) (λ (,k) (λ (,m) (,k v))))) (λ (z) ((z (λ (x) (λ (y) y))) ,(transform '(λ (x) (λ (y) y))))))))
 
+
+;; separate flag and marks
 #;(define (init e)
     (let ([k (gensym 'k)]
           [f (gensym 'f)]
           [m (gensym 'm)])
       `(((,e (λ (v) (λ (,k) (λ (,f) (λ (,m) (,k v)))))) (λ (x) (λ (y) y))) ,(transform '(λ (x) (λ (y) y))))))
 
-(define (init e)
+;; no continuation
+#;(define (init e)
   (let ([f (gensym 'f)]
         [m (gensym 'm)])
     `((λ (v) (λ (,f) (λ (,m) v))) ((,e (λ (x) (λ (y) y))) ,(transform '(λ (x) (λ (y) y)))))))
