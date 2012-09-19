@@ -10,6 +10,8 @@
 (define λv-rr
   (reduction-relation
    λv
+   #;(--> (in-hole E e)
+        (decomposition E e))
    (--> (in-hole E ((λ (x) e) v))
         (in-hole E (λv-subst x v e))
         "βv")
