@@ -120,13 +120,11 @@
           (λ (,m)
             ((,(transform e1)
               (λ (x) (λ (y) x)))
-             (((((λ (,a)
-                   (λ (,b)
-                     (λ (,f) (λ (,m) (λ (z) ,(substitute-app (substitute-app (transform 'z) (transform a)) (transform b)))))))
-                 ((,(transform e0) (λ (x) (λ (y) y))) ,m))
-                ((,f
-                  (((((,m (λ (z) z)) (λ (z) z)) (λ (x) (λ (,f) (λ (,m) (λ (y) (λ (,f) (λ (,m) y))))))) (λ (q1) q1)) (λ (q2) q2)))
-                  ((,m (λ (z) z)) (λ (z) z)))))))))]
+             (((λ (,a) (λ (,b) ,(transform `(λ (z) ((z ,a) ,b)))))
+               ((,(transform e0) (λ (x) (λ (y) y))) ,m))
+              ((,f
+                (((((,m (λ (z) z)) (λ (z) z)) (λ (x) (λ (,f) (λ (,m) (λ (y) (λ (,f) (λ (,m) y))))))) (λ (q1) q1)) (λ (q2) q2)))
+               ((,m (λ (z) z)) (λ (z) z)))))))]
       [(list 'λ (list x0) e0)
        `(λ (,f) (λ (,m) (λ (,x0) ,(transform e0))))]
       [(list e0 e1)
