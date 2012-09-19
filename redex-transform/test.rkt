@@ -85,24 +85,45 @@
 (transform-test '(wcm (ccm) (ccm)))
 (transform-test '(wcm (wcm (ccm) (ccm)) (λ (x) x)))
 (transform-test '(wcm (wcm (ccm) (ccm)) b))
-;(transform-test '(wcm (λ (a) (λ (b) b)) (ccm)))
+(transform-test '(wcm (λ (a) (λ (b) b)) (ccm)))
 (transform-test '(wcm (λ (x) x) (ccm)))
 (transform-test '(wcm (λ (x) (λ (y) x)) (ccm)))
 (transform-test '(wcm 0 (wcm 1 (ccm))))
-;(transform-test 'F)
+(transform-test 'F)
 (transform-test '(wcm (ccm) 3))
 (transform-test '((ccm) 2))
 (transform-test '(wcm ((ccm) 1) (ccm)))
 (transform-test '(wcm 0 ((ccm) (ccm))))
 (transform-test '(wcm 1 ((ccm) (λ (x) (λ (y) x)))))
-;(transform-test '(a b))
+(transform-test '(a b))
 (transform-test '(wcm (ccm) (ccm)))
 (transform-test '((wcm (ccm) (ccm)) 1))
-;(transform-test '(Y (wcm (ccm) (ccm))))
+(transform-test '(Y (wcm (ccm) (ccm))))
 (transform-test '(error (ccm)))
 (transform-test '(wcm 1 (wcm (ccm) (ccm))))
 (transform-test '(wcm 0 ((λ (x) (wcm x (ccm))) 1)))
 
+(define Y '(λ (f)
+             ((λ (x) (f (λ (v) ((x x) v))))
+              (λ (x) (f (λ (v) ((x x) v)))))))
+
+(define TRUE '(λ (x) (λ (y) x)))
+(define FALSE '(λ (x) (λ (y) y)))
+
+(define ZERO '(λ (f) (λ (z) z)))
+(define ONE '(λ (f) (λ (z) (f z))))
+
+(define SUCC '(λ (n) (λ (f) (λ (z) (f ((n f) z))))))
+(define PRED '(λ (n) (λ (f) (λ (z) (((n (λ (g) (λ (h) (h (g f))))) (λ (u) z)) (λ (u) u))))))
+
+(define ZERO? `(λ (n) ((n (λ (x) ,FALSE)) ,TRUE)))
+
+#;(define fac `(,Y (λ (f)
+                   (λ (n)
+                     (((,ZERO? n) ,ONE) ((,MULT n) (f (,PRED n)))))))) 
+
+;(traces λcm-rr `(,PRED (,SUCC ,ZERO)))  
+       
 (define p '(wcm 0 (ccm)))
 ;(trace '(x (λ (y) y)))
 
@@ -131,7 +152,7 @@
 ;
 ;(transform-test '(λ (u) u))
 ;(trace (random-cm-term 10))
-;(trace '((ccm) 2))
+;(trace '((λ (x) (x x)) (λ (x) (x x))))
 
 (define (the-important-property-holds program)
   (let* ((value1 (transform (first (apply-reduction-relation* λcm-rr program))))
