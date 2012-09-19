@@ -10,6 +10,9 @@
 (define λv-rr
   (reduction-relation
    λv
+   (--> (in-hole E ((λ (x) e) v))
+        (in-hole E (λv-subst x v e))
+        "βv")
    (--> (in-hole E x)
         (in-hole E error)
         "error: unbound identifier")
@@ -21,10 +24,7 @@
         "error in operator")
    (--> (in-hole E (v error))
         (in-hole E error)
-        "error in operand")
-   (--> (in-hole E ((λ (x) e) v))
-        (in-hole E (subst x v e))
-        "βv")))
+        "error in operand")))
 
 #;(define-metafunction λv
   rename : x x e -> e
@@ -50,29 +50,29 @@
    number_1])
 
 (define-metafunction λv
-  subst : x v e -> e
-  ;; 1. substitute in application
-  [(subst x_1 v_1 (e_1 e_2))
-   ((subst x_1 v_1 e_1) (subst x_1 v_1 e_2))]
-  ;; 2a. substitute in variable (same)
-  [(subst x_1 v_1 x_1)
-   v_1]
-  ;; 2b. substitute in variable (different)
-  [(subst x_1 v_1 x_2)
-   x_2]
-  ;; 3a. substitute in abstraction (bound)
-  [(subst x_1 v_1 (λ (x_1) e_1))
-   (λ (x_1) e_1)]
-  ;; 3b. substitute in abstraction (free)
-  [(subst x_1 v_1 (λ (x_2) e_1))
-   (λ (x_2) (subst x_1 v_1 e_1))]
-   ;(λ (x_new) (subst x_1 v_1 (rename x_2 x_new e_1)))
-   ;(where x_new ,(variable-not-in (term (x_2 v_1 e_1)) (term x_2)))]
-  ;; 4. substitute in error
-  [(subst x_1 v_1 error)
+  λv-subst : x v e -> e
+  ;; 1. x_1 bound, so don't continue in λ body
+  [(λv-subst x_0 v_0 (λ (x_0) e_0))
+   (λ (x_0) e_0)]
+  ;; 2. descend into abstraction
+  [(λv-subst x_0 v_0 (λ (x_1) e_0))
+   (λ (x_1) (λv-subst x_0 v_0 e_0))]
+  
+  [(λv-subst x_0 e_0 error)
    error]
-  [(subst x_1 v_1 number_1)
-   number_1])
+  
+  [(λv-subst x_0 e_0 number_1)
+   number_1]
+  ;; 3. substitute in application
+  [(λv-subst x_0 v_0 (e_0 e_1))
+   ((λv-subst x_0 v_0 e_0) (λv-subst x_0 v_0 e_1))]
+  
+  [(λv-subst x_0 v_0 x_0)
+   v_0]
+  
+  [(λv-subst x_0 v_0 x_1)
+   x_1])
 
 (provide λv
-         λv-rr)
+         λv-rr
+         λv-subst)

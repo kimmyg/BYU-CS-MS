@@ -1,47 +1,25 @@
 #lang racket
-(require redex)
+(require redex
+         "lc.rkt")
 
-(define-language λcm
-  (e (e e) (wcm e e) (ccm) x v error op)
-  (op ope opf)
-  (x variable-not-otherwise-mentioned)
-  (v (λ (x) e) number)
-  (E (wcm v F) (wcm ph F) F)
-  (F (E e) (v E) (ph E) (wcm E e) hole))
+(define-extended-language λcm λv
+  (e .... (wcm e e) (ccm))
+  (E (wcm v F) F)
+  (F (E e) (v E) (wcm E e) hole))
 
 (define λcm-rr
-  (reduction-relation
+  (extend-reduction-relation
+   λv-rr
    λcm
-   (--> (in-hole E x)
-        (in-hole E error)
-        "error: unbound identifier")
-   (--> (in-hole E (error e))
-        (in-hole E error)
-        "error in operator")
-   (--> (in-hole E (v error))
-        (in-hole E error)
-        "error in operand")
-   (--> (in-hole E (ph error))
-        (in-hole E error)
-        "error in operand/placeholder")
    (--> (in-hole E ((λ (x) e) v))
-        (in-hole E (subst x v e))
+        (in-hole E (λcm-subst x v e))
         "βv")
-   (--> (in-hole E (number v))
-        (in-hole E error)
-        "number in operator position")
-   (--> (in-hole E (number ph))
-        (in-hole E error)
-        "number in operator position/placeholder")
+   (--> (in-hole E (wcm v_1 (wcm v_2 e)))
+        (in-hole E (wcm v_2 e))
+        "wcm-collapse")
    (--> (in-hole E (wcm v_1 v_2))
         (in-hole E v_2)
         "wcm")
-   #;(--> (in-hole E (wcm v_1 v_2))
-        (in-hole E v_2)
-        "wcm/placeholder")
-   (--> (in-hole E (wcm v_1 (wcm v_2 e)))
-        (in-hole E (wcm v_2 e))
-        "tail")
    (--> (in-hole E (wcm error e))
         (in-hole E error)
         "error in wcm mark expression")
@@ -58,37 +36,13 @@
   [(chi (E e) v_ms)     (chi E v_ms)]
   [(chi (v E) v_ms)     (chi E v_ms)]
   [(chi (wcm E e) v_ms) (chi E v_ms)]
-  [(chi (wcm v E) v_ms) (chi E (λ (p) ((p v) v_ms)))])
+  [(chi (wcm v E) v_ms) (chi E (λ (z) ((z v) v_ms)))])
 
-(define-metafunction λcm
-  subst : x v e -> e
-  ;; 1. x_1 bound, so don't continue in λ body
-  [(subst x_1 v_1 (λ (x_1) e_1))
-   (λ (x_1) e_1)]
-  ;; 2. descend into abstraction
-  [(subst x_1 v_1 (λ (x_2) e_1))
-   (λ (x_2) (subst x_1 v_1 e_1))]
-  
-  [(subst x_1 v_1 error)
-   error]
-  
-  [(subst x_1 v_1 number_1)
-   number_1]
-  
-  ;; 3. substitute in application
-  [(subst x_1 v_1 (e_1 e_2))
-   ((subst x_1 v_1 e_1) (subst x_1 v_1 e_2))]
-  
-  [(subst x_1 v_1 x_1)
-   v_1]
-  
-  [(subst x_1 v_1 x_2)
-   x_2]
-
-  [(subst x_1 v_1 (wcm e_1 e_2))
-   (wcm (subst x_1 v_1 e_1) (subst x_1 v_1 e_2))]
-  
-  [(subst x_1 v_1 (ccm))
+(define-metafunction/extension λv-subst λcm
+  λcm-subst : x v e -> e
+  [(λcm-subst x_0 v_0 (wcm e_0 e_1))
+   (wcm (λcm-subst x_0 v_0 e_0) (λcm-subst x_0 v_0 e_1))]
+  [(λcm-subst x_0 v_0 (ccm))
    (ccm)])
 
 (provide λcm
