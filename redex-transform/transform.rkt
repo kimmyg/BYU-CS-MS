@@ -38,7 +38,7 @@
          `(λ (,k) (λ (,m) (,k ,x1)))])))
 
 ;; separate flag and marks
-#;(define (transform e)
+(define (transform e)
   (let ([k (gensym 'k)]
         [m (gensym 'm)]
         [n (gensym 'n)]
@@ -50,19 +50,18 @@
         [f (gensym 'f)])
     (match e
       [(list 'ccm)
-       `(λ (,k) (λ (,f) (λ (,m) (((,m ,k) (λ (z) z)) (λ (z) z)))))]
+       `(λ (,k) (λ (,f) (λ (,m) (,k ,m))))];(((,m ,k) (λ (z) z)) (λ (z) z)))))]
       [(list 'wcm e0 e1)
        `(λ (,k)
           (λ (,f)
             (λ (,m)
               (((,(transform e0)
-                 (λ (,n) ((λ (,k) (,k (((,m (λ (x) x)) (λ (z) z)) (λ (z) z))))
-                          (λ (,t) ((λ (,k) (,k ((,f ((((,t (λ (x) (λ (k) (λ (f) (λ (m) (k (λ (y) (λ (k) (λ (f) (λ (m) (k y))))))))))) (λ (x) x)) (λ (z) z)) (λ (z) z))) ,t)))
-                                   (λ (,r) 
-                                     (((,(transform e1)
-                                        ,k)
-                                       (λ (x) (λ (y) x)))
-                                      ,(transform `(λ (z) ((z ,n) ,r))))))))))
+                 (λ (,n) ((λ (,r) 
+                            (((,(transform e1)
+                               ,k)
+                              (λ (x) (λ (y) x)))
+                             (λ (z) ,(transform `((z ,n) ,r)))))
+                          ((,f ((((,m (λ (x) (λ (k) (λ (f) (λ (m) (k (λ (y) (λ (k) (λ (f) (λ (m) (k y))))))))))) (λ (x) x)) (λ (z) z)) (λ (z) z))) ,m))))
                 (λ (x) (λ (y) y)))
                ,m))))]
       [(list 'λ (list x0) e0)
@@ -87,7 +86,7 @@
 
 
 ;; no continuation
-(define (transform e)
+#;(define (transform e)
     (let ([f (gensym 'f)]
           [m (gensym 'm)]
           [a (gensym 'a)]
@@ -104,7 +103,6 @@
                  ((,(transform e0) (λ (x) (λ (y) y))) ,m))
                 ((,f
                   ((,(transform `((λ (p) (p (λ (x) (λ (y) y)))) ,m)) (λ (z) z)) (λ (z) z)))
-                  ;(((,m (λ (x) (λ (,f) (λ (,m) (λ (y) (λ (,f) (λ (,m) y))))))) (λ (z) z)) (λ (z) z)))
                  ,m)))))]
         [(list 'λ (list x0) e0)
          `(λ (,f) (λ (,m) (λ (,x0) ,(transform e0))))]
@@ -128,14 +126,14 @@
 
 
 ;; separate flag and marks
-#;(define (init e)
+(define (transform-c e)
   (let ([k (gensym 'k)]
         [f (gensym 'f)]
         [m (gensym 'm)])
-    `(((,e (λ (v) (λ (,k) (λ (,f) (λ (,m) (,k v)))))) (λ (x) (λ (y) y))) ,(transform '(λ (x) (λ (y) y))))))
+    `(((,(transform e) (λ (v) (λ (,k) (λ (,f) (λ (,m) (,k v)))))) (λ (x) (λ (y) y))) (λ (x) ,(transform '(λ (y) y))))))
 
 ;; no continuation
-(define (transform-c e)
+#;(define (transform-c e)
     (let ([f (gensym 'f)]
           [m (gensym 'm)])
       `((,(transform e) (λ (x) (λ (y) y))) (λ (x) ,(transform '(λ (y) y))))))
