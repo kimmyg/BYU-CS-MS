@@ -23,16 +23,7 @@ We will now set out to demonstrate that $\mathcal{C}$ preserves program meaning.
 
 First, we define some useful shorthand.
 
-\setspecialsymbol{TRUE}{$\mathbf{true}$}
-\setspecialsymbol{FALSE}{$\mathbf{false}$}
-\setspecialsymbol{PAIR}{$\mathbf{pair}$}
-\setspecialsymbol{FST}{$\mathbf{fst}$}
-\setspecialsymbol{SND}{$\mathbf{snd}$}
-\setspecialsymbol{NIL}{$\mathbf{nil}$}
 
-
-
-\setconstant{error}
 
 \begin{defn}
 $\true=\abs{x}{\abs{y}{x}}$
@@ -81,8 +72,7 @@ unorthodox notation for consistency.
 $\C{E[v]}=\app{\C{E}}{\Cp{v}}$
 \end{defn}
 
-\renewenvironment{schemedefn}[1]{\begin{defn}$#1$\begin{singlespace}}{\end{singlespace}\end{defn}}
-\renewenvironment{namedschemedefn}[2]{\begin{defn}\label{#1}$#2$\begin{singlespace}}{\end{singlespace}\end{defn}}
+
 
 \begin{schemedefn}{\C{\app{e_0}{e_1}}}
 \begin{schemedisplay}

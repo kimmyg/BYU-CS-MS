@@ -20,9 +20,6 @@ program which defines a toy language. In contrast to a Redex tutorial, we will n
 ourselves with the syntax and structure of roads not taken and will instead briefly
 explain each component of the program.
 
-\setkeyword{define-language define-extended-language variable-not-otherwise-mentioned number reduction-relation extend-reduction-relation in-hole substitute term define-metafunction define-metafunction/extension reduces-to-one-value? value? redex-match length apply-reduction-relation* first redex-check}
-\setconstant{toy toy-rr undefined hole}
-\setspecialsymbol{-->}{$\rightarrow$}
 \begin{singlespace}
 \begin{schemedisplay}
 (define-language toy
@@ -187,13 +184,6 @@ sum of the two numbers obtained. If \scheme{e_2} reduces to \scheme{undefined}, 
 This property is fairly trivial and its proof is similarly trivial, but it is a shadow of 
 the approach we will ultimately take to verify certain transformation properties.
 
-\setspecialsymbol{lambda}{$\lambda$}
-\setspecialsymbol{-->}{$\rightarrow$}
-\setspecialsymbol{betav}{$\beta$v}
-\setconstant{error}
-\setkeyword{subst}
-\setkeyword{chi}
-
 \section{Flavors of $\lambda$}
 
 Our first task in developing a testing environment for transformations is to define interpreters for \cm\ and \lv.
@@ -202,21 +192,15 @@ We begin with \lv, the simpler language.
 
 \subsection{\lv}
 
-\setspecialsymbol{lambdav}{$\lambda$v}
-\setspecialsymbol{lambdav-rr}{$\lambda$v-rr}
-\setspecialsymbol{lambdav-subst}{$\lambda$v-subst}
-
 To begin, we define language terms and evaluation contexts.
 
-\begin{singlespace}
-\begin{schemedisplay}
+\begin{schemeblock}
 (define-language lambdav
   (e (e e) x v error)
   (x variable-not-otherwise-mentioned)
   (v (lambda (x) e))
   (E (E e) (v E) hole))
-\end{schemedisplay}
-\end{singlespace}
+\end{schemeblock}
 
 The characterization of \lv\ seen in figures \ref{lv-language-forms} and
 \ref{lv-language-semantics} was influenced by the knowledge that an interpreter would need
@@ -272,10 +256,6 @@ The first rule in the reduction relation corresponds with the sole semantic rule
 The \scheme{lambdav-subst} metafunction presents the conceptual definition of substitution. We omit the capture-avoidance facilities for clarity.
 
 \subsection{\cm}
-
-\setspecialsymbol{lambdacm}{$\lambda$cm}
-\setspecialsymbol{lambdacm-rr}{$\lambda$cm-rr}
-\setspecialsymbol{lambdacm-subst}{$\lambda$cm-subst}
 
 Since \cm\ is a superset of \lv, we need only extend the definition of the \lv\ interpreter to accommodate the additions \cm\ brings.
 
