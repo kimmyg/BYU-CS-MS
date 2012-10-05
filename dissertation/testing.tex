@@ -1,0 +1,351 @@
+\chapter{Testing}
+
+We do not attempt to construct a correct transformation \emph{ex nihilo}. A pragmatic
+approach to the discovery of a correct transformation involves consistent feedback and
+testing to validate candidate transforms. Testing is no substitute for proof, but, as
+Klein et al. \cite{klein2012run} show, proof is no substitute for testing. Lightweight
+mechanization is a fruitful middle ground between pencil-and-paper analysis and fully-
+mechanized formal proof. We use Redex to provide feedback, thoroughly exercise candidates,
+and perform exploratory analysis.
+
+\section{Redex}
+
+Redex \cite{findler2010redex} is a domain-specific language for exploring language
+semantics. It lives very close to the semantics notation we have used so far in this
+discussion.
+
+\subsection{Toy Language}
+To illustrate how easily langagues can be defined in Redex, we will examine a Redex
+program which defines a toy language. In contrast to a Redex tutorial, we will not concern
+ourselves with the syntax and structure of roads not taken and will instead briefly
+explain each component of the program.
+
+\setkeyword{define-language define-extended-language variable-not-otherwise-mentioned number reduction-relation extend-reduction-relation in-hole substitute term define-metafunction define-metafunction/extension reduces-to-one-value? value? redex-match length apply-reduction-relation* first redex-check}
+\setconstant{toy toy-rr undefined hole}
+\setspecialsymbol{-->}{$\rightarrow$}
+\begin{singlespace}
+\begin{schemedisplay}
+(define-language toy
+  (x variable-not-otherwise-mentioned)
+  (v number undefined) 
+  (e (+ e e) (with (x e) e) x v)
+  (E hole (+ E e) (+ v E) (with (x E) e)))
+\end{schemedisplay}
+\end{singlespace}
+
+This expression defines the abstract syntactic structure of a language named \emph{toy}.
+There are four categories of structures: \scheme'x', \scheme'v', \scheme'e', and
+\scheme'E'. The category \scheme'x' is defined to contain any token not otherwise
+mentioned in the definition. The category \scheme'v' is defined to contain numbers and the
+token \scheme{undefined}. The category \scheme'e' is defined to contain the expression
+forms of the language, of which there are four: addition expressions, \scheme{with}
+expressions, lone variables, and lone values. The last category, \scheme'E', does not
+define abstract syntax but instead reduction contexts. The first reduction context is a
+\scheme{hole} (a special token in Redex) which will be filled in with the result of the
+expression that previously resided in its place. The next two are addition contexts, the
+first representing the evaluation of the first argument and the second representing the
+evaluation of the second; the composition of these contexts imposes an order on the
+evaluation of the arguments. The final context, a \scheme{with} context, specifies a
+variable, a value, and an expression within which that variable is bound to that value.
+
+\begin{singlespace}
+\begin{schemedisplay}
+(define toy-rr
+  (reduction-relation toy
+   (--> (in-hole E (+ number_1 number_2))
+        (in-hole E (+ (term number_1) (term number_2)))
+        "+")
+   (--> (in-hole E (with (x_1 v_1) e_1))
+        (in-hole E (substitute x_1 v_1 e_1))
+        "with")
+   (--> (in-hole E x_1)
+        (in-hole E undefined)
+        "free variable")
+   (--> (in-hole E (+ undefined e_1))
+        (in-hole E undefined)
+        "undefined in first position")
+   (--> (in-hole E (+ number_1 undefined))
+        (in-hole E undefined)
+        "undefined in second position")))
+\end{schemedisplay}
+\end{singlespace}
+
+This term defines a reduction relation on the \scheme{toy} language. The five defined
+reductions, signalled by \scheme{-->}, match specified patterns and manipulate them
+according to the defined rules. These define: the addition of two numbers; the
+substitution of a \scheme{with} expression; a lone variable; the addition of an undefined
+value on the left; and the addition of an undefined value on the right.
+
+\begin{singlespace}
+\begin{schemedisplay}
+(define-metafunction toy
+  substitute : x v e -> e
+  [(substitute x_1 v_1 (+ e_1 e_2))
+   (+ (substitute x_1 v_1 e_1) (substitute x_1 v_1 e_2))]
+  [(substitute x_1 v_1 (with (x_1 e_1) e_2))
+   (with (x_1 (substitute x_1 v_1 e_1)) e_2)]
+  [(substitute x_1 v_1 (with (x_2 e_1) e_2))
+   (with (x_2 (substitute x_1 v_1 e_1)) (substitute x_1 v_1 e_2))]
+  [(substitute x_1 v_1 x_1)
+   v_1]
+  [(substitute x_1 v_1 x_2)
+   x_2]
+  [(substitute x_1 v_1 v_2)
+   v_2])
+\end{schemedisplay}
+\end{singlespace}
+
+The definition of the \scheme{with} reduction rule relies on the \scheme{substitute}
+metafunction. (The language used to define \scheme'toy' (Redex) is the metalanguage. 
+As functions are in the language, metafunctions are in the metalanguage.) The
+\scheme{substitute} metafunction recursively substitutes a variable in an expression with
+a value. The substitution is only propagated as long as a binding with the same name is
+not encountered. At that point, the substitution is performed in the value expression of
+the binding, but not the body. This allows for expressions like
+\begin{singlespace}
+\begin{schemedisplay}
+(with (x 5)
+  (with (x x)
+    x))
+\end{schemedisplay}
+\end{singlespace}
+to behave as we expect (returning \scheme'5').
+
+\subsubsection{Testing}
+
+Now that the syntactic forms and reduction rules of the language are defined, we can use 
+the randomized testing built into Redex to investigate properties of the language. We 
+start by defining the helper function 
+\begin{singlespace}
+\begin{schemedisplay}
+(define (reduces-to-one-value? e)
+  (let ((results (apply-reduction-relation* toy-rr e)))
+    (and (= (length results) 1)
+         (value? (first results)))))
+\end{schemedisplay}
+\end{singlespace}
+which has its own helper function 
+\begin{singlespace}
+\begin{schemedisplay}
+(define value? (redex-match toy v))
+\end{schemedisplay}
+\end{singlespace}
+The \scheme{*} at the end of the function name \scheme{apply-reduction-relation*}
+signifies that all possible reduction rules will be applied as many times as possible. If
+some of the reduction rules don't actually reduce terms, the relation may produce a
+reducible term indefinitely. The function \scheme{apply-reduction-relation*} is in a sense
+strict in the reduction relation and will likewise run indefinitely if this is the case.
+
+After the language and some properties have been established, the randomized testing, 
+initiated by
+\begin{schemedisplay}
+(redex-check toy e (reduces-to-one-value? (term e)))
+\end{schemedisplay}
+is simple. We merely provide the name of the language we wish to work with, the
+nonterminal in the grammar we wish to use to generate language terms, and a predicate that
+checks terms for properties. This function generates terms gradually increasing in size,
+applying the predicate to each in turn, and terminates with a counterexample or after a
+set number of terms have been checked (1000 by default).
+
+\subsubsection{Proof}
+
+Randomized testing can increase our confidence in various assertions but is no substitute 
+for proof. We express the property of reducing to one value with the following theorem:
+
+\newtheorem*{toythm}{Toy Language One-Value Theorem}
+\begin{toythm}
+For all terms \scheme'e' of the toy language, \scheme'e' reduces to exactly one
+value.\footnote{We do not use the term \emph{value} loosely here; the toy language
+definition specifies what constitute values, and we appeal to this.}
+\end{toythm}
+We proceed by induction on the structure of terms \scheme'e' of the toy language. First,
+we consider the base cases.
+\begin{proof}[Case \scheme'v']
+A term \scheme'e' of the form \scheme'v' is exactly one value and cannot be reduced, 
+so the statement holds.
+\end{proof}
+\begin{proof}[Case \scheme'x']
+A term \scheme'e' of the form \scheme'x', a variable, reduces to \scheme{undefined}, 
+a value term, so the statement holds.
+\end{proof}
+\begin{proof}[Case \scheme|(with (x e_1) e_2)|]
+By induction, we assume that \scheme{e_1} reduces to exactly one value. Then the
+``with''-rule can only be applied once, resulting in a single term \scheme{e_2} in
+\scheme'e' which, by our inductive hypothesis, reduces to only one value.
+\end{proof}
+\begin{proof}[Case \scheme|(+ e_1 e_2)|]
+By induction, we assume both \scheme{e_1} and \scheme{e_2} reduce to a single value. We
+consider two subcases: If \scheme{e_1} reduces to \scheme{undefined}, the ``undefined in
+first position''-rule is applied, and the whole term reduces to \scheme{undefined}. If
+\scheme{e_1} reduces to a number, we consider two further subcases: If \scheme{e_2}
+reduces to a number, the ``+''-rule is applied, and the entire expression reduces to the
+sum of the two numbers obtained. If \scheme{e_2} reduces to \scheme{undefined}, the
+``undefined in second position''-rule is applied, and the entire term reduces to
+\scheme{undefined}. Thus, in all subcases, the whole term reduces to exactly one value.
+\end{proof}
+
+This property is fairly trivial and its proof is similarly trivial, but it is a shadow of 
+the approach we will ultimately take to verify certain transformation properties.
+
+\setspecialsymbol{lambda}{$\lambda$}
+\setspecialsymbol{-->}{$\rightarrow$}
+\setspecialsymbol{betav}{$\beta$v}
+\setconstant{error}
+\setkeyword{subst}
+\setkeyword{chi}
+
+\section{Flavors of $\lambda$}
+
+Our first task in developing a testing environment for transformations is to define interpreters for \cm\ and \lv.
+
+We begin with \lv, the simpler language.
+
+\subsection{\lv}
+
+\setspecialsymbol{lambdav}{$\lambda$v}
+\setspecialsymbol{lambdav-rr}{$\lambda$v-rr}
+\setspecialsymbol{lambdav-subst}{$\lambda$v-subst}
+
+To begin, we define language terms and evaluation contexts.
+
+\begin{singlespace}
+\begin{schemedisplay}
+(define-language lambdav
+  (e (e e) x v error)
+  (x variable-not-otherwise-mentioned)
+  (v (lambda (x) e))
+  (E (E e) (v E) hole))
+\end{schemedisplay}
+\end{singlespace}
+
+The characterization of \lv\ seen in figures \ref{lv-language-forms} and
+\ref{lv-language-semantics} was influenced by the knowledge that an interpreter would need
+to be built. Because Redex lives so close to this characterization, the only change we
+make in translation is the addition of \scheme'error'.
+
+\begin{singlespace}
+\begin{schemedisplay}
+(define lambdav-rr
+  (reduction-relation lambdav
+   (--> (in-hole E ((lambda (x) e) v))
+        (in-hole E (lambdav-subst x v e))
+        "betav")
+   (--> (in-hole E x)
+        (in-hole E error)
+        "error: unbound identifier")
+   (--> (in-hole E (error e))
+        (in-hole E error)
+        "error in operator")
+   (--> (in-hole E (v error))
+        (in-hole E error)
+        "error in operand")))
+\end{schemedisplay}
+\end{singlespace}
+
+The first rule in the reduction relation corresponds with the sole semantic rule found in \ref{lv-language-semantics}. The remaining handle cases introduced by \scheme'error'.
+
+\begin{singlespace}
+\begin{schemedisplay}
+(define-metafunction lambdav
+  lambdav-subst : x v e -> e
+  ;; 1. substitute in application
+  [(lambdav-subst x_1 v_1 (e_1 e_2))
+   ((lambdav-subst x_1 v_1 e_1) (lambdav-subst x_1 v_1 e_2))]
+  ;; 2a. substitute in variable (same)
+  [(lambdav-subst x_1 v_1 x_1)
+   v_1]
+  ;; 2b. substitute in variable (different)
+  [(lambdav-subst x_1 v_1 x_2)
+   x_2]
+  ;; 3a. substitute in abstraction (bound)
+  [(lambdav-subst x_1 v_1 (lambda (x_1) e_1))
+   (lambda (x_1) e_1)]
+  ;; 3b. substitute in abstraction (free)
+  [(lambdav-subst x_1 v_1 (lambda (x_2) e_1))
+   (lambda (x_2) (lambdav-subst x_1 v_1 e_1))]
+  ;; 4. substitute in error
+  [(lambdav-subst x_1 v_1 error)
+   error])
+\end{schemedisplay}
+\end{singlespace}
+
+The \scheme{lambdav-subst} metafunction presents the conceptual definition of substitution. We omit the capture-avoidance facilities for clarity.
+
+\subsection{\cm}
+
+\setspecialsymbol{lambdacm}{$\lambda$cm}
+\setspecialsymbol{lambdacm-rr}{$\lambda$cm-rr}
+\setspecialsymbol{lambdacm-subst}{$\lambda$cm-subst}
+
+Since \cm\ is a superset of \lv, we need only extend the definition of the \lv\ interpreter to accommodate the additions \cm\ brings.
+
+\begin{singlespace}
+\begin{schemedisplay}
+(define-extended-language lambdacm lambdav
+  (e .... (wcm e e) (ccm))
+  (E (wcm v F) F)
+  (F (E e) (v E) (wcm E e) hole))
+\end{schemedisplay}
+\end{singlespace}
+
+Redex allows us to easily define a proper extension of a language, inheriting anything left unspecified. As similar as the \lv\ interpeter definition is to the \lv\ definition in figure \ref{lv-language-forms}, this \cm\ interpreter definition is to the \cm\ definition in figure \ref{cm-language-forms}.
+
+\begin{singlespace}
+\begin{schemedisplay}
+(define lambdacm-rr
+  (extend-reduction-relation lambdav-rr lambdacm
+   (--> (in-hole E ((lambda (x) e) v))
+        (in-hole E (lambdacm-subst x v e))
+        "betav")
+   (--> (in-hole E (wcm v_1 (wcm v_2 e)))
+        (in-hole E (wcm v_2 e))
+        "wcm-collapse")
+   (--> (in-hole E (wcm v_1 v_2))
+        (in-hole E v_2)
+        "wcm")
+   (--> (in-hole E (ccm))
+        (in-hole E (chi E (lambda (x) (lambda (y) y))))
+        "chi")
+   (--> (in-hole E (wcm error e))
+        (in-hole E error)
+        "error in wcm mark expression")
+   (--> (in-hole E (wcm v error))
+        (in-hole E error)
+        "error in wcm body expression")))
+\end{schemedisplay}
+\end{singlespace}
+
+The first three rules in the reduction relation correspond with the three additional semantic rules found in \ref{cm-language-semantics}. The remaining handle cases introduced by the the new language forms' interaction with \scheme'error'.
+
+\begin{singlespace}
+\begin{schemedisplay}
+(define-metafunction/extension lambdav-subst lambdacm
+  lambdacm-subst : x v e -> e
+  ;; 1. substitute in wcm form
+  [(lambdacm-subst x_1 v_1 (wcm e_1 e_2))
+   (wcm (lambdacm-subst x_1 v_1 e_1) (lambdacm-subst x_1 v_1 e_2))]
+  ;; 2. substitute in ccm form
+  [(lambdacm-subst x_1 v_1 (ccm))
+   (ccm)])
+\end{schemedisplay}
+\end{singlespace}
+
+The \scheme{lambdacm-subst} metafunction is extended to accommodate the additional forms in \cm.
+
+\begin{singlespace}
+\begin{schemedisplay}
+(define-metafunction lambdacm
+  chi : E v -> v
+  [(chi hole v_ms)      v_ms]
+  [(chi (E e) v_ms)     (chi E v_ms)]
+  [(chi (v E) v_ms)     (chi E v_ms)]
+  [(chi (wcm E e) v_ms) (chi E v_ms)]
+  [(chi (wcm v E) v_ms) (chi E (lambda (p) ((p v) v_ms)))])
+\end{schemedisplay}
+\end{singlespace}
+
+Finally, we define the $\chi$ metafunction. Its definition does not map directly to the formal definition, but matches the intuitive definition that underlies it.
+
+\section{Transformation testing}
+\section{Transformation definition}
+

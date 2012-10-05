@@ -1,0 +1,42 @@
+\chapter{Introduction}
+
+Thesis: A CPS-like global transformation can compile the \lc\ with continuation marks into
+the plain \lc\ in a semantics-preserving way.
+
+Numerous programming language instruments rely on stack inspection to function. Statistical profilers sample the stack regularly to record active functions, algebraic steppers observe the stack to represent the evaluation context of an expression, and debuggers naturally require consistent access to the stack. Each of these relies on implementation-specific information and must be maintained as the instrumented language undergoes optimizations and ventures across platforms. This makes these tools brittle and increases the porting cost of the language ecosystem. Each of these examples would benefit from a generalized stack-inspection mechanism available within the instrumented language itself. If written in such an enhanced language, each instrument would be more robust, more easily modified, and would port for free.
+
+Continuation marks \cite{clements2006portable} are a programming language feature which generalizes stack inpection. Not only do they dramatically simplify correct instrumentation \cite{clements2001modeling}, they have been used to allow inspection-based dynamic security checks in the presence of tail-call optimization \cite{clements2004tail} and to express aspect-oriented programming in higher-order languagues \cite{tucker2003pointcuts}.
+
+In spite of their usefulness, continuation marks have remained absent from programming languages at large. One reason for this is that retrofitting virtual machines to accommodate the level of stack inspection continuation marks must provide is expensive, especially when the virtual machines use the host stack for efficiency.
+
+For example, the ubiquitous JavaScript is an ideal candidate for the addition of continuation marks. However, as the lingua franca of the web, it has numerous mature implementations which have been heavily optimized; to add continuation marks to JavaScript amounts to modifying each implementation upstream, to say nothing of amending the JavaScript standard. (Clements et al. successfully added continuation marks in Mozilla's Rhino compiler \cite{clements2008implementing}, but it remains a proof-of-concept.)
+
+To avoid this roadblock, we instead take a macro-style approach; that is, we enhance the core language with facilities to manipulate continuation marks and desugar the enhanced language back to the core. To make our desugaring transformation apply to many languages, we define it over the \lc, the common core of most higher-order languages. With such a transformation, language semanticists do not need to reconcile the feature with other features in the language (provided they have already done so with $\lambda$) and their compiler writers do not need to worry about complicating their implementations (for the same reason).
+
+The \lc\ is a Turing-complete formal logic based on variable binding and substitution.
+Where the Turing machine model of computation is machine-centric, the \lc\ model is
+language-centric. Thus, it conveniently serves as an intermediate representation for a
+compiler or a base from which to define higher-level languages. The standard
+reference to the \lc\ is Barendregt \cite{barendregt1984lambda}.
+
+The continuation-passing style (CPS) transformation is actually a family of
+language transformations designed to make certain analyses simpler. Every member of this family
+shares a common trait: their performance augments each function with an additional formal
+parameter, the \emph{continuation}, a functional representation of currently pending
+computation. Functions in CPS never explicitly return; instead, they call the continuation
+argument with their result. Because no function ever returns, function calls are the final
+act of the caller. Thus, all calls are tail calls. The CPS transformation then simplifies
+programs by representing all control and data transfer uniformly and explicitly. In
+general, the ``spirit'' of the CPS transformation is to represent all transfers of control
+uniformly \cite{sabry1994formal}.
+
+We take the core of computation, the \lc, and add facilities to manipulate continuation
+marks. These two together comprise a language which we term \cm. By expressing \cm\ in
+terms of the plain \lc, we uncover the meaning of continuation marks in a pure
+computational language absent other language features and implementation details. To do
+this, we construct $\mathcal{C}$, a transformation from \cm\ programs to \lc\ programs in
+the spirit of CPS. We use Redex \cite{findler2010redex} to test candidate transformations
+for correctness. This allows us to increase our confidence in a functioning transformation
+but cannot demonstrate correctness. We address this shortcoming by providing and proving a
+meaning preservation theorem.
+

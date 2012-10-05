@@ -1,0 +1,124 @@
+\chapter{\lv\ and \cm}
+
+\section{\lv}
+
+The \lv\ language is merely the call-by-value \lc.
+
+Figure \ref{lv-language-forms} presents the language terms and evaluation contexts of \lv.
+The definition of $e$ specifies the form of terms in \lv\ similar to our previous
+discussion of the \lc. The definition of $E$ specifies evaluation contexts which, like
+terms, are defined inductively. An evaluation context is either empty (denoted by
+$\hole$), an application wherein the operator is being evaluated, or an application
+wherein the operand is being evaluated.
+
+\begin{figure}
+\begin{align*}
+E = &\app{E}{e} & e = &\app{e}{e}\\
+    &\app{v}{E} &     &x\\
+    &\hole      &     &v\\
+    &           & v = &\abs{x}{e}
+\end{align*}
+\caption{\lv\ forms}
+\label{lv-language-forms}
+\end{figure}
+
+Figure \ref{lv-language-semantics} presents the sole semantic definition of \lv, the
+meaning of application.
+
+\begin{figure}
+\begin{align*}
+E[(\lambda x.e)\,v]     &\rightarrow E[e[x\leftarrow v]]\\
+\end{align*}
+\caption{\lv\ evaluation rule}
+\label{lv-language-semantics}
+\end{figure}
+
+\section{\cm}
+
+We now consider an extension of \lv\ with facilities to manipulate continuation 
+marks, introduced by Pettyjohn et al. \cite{pettyjohn2005continuations}, which 
+we term \cm. As an extension of \lv, it inherits its definitions of language 
+terms, evaluation contexts, and semantics.
+
+Figure \ref{cm-language-forms} presents the syntactic forms of \cm.  Definitions of $E$
+and $F$ signify evaluation contexts. The separation of $E$ from $F$ prevents $\wcm{v}{F}$
+contexts from directly nesting within the entire evaluation context to enforce proper
+tail-call behavior. The definition of $e$ is identical to that of \lv\ with the addition
+of contionuation mark forms $\wcm{e}{e}$ and $\ccm$. (\cm\ expresses unkeyed marks which
+obviates the need to specify a key to which a value will be associated. Hence, the
+\scheme'wcm' and \scheme'ccm' forms need one parameter fewer than their Scheme
+counterparts.)
+
+\begin{figure}
+\begin{align*}
+E = &\wcm{v}{F} & e = &\app{e}{e}\\
+    &F          &     &x\\
+F = &\hole      &     &v\\
+    &\app{E}{e} &     &\wcm{e}{e}\\
+    &\app{v}{E} &     &\ccm\\
+    &\wcm{E}{e} & v = &\abs{x}{e}
+\end{align*}
+\caption{\cm\ forms}
+\label{cm-language-forms}
+\end{figure}
+
+Figure \ref{cm-language-semantics} presents the semantics of \cm\ in the form of a list of
+reduction rules. Rule 1 defines the meaning of application as inherited from \lv. Rule 2
+defines the tail behavior of the \scheme'wcm' form. Rule 3 expresses that the \scheme'wcm'
+form takes on the value of its body. Finally, rule 4 defines the value of the \scheme'ccm'
+form in terms of the $\chi$ metafunction.
+
+\begin{figure}
+\begin{align*}
+E[(\lambda x.e)\,v]     &\rightarrow E[e[x\leftarrow v]]\tag{1}\\
+E[\wcm{v}{\wcm{v'}{e}}] &\rightarrow E[\wcm{v'}{e}]\tag{2}\\
+E[\wcm{v}{v'}]          &\rightarrow E[v']\tag{3}\\
+E[\ccm]                 &\rightarrow E[\chi(E)]\tag{4}
+\end{align*}
+\caption{\cm\ semantics}
+\label{cm-language-semantics}
+\end{figure}
+
+The definition of the $\chi$-metafunction is given in figure \ref{cm-chi-metafunction}.
+Conceptually, the $\chi$-metafunction traverses the context from the outside in,
+accumulating values as it encounters $\wcm{v}{E}$ contexts. Since the $\chi$ metafunction
+is defined over evaluation contexts of \cm, its domain corresponds to the definitions of
+$E$ and $F$ in figure \ref{cm-language-forms}.
+
+\begin{figure}
+\begin{align*}
+\chi(\hole)             &= \mathrm{nil}\\
+\chi(E[\app{\hole}{e}]) &= \chi(E)\\
+\chi(E[\app{v}{\hole}]) &= \chi(E)\\
+\chi(E[\wcm{\hole}{e}]) &= \chi(E)\\
+\chi(E[\wcm{v}{\hole}]) &= v : \chi(E)
+\end{align*}
+\caption{Definition of $\chi$ metafunction}
+\label{cm-chi-metafunction}
+\end{figure}
+
+% what are the contracts? why does it work?
+
+% most states have a direct correspondence in C
+% (E,e) being a state
+% most behavior has a direct correspondence in C (evaluation steps)
+% reinsertion of value, composition of contexts, semantic rules
+
+
+
+In \cm, evaluation of an application form proceeds as
+
+\begin{align*}
+E[\app{e_0}{e_1}]\cmrr &E[\app{\hole}{e_1}][e_0]\\
+                \cmrrs &E[\app{\hole}{e_1}][v_0]\\
+                 \cmrr &E[\app{v_0}{e_1}]\tag{1}\\
+                 \cmrr &E[\app{v_0}{\hole}][e_1]\\
+                \cmrrs &E[\app{v_0}{\hole}][v_1]\\
+                 \cmrr &E[\app{v_0}{v_1}]\tag{2}\\
+                     = &E[\app{\abs{x}{e'_0}}{v_1}] &\text{for some $x$ and $e'_0$}\\
+                 \cmrr &E[e'_0[x\leftarrow v_1]]\\
+                     = &E[e_2] &\text{for some $e_2$}
+\end{align*}
+
+Steps 1 and 2 denote the insertion of a value into the hole in the context.
+

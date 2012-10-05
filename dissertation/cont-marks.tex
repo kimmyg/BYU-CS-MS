@@ -1,0 +1,145 @@
+\chapter{Continuation marks}
+
+There are certain tools that are indispensable to some programmers that concern the
+behavior of their programs: debuggers, profilers, steppers, etc. Without these tools,
+these programmers cannot justify the adoption of a language, however compelling it might
+otherwise be. Traditionally, these tools are developed at the same level the language is,
+privy to incidental implementation detail, precisely because that detail enables these
+tools to function. This is problematic for at least two reasons. First, it couples the
+implementation of the tool with the implementation of the language, which increases the
+cost to port to other platforms. If users become dependent upon these tools, it can stall
+the advancement of the language and the adoption of new language features. Second and more
+critical, it makes these tools unsound. For instance, debuggers typically examine programs
+which have been compiled without optimizations. In general, this means that the debugged
+program has different behavior than the deployed program. This is obviously undesirable.
+
+It is desirable to implement such tools at the same level as the language, removing
+dependency upon the implementation and instead relying on definitional and behavioral
+invariants. Continuation marks are a language-level feature that provide the information
+necessary for these tools to function. Furthermore, languages which require stack
+inspection to enforce security policies (\emph{Java}, \emph{C\#}) or support aspect
+oriented programming (\emph{aspectj}) can be defined in terms of a simpler language with
+continuation marks \cite{clements2004tail, tucker2003pointcuts}.
+
+Continuation marks originated in PLT Scheme (now Racket \cite{plt-tr1}) as a stack 
+inspection mechanism. In fact, the \emph{Java} and \emph{C\#} languages rely on a similar 
+stack inspection to enforce security policies of which continuation marks can be seen as 
+a generalization. Surprisingly, continuation marks can be encoded in any language with 
+exception facilities \cite{pettyjohn2005continuations}.
+
+
+
+The feature of continuation marks itself is accessible via two surface level syntactic
+forms: \scheme{with-continuation-mark} and \scheme{current-continuation-marks}.
+
+In Scheme-like syntax, a \scheme{with-continuation-mark} expression appears as
+\scheme|(with-continuation-mark key-expr value-expr body-expr)|. The evaluation of this
+expression proceeds by first evaluating \scheme{key-expr} to \scheme{key} and
+\scheme{value-expr} to \scheme{value}. Thereafter, \scheme{body-expr} is evaluated within
+the extent of which \scheme'value' is associated with \scheme 'key'.
+
+For instance, in the expression \scheme|(with-continuation-mark 'fun 'cons (cons 0
+empty))|, the value \scheme{'+} is associated with the key \scheme{'fun} during the
+evaluation of \scheme|(+ 2 2)|.
+
+In the same Scheme-like syntax, a \scheme{current-continuation-marks} expression appears
+as \scheme|(current-continuation-marks key-list)|. This expression evaluates to a list of
+all the present key-value associations referenced in \scheme{key-list}. The
+\scheme{with-continuation-mark} form admits a notion of ordering--inner associations are
+more recent than outer ones--and this in reflected in the list yielded by the
+\scheme{current-continuation-marks}.
+
+Importantly, the result of \scheme{current-continuation-marks} provides no evidence of any
+portion of the dynamic context lacking continuation marks with the specified keys. This
+preserves the ability to perform optimizations without exposing details which would render
+the optimizations unsound. This also requires special consideration of a language that
+supports tail call optimization (which is not an optimization in the above sense since its
+behavior is defined in the semantics of the language).
+
+The canonical example to illustrate the behavior of continuation marks in the presence and
+absence of tail call optimization is the factorial function.
+
+Figure \ref{fac-rec} illustrates the definitional recursive variant of the factorial
+function. In this actualization, a cascade of multiplication operations builds as the
+recursive calls are made. Each multiplication is pending computation of which the machine 
+must keep track.
+
+\begin{figure}
+\begin{schemedisplay}
+(define (fac n)
+  (if (= n 0)
+      1
+      (* n (fac (- n 1)))))
+\end{schemedisplay}
+\caption{The definitionally recursive factorial function}
+\label{fac-rec}
+\end{figure}
+
+Figure \ref{fac-tail-rec} illustrates the tail recursive manifestation of the factorial
+function. In contrast to the function in figure \ref{fac-rec}, this formulation performs
+the multiplication before the recursive call. Because the function has no pending
+computations after the evaluation of the recursive call, the execution context need not
+grow. Such a call is said to be in tail position.
+
+\begin{figure}
+\begin{schemedisplay}
+(define (fac-tr n acc)
+  (if (= n 0)
+      acc
+      (fac-tr (- n 1) (* n acc))))
+\end{schemedisplay}
+\caption{A tail-recursive variant of the factorial function}
+\label{fac-tail-rec}
+\end{figure}
+
+Figures \ref{fac-rec-cm} and \ref{fac-tail-rec-cm} represent these two variants of the
+factorial function augmented with continuation marks. Using these definitions, the 
+result of \scheme|(fac 3)| would be
+
+\begin{schemedisplay}
+(((fac 1)) ((fac 2)) ((fac 3)))
+6
+\end{schemedisplay}
+
+whereas the result of \scheme|(fac-tr 3 1)| would be
+
+\begin{schemedisplay}
+(((fac 1)))
+6
+\end{schemedisplay}
+
+\begin{figure}
+\begin{schemedisplay}
+(define (fac n)
+  (if (= n 0)
+      (begin
+        (display (current-continuation-marks '(fac)))
+        1)
+      (with-continuation-mark 'fac n (* n (fac (- n 1)))))
+\end{schemedisplay}
+\caption{The definitionally recursive factorial function augmented with continuation marks}
+\label{fac-rec-cm}
+\end{figure}
+
+\begin{figure}
+\begin{schemedisplay}
+(define (fac-tr n acc)
+  (if (= n 0)
+      (begin
+        (display (current-continuation-marks '(fac)))
+        acc)
+      (with-continuation-mark 'fac n (fac-tr (- n 1) (* n acc))))
+\end{schemedisplay}
+\caption{The tail-recursive factorial function augmented with continuation marks}
+\label{fac-tail-rec-cm}
+\end{figure}
+
+This difference is due to the growing continuation in the definitionally recursive
+\scheme{fac}. Each call to \scheme{fac} has a pending computation--namely, the
+multiplication--after the recursive call and so each necessitates the creation of
+additional evaluation context. The effect of this additional context is that each
+annotation is applied to new, ``blank'' context, so all the previous annotations are
+preserved. In the tail-recursive variant, there is no pending computation and therefore no
+additional evaluation context. In this instance, the previous mark is overwritten with the
+new.
+

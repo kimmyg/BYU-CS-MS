@@ -1,0 +1,178 @@
+\chapter{CPS transformation}
+
+\section{Introduction}
+
+The CPS transform is actually a family of language transformations derived from Plotkin
+\cite{plotkin1975call} designed to simplify  programs by representing all data and control
+flow uniformly and explicitly. This, in turn, simplifies compiler construction and
+analyses such as optimization and verification \cite{sabry1994formal}. The standard
+variation of CPS adds a formal parameter to every function definition and an argument to
+every call site.
+
+As an example, consider once again the two variants of the factorial function, sans
+continuation marks, given earlier. In CPS, the properly-recursive variant can be expressed
+as
+\begin{schemedisplay}
+(define (fac n k) 
+  (if (= n 0)
+      (k 1)
+      (fac (- n 1) (lambda (acc) (k (* n acc))))))
+\end{schemedisplay}
+and the tail-recursive variant as
+\begin{schemedisplay}
+(define (fac-tr n acc k)
+  (if (= n 0)
+      (k acc)
+      (fac-tr (- n 1) (* n acc) k)))
+\end{schemedisplay}
+(For clarity, we have treated ``primitive'' functions--equality comparison, subtraction,
+and multiplication--in a direct manner. In contrast, a comprehensive CPS transformation
+would affect \emph{every} function.)
+
+Notice that, in the first variation, each recursive call receives a newly-constructed
+\scheme{k} encapsulating additional work to be performed at the completion of the
+recursive computation. In the second, \scheme{k} is passed unmodified, so while
+computation occurs within each context, no \emph{additional} computation pends. From this
+example, we see that the CPS representation is ideal for understanding tail-call behavior
+as it is explicit that the continuation is preserved by the tail call.
+
+The purpose of CPS does not lie solely in pedagogy, however. The reification of and
+consequent ability to directly manipulate the continuation is powerful, analogous in power
+to the ability to \emph{capture} a continuation which some languages provide. In Scheme,
+this is accomplished with \scheme{call/cc}, short for ``call with current continuation''.
+This call takes one argument which itself is a function of one argument. \scheme{call/cc}
+calls its argument, passing in a functional representation of the current
+continuation--the continuation present when \scheme{call/cc} was invoked. This
+continuation function takes one argument which is treated as the result of
+\scheme{call/cc} and runs this continuation to completion.
+
+As a simple example,
+\begin{schemedisplay}
+(+ 1 (call/cc
+       (lambda (k)
+         (k 1))))
+\end{schemedisplay}
+returns \scheme'2'. In effect, invoking \scheme{k} with \scheme'1' is the same 
+as replacing the entire \scheme{call/cc} invocation with \scheme'1'.
+
+Much of the power of \scheme{call/cc} lies in the manifestation of the continuation as a
+function, giving it first-class status. It can be passed as an argument in function calls,
+invoked, and, amazingly, reinvoked at leisure. It is this reinvokeability that makes
+\scheme{call/cc} the fundamental unit of control from which all other control structures can
+be built, including generators, coroutines, and threads.
+
+%\emph{call/cc} is erroneously seen as incredibly heavyweight and overkill for control
+%(cite something). This conception probably comes from the conceptualization of the
+%continuation as the call stack and continuation capture as stack copy while continuation
+%call is stack installation. It is also seen as a form of \emph{goto} which is known to
+%obfuscate control flow and impede analysis (cite something). [Can't and shouldn't talk
+%much about the second. Probably take it out.] Bearing in mind that the CPS transformation
+%aids compilers, it is useful to investigate the characterization of \emph{call/cc} within
+%the standard CPS transformation.
+
+In direct style, the definition of \scheme{call/cc} is conceptually 
+\begin{schemedisplay}
+(define call/cc
+  (lambda (f)
+    (f (get-function-representing-continuation))))
+\end{schemedisplay}
+where \scheme{get-function-representing-continuation} is an opaque function which leverages
+sweeping knowledge of the language implementation. The CPS definition is notably simpler:
+\begin{schemedisplay}
+(define call/cc
+  (lambda (f k)
+    (f (lambda (x w) (k x)) k)))
+\end{schemedisplay}
+
+Variations on the standard CPS transformation can make the expression of certain control
+structures more straightforward. For instance, the ``double-barrelled'' CPS transformation
+is a variation wherein each function signature receives not one but two additional formal
+parameters, each a continuation. One application of this particular variation is error
+handling with one continuation argument representing the remainder of a successful
+computation and the other representing the failure contingency. It is especially useful in
+modelling exceptions and other non-local transfers of control in situations where the
+computation might fail. In general, the nature of the CPS transformation allows it to
+untangle complicated, intricate control structures.
+
+Similar transformations exist which express other programming language features such as
+security annotations \cite{wallach2000safkasi} and control structures such as procedures,
+exceptions, labelled jumps, coroutines, and backtracking. On top of other offerings, this
+places it in a category of tools to describe and analyze programming language features.
+(This category is also occupied by Moggi's computational \lc--monads
+\cite{moggi1989computational}.)
+
+\section{Example}
+
+We will now focus our attention on a CPS transform defined over \lv.
+
+A CPS transformation is a global syntactic transformation of language terms. Recall that
+terms in the \lc\ take the form of lone variables $x$, $\lambda$-abstractions
+$\abs{x}{M}$, and applications $\app{M}{N}$ where $M$ and $N$ are themselves \lc\ terms. A
+comprehensive CPS transform definition then need only specify transformations for these
+three categories. As an example, consider Fischer's CPS transform \cite{fischer1972lambda}:
+\begin{align*}
+\mathcal{F}[x]          &= \abs{k}{\app{k}{x}}\\
+\mathcal{F}[\abs{x}{M}] &= \abs{k}{\app{k}{\abs{x}{\mathcal{F}[M]}}}\\
+\mathcal{F}[\app{M}{N}] &= \abs{k}{\app{\mathcal{F}[M]}{\abs{m}{\app{\mathcal{F}[N]}{\abs{n}{\app{\app{m}{n}}{k}}}}}}
+\end{align*}
+Fischer's CPS transform abstracts each term in the \lc: lone variables wait on a
+continuation, abstractions receive a degree of indirection, and even applications, the
+sole reduction facility of the \lc, become abstractions. In essence, terms become
+suspended in wait of a continuation argument. By priming a term so-transformed with a
+continuation function--even as simple as the identity function--we instigate a cascade of
+computation.
+
+GO OVER THE REST OF THIS SECTION
+
+In the case of lone variables and applications, this transformation ultimately has no
+effect on the result of the computation. However, abstractions, the values of the
+\lc, are contaminated by the transform. For example, consider the
+transformation of $\lambda x.x$
+\begin{align*}
+\mathcal{F}[\lambda x.x] &= \lambda k.k\,(\lambda x.\mathcal{F}[x])\\
+                         &= \lambda k.(k\,\lambda x.\lambda k.(k\,x))
+\end{align*}
+If we apply this term to the identity function, it reduces as
+\begin{align*}
+                        &\lambda k.(k \lambda x.\lambda k.(k\,x))\,\lambda y.y\\
+\lvrr &\lambda y.y\,\lambda x.\lambda k.(k\,x)\\
+\lvrr &\lambda x.\lambda k.(k\,x)
+\end{align*}
+The result of this reduction, in common with most others, contains residual terms from the
+CPS transform. We will need to account for this particular property of Fischer's CPS
+transform.
+
+One of the many reasons continuation-passing style is useful is that is allows evaluation
+order to be controlled. In fact, Plotkin \cite{plotkin1975call} showed that it can be used
+to simulate the call-by-value \lc\ with the call-by-name \lc
+and vice versa. We can show that, in the call-by-value \lc, the passed
+continuation is applied only to fully-reduced terms. This can be done by verifying this
+property for each case of the CPS transform definition. Before doing so, we remind that no
+reduction is performed by effect of the transformation.
+\[
+T[x]=\lambda k.(k\,x)
+\]
+Variables are irreducible, so the property holds immediately here.
+\[
+T[\lambda x.E]=\lambda k.(k\,\lambda x.T[E])
+\]
+Here we reason inductively by assuming that the property holds for E. Abstractions are
+irreducible in a call-by-value regime, so the property holds in this case also.
+\[
+T[E\,F]=\lambda k.(T[E]\,\lambda e.(T[F]\,\lambda f.((e\,f)\,k))))
+\]
+In this case, we observe that the continuation $k$ provided is not directly applied.
+Instead, the operator is evaluated and a continuation is constructed into which its value
+may be passed. The operand is treated similarly. Finally, the operator is applied to the
+operand and $k$ is not invoked but passed to the result.
+
+Notice that $k$, which represents the rest of the continuation, is passed unmodified.
+Specifically, a new continuation which employs $k$ as a subcontinuation has not been
+constructed. This quality is characteristic of a tail call in which the evaluation context
+for the arguments, no longer necessary, is subsumed by the evaluation context of the newly
+formed application.
+
+Finally, we observe that every transformed application passes--rather than invokes--the
+provided continuation and that occurs only after reduction. Then continuations can be
+invoked only as in the cases of variables and abstractions and we can see that they are 
+only applied to fully-reduced terms.
