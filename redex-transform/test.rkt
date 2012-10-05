@@ -102,37 +102,17 @@
 ;(transform-test '(error (ccm)))
 ;(transform-test '(wcm 1 (wcm (ccm) (ccm))))
 ;(transform-test '(wcm 0 ((λ (x) (wcm x (ccm))) 1)))
-(trace '(wcm (λ (x759754) (λ (x759755) ((ccm) x759754))) ((ccm) ((ccm) (ccm)))))
+;(trace '(wcm (λ (x759754) (λ (x759755) ((ccm) x759754))) ((ccm) ((ccm) (ccm)))))
+
+;(trace '(wcm 1 ((ccm) (λ (x) (λ (y) x)))))
+
+;(trace `(wcm (λ (x) (ccm)) (((ccm) (λ (x) (λ (y) x))) (λ (x) (x)))))
 #;(traces λv-rr `(((((,(transform '(λ (z) ((z (λ (a) a)) (λ (b) b))))
              (λ (z) z)) (λ (z) z)) (λ (x) (λ (f) (λ (m) (λ (y) (λ (f) (λ (m) x))))))) (λ (q1) q1)) (λ (q2) q2)))
 
 
-(define Y '(λ (f)
-             ((λ (x) (f (λ (v) ((x x) v))))
-              (λ (x) (f (λ (v) ((x x) v)))))))
 
-(define TRUE '(λ (x) (λ (y) x)))
-(define FALSE '(λ (x) (λ (y) y)))
 
-(define ZERO '(λ (f) (λ (z) z)))
-(define ONE '(λ (f) (λ (z) (f z))))
-
-(define SUCC '(λ (n) (λ (f) (λ (z) (f ((n f) z))))))
-(define PRED '(λ (n) (λ (f) (λ (z) (((n (λ (g) (λ (h) (h (g f))))) (λ (u) z)) (λ (u) u))))))
-
-(define ZERO? `(λ (n) ((n (λ (x) ,FALSE)) ,TRUE)))
-
-#;(define fac `(,Y (λ (f)
-                   (λ (n)
-                     (((,ZERO? n) ,ONE) ((,MULT n) (f (,PRED n)))))))) 
-
-;(traces λcm-rr `(,PRED (,SUCC ,ZERO)))  
-       
-(define p '(wcm 0 (ccm)))
-;(trace '(x (λ (y) y)))
-
-;(traces λcm-rr p)
-;(traces λv-rr (init (transform p)))
 
 (define (apply-reduction-relation/n rr e n [i 0])
   (if (= i n)
@@ -186,4 +166,4 @@
 
 
 
-;(redex-check λcm e (the-important-property-holds (term e)) #:attempts 10000 #:prepare prepare-cm-term)
+(redex-check λcm e (the-important-property-holds (term e)) #:attempts 10000); #:prepare prepare-cm-term)

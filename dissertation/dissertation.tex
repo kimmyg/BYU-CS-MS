@@ -189,13 +189,9 @@
 \yearcopyrighted{\GraduationYear}
 
 \documentabstract{%
-Continuation marks are a programming language feature which generalize stack inspection.
-We present a CPS-like transformation from the call-by-value $\lambda$-calculus augmented
-with continuation marks to the pure call-by-value $\lambda$-calculus. We document an
-iterative, feedback-based approach using Redex. We accompany the transformation with a
-meaning-preservation theorem. Finally, we discuss how such a transformation would simplify
-the construction of compilers which treat continuation marks correctly.
-%Continuation marks do not yet enjoy a transformation to the plain $\lambda$-calculus.
+Continuation marks are a programming language feature which generalize stack inspection. Despite its usefulness, this feature has not been adopted by languages which rely on stack inspection, e.g., for dynamic security checks. One reason for this neglect may be that continuation marks do not yet enjoy a transformation to the plain $\lambda$-calculus which would allow higher-order languages to provide continuation marks at little cost.
+
+We present a CPS-like transformation from the call-by-value $\lambda$-calculus augmented with continuation marks to the pure call-by-value $\lambda$-calculus. We discuss how this transformation simplifies the construction of compilers which treat continuation marks correctly. We document an iterative, feedback-based approach using Redex. We accompany the transformation with a meaning-preservation theorem.
 }
 
 \documentkeywords{%
@@ -286,22 +282,24 @@ My wife is the hottest thing ever.
 Thesis: A CPS-like global transformation can compile the \lc\ with continuation marks into
 the plain \lc\ in a semantics-preserving way.
 
-Continuation marks \cite{clements2006portable} are a language feature that provides a
-mechanism to annotate the evaluation context of a program. This feature allows arbitrary
-keys to be associated with arbitrary values for the lifetime of an evaluation context and
-the inquiry of these values for a given set of keys. This is advantageous for programs
-that require dynamic information about a program execution such as debuggers, profilers,
-and steppers because it allows them to be defined at the same level as the language
-instead of some level below.
+Numerous programming language instruments rely on stack inspection to function. Statistical profilers sample the stack regularly to record active functions, algebraic steppers observe the stack to represent the evaluation context of an expression, and debuggers naturally require consistent access to the stack. Each of these relies on implementation-specific information and must be maintained as the instrumented language undergoes optimizations and ventures across platforms. This makes these tools brittle and increases the porting cost of the language ecosystem. Each of these examples would benefit from a generalized stack-inspection mechanism available within the instrumented language itself. If written in such an enhanced language, each instrument would be more robust, more easily modified, and would port for free.
+
+Continuation marks \cite{clements2006portable} are a programming language feature which generalizes stack inpection. Not only do they dramatically simplify correct instrumentation \cite{clements2001modeling}, they have been used to allow inspection-based dynamic security checks in the presence of tail-call optimization \cite{clements2004tail} and to express aspect-oriented programming in higher-order languagues \cite{tucker2003pointcuts}.
+
+In spite of their usefulness, continuation marks have remained absent from programming languages at large. One reason for this is that retrofitting virtual machines to accommodate the level of stack inspection continuation marks must provide is expensive, especially when the virtual machines use the host stack for efficiency.
+
+For example, the ubiquitous JavaScript is an ideal candidate for the addition of continuation marks. However, as the lingua franca of the web, it has numerous mature implementations which have been heavily optimized; to add continuation marks to JavaScript amounts to modifying each implementation upstream, to say nothing of amending the JavaScript standard. (Clements et al. successfully added continuation marks in Mozilla's Rhino compiler \cite{clements2008implementing}, but it remains a proof-of-concept.)
+
+To avoid this roadblock, we instead take a macro-style approach; that is, we enhance the core language with facilities to manipulate continuation marks and desugar the enhanced language back to the core. To make our desugaring transformation apply to many languages, we define it over the \lc, the common core of most higher-order languages. With such a transformation, language semanticists do not need to reconcile the feature with other features in the language (provided they have already done so with $\lambda$) and their compiler writers do not need to worry about complicating their implementations (for the same reason).
 
 The \lc\ is a Turing-complete formal logic based on variable binding and substitution.
 Where the Turing machine model of computation is machine-centric, the \lc\ model is
 language-centric. Thus, it conveniently serves as an intermediate representation for a
-compiler or a base from which to define higher-level languages. The de facto standard
+compiler or a base from which to define higher-level languages. The standard
 reference to the \lc\ is Barendregt \cite{barendregt1984lambda}.
 
 The continuation-passing style (CPS) transformation is actually a family of
-transformations designed to make certain analyses simpler. Every member of this family
+language transformations designed to make certain analyses simpler. Every member of this family
 shares a common trait: their performance augments each function with an additional formal
 parameter, the \emph{continuation}, a functional representation of currently pending
 computation. Functions in CPS never explicitly return; instead, they call the continuation
@@ -342,14 +340,15 @@ invariants. Continuation marks are a language-level feature that provide the inf
 necessary for these tools to function. Furthermore, languages which require stack
 inspection to enforce security policies (\emph{Java}, \emph{C\#}) or support aspect
 oriented programming (\emph{aspectj}) can be defined in terms of a simpler language with
-continuation marks \cite{clements2004tail}.
+continuation marks \cite{clements2004tail, tucker2003pointcuts}.
 
 Continuation marks originated in PLT Scheme (now Racket \cite{plt-tr1}) as a stack 
 inspection mechanism. In fact, the \emph{Java} and \emph{C\#} languages rely on a similar 
 stack inspection to enforce security policies of which continuation marks can be seen as 
 a generalization. Surprisingly, continuation marks can be encoded in any language with 
-exception facilities \cite{pettyjohn2005continuations} which fact has led to their 
-experimental addition to \emph{JavaScript} \cite{clements2008implementing}.
+exception facilities \cite{pettyjohn2005continuations}.
+
+
 
 The feature of continuation marks itself is accessible via two surface level syntactic
 forms: \scheme{with-continuation-mark} and \scheme{current-continuation-marks}.
@@ -779,7 +778,7 @@ Similar transformations exist which express other programming language features 
 security annotations \cite{wallach2000safkasi} and control structures such as procedures,
 exceptions, labelled jumps, coroutines, and backtracking. On top of other offerings, this
 places it in a category of tools to describe and analyze programming language features.
-(This category is also occupied by Moggi's computational lambda calculus--monads
+(This category is also occupied by Moggi's computational \lc--monads
 \cite{moggi1989computational}.)
 
 \section{Example}
@@ -1362,7 +1361,7 @@ obvious that $e$ converges.
 \end{defn}
 
 \begin{defn}
-$\C{E[e]}=\app{\app{\C{e}}{\C{E}}}{\eval{\pair{\xi(E)}{\C{\chi(E)}}}}$
+$\C{E[e]}=\app{\app{\app{\C{e}}{\C{E}}}{\xi(E)}}{\C{\chi(E)}}$
 
 When applied to both a context and term, $\mathcal{C}$ is treated as a two argument
 function. While this in conventionally denoted $\Ct{E}{e}$ or similarly, we adopt the
@@ -1794,6 +1793,8 @@ Therefore, $\C{\mathrm{eval}_{cm}(p)}=\mathrm{eval}_{v}(\C{p})$.
 \end{proof}
 
 \chapter{Conclusion}
+
+Continuation marks support a bevy of instrumentation tools and advanced language features in a generalized, portable way. Despite their demonstrated utility, they have not yet found their way into most languages. A verified characterization of continuation marks in a pure computational language provides implementors of higher-order languages a correct compiler for continuation marks.
 
 \bibliographystyle{plainnat}
 \bibliography{dissertation}
