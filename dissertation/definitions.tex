@@ -1,22 +1,29 @@
+\newenvironment{schemeblock}{\begin{schemeregion}\begin{singlespace}\begin{schemedisplay}}{\end{schemedisplay}\end{singlespace}\end{schemeregion}}
+
+% church
+
 \setspecialsymbol{TRUE}{$\mathbf{true}$}
 \setspecialsymbol{FALSE}{$\mathbf{false}$}
-\setspecialsymbol{PAIR}{$\mathbf{pair}$}
+\setspecialsymbol{CONS}{$\mathbf{CONS}$}
 \setspecialsymbol{FST}{$\mathbf{fst}$}
 \setspecialsymbol{SND}{$\mathbf{snd}$}
 \setspecialsymbol{NIL}{$\mathbf{nil}$}
 
-
+% redex
 \setspecialsymbol{lambda}{$\lambda$}
 \setspecialsymbol{-->}{$\rightarrow$}
 \setspecialsymbol{betav}{$\beta$v}
-\setconstant{error}
-\setkeyword{subst}
-\setkeyword{chi}
 \setspecialsymbol{lambdav}{$\lambda$v}
 \setspecialsymbol{lambdav-rr}{$\lambda$v-rr}
 \setspecialsymbol{lambdav-subst}{$\lambda$v-subst}
-
+\setspecialsymbol{lambdacm}{$\lambda$cm}
+\setspecialsymbol{lambdacm-rr}{$\lambda$cm-rr}
+\setspecialsymbol{lambdacm-subst}{$\lambda$cm-subst}
 \setconstant{error}
+\setkeyword{chi subst}
+
+
+
 
 \renewenvironment{schemedefn}[1]{\begin{defn}$#1$\begin{singlespace}}{\end{singlespace}\end{defn}}
 \renewenvironment{namedschemedefn}[2]{\begin{defn}\label{#1}$#2$\begin{singlespace}}{\end{singlespace}\end{defn}}
@@ -25,8 +32,6 @@
 \setconstant{toy toy-rr undefined hole}
 \setspecialsymbol{-->}{$\rightarrow$}
 
-\setspecialsymbol{lambdacm}{$\lambda$cm}
-\setspecialsymbol{lambdacm-rr}{$\lambda$cm-rr}
-\setspecialsymbol{lambdacm-subst}{$\lambda$cm-subst}
+
 
 

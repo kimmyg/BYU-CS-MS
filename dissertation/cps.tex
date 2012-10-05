@@ -12,19 +12,19 @@ every call site.
 As an example, consider once again the two variants of the factorial function, sans
 continuation marks, given earlier. In CPS, the properly-recursive variant can be expressed
 as
-\begin{schemedisplay}
+\begin{schemeblock}
 (define (fac n k) 
   (if (= n 0)
       (k 1)
       (fac (- n 1) (lambda (acc) (k (* n acc))))))
-\end{schemedisplay}
+\end{schemeblock}
 and the tail-recursive variant as
-\begin{schemedisplay}
+\begin{schemeblock}
 (define (fac-tr n acc k)
   (if (= n 0)
       (k acc)
       (fac-tr (- n 1) (* n acc) k)))
-\end{schemedisplay}
+\end{schemeblock}
 (For clarity, we have treated ``primitive'' functions--equality comparison, subtraction,
 and multiplication--in a direct manner. In contrast, a comprehensive CPS transformation
 would affect \emph{every} function.)
@@ -47,11 +47,11 @@ continuation function takes one argument which is treated as the result of
 \scheme{call/cc} and runs this continuation to completion.
 
 As a simple example,
-\begin{schemedisplay}
+\begin{schemeblock}
 (+ 1 (call/cc
        (lambda (k)
          (k 1))))
-\end{schemedisplay}
+\end{schemeblock}
 returns \scheme'2'. In effect, invoking \scheme{k} with \scheme'1' is the same 
 as replacing the entire \scheme{call/cc} invocation with \scheme'1'.
 
@@ -71,18 +71,18 @@ be built, including generators, coroutines, and threads.
 %the standard CPS transformation.
 
 In direct style, the definition of \scheme{call/cc} is conceptually 
-\begin{schemedisplay}
+\begin{schemeblock}
 (define call/cc
   (lambda (f)
     (f (get-function-representing-continuation))))
-\end{schemedisplay}
+\end{schemeblock}
 where \scheme{get-function-representing-continuation} is an opaque function which leverages
 sweeping knowledge of the language implementation. The CPS definition is notably simpler:
-\begin{schemedisplay}
+\begin{schemeblock}
 (define call/cc
   (lambda (f k)
     (f (lambda (x w) (k x)) k)))
-\end{schemedisplay}
+\end{schemeblock}
 
 Variations on the standard CPS transformation can make the expression of certain control
 structures more straightforward. For instance, the ``double-barrelled'' CPS transformation

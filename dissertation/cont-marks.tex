@@ -65,12 +65,12 @@ recursive calls are made. Each multiplication is pending computation of which th
 must keep track.
 
 \begin{figure}
-\begin{schemedisplay}
+\begin{schemeblock}
 (define (fac n)
   (if (= n 0)
       1
       (* n (fac (- n 1)))))
-\end{schemedisplay}
+\end{schemeblock}
 \caption{The definitionally recursive factorial function}
 \label{fac-rec}
 \end{figure}
@@ -82,12 +82,12 @@ computations after the evaluation of the recursive call, the execution context n
 grow. Such a call is said to be in tail position.
 
 \begin{figure}
-\begin{schemedisplay}
+\begin{schemeblock}
 (define (fac-tr n acc)
   (if (= n 0)
       acc
       (fac-tr (- n 1) (* n acc))))
-\end{schemedisplay}
+\end{schemeblock}
 \caption{A tail-recursive variant of the factorial function}
 \label{fac-tail-rec}
 \end{figure}
@@ -96,40 +96,40 @@ Figures \ref{fac-rec-cm} and \ref{fac-tail-rec-cm} represent these two variants 
 factorial function augmented with continuation marks. Using these definitions, the 
 result of \scheme|(fac 3)| would be
 
-\begin{schemedisplay}
+\begin{schemeblock}
 (((fac 1)) ((fac 2)) ((fac 3)))
 6
-\end{schemedisplay}
+\end{schemeblock}
 
 whereas the result of \scheme|(fac-tr 3 1)| would be
 
-\begin{schemedisplay}
+\begin{schemeblock}
 (((fac 1)))
 6
-\end{schemedisplay}
+\end{schemeblock}
 
 \begin{figure}
-\begin{schemedisplay}
+\begin{schemeblock}
 (define (fac n)
   (if (= n 0)
       (begin
         (display (current-continuation-marks '(fac)))
         1)
       (with-continuation-mark 'fac n (* n (fac (- n 1)))))
-\end{schemedisplay}
+\end{schemeblock}
 \caption{The definitionally recursive factorial function augmented with continuation marks}
 \label{fac-rec-cm}
 \end{figure}
 
 \begin{figure}
-\begin{schemedisplay}
+\begin{schemeblock}
 (define (fac-tr n acc)
   (if (= n 0)
       (begin
         (display (current-continuation-marks '(fac)))
         acc)
       (with-continuation-mark 'fac n (fac-tr (- n 1) (* n acc))))
-\end{schemedisplay}
+\end{schemeblock}
 \caption{The tail-recursive factorial function augmented with continuation marks}
 \label{fac-tail-rec-cm}
 \end{figure}
