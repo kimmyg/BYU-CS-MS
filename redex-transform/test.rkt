@@ -9,8 +9,8 @@
 
 (define (transform-test program)
   (let* ((value (first (apply-reduction-relation* λcm-rr program)))
-         (value1 (transform value))
-         (value2 (first (apply-reduction-relation* λv-rr (init (transform program))))))
+         (value1 (first (apply-reduction-relation* λv-rr (transform-c value))))
+         (value2 (first (apply-reduction-relation* λv-rr (transform-c program)))))
     (if (alpha-eq? value1 value2)
         (if #f
             (begin
@@ -34,7 +34,7 @@
 (define (trace program)
   (begin
     (traces λcm-rr program)
-    (traces λv-rr (init (transform program)))))
+    (traces λv-rr (transform-c program))))
 
 (define (random-cm-term l [bv (list)])
   (if (> l 0)
@@ -77,28 +77,29 @@
     [x
      1]))
 
-;(transform-test '1)
-;(transform-test '(λ (x) x))
-;(transform-test '(ccm))
-;(transform-test '((λ (x) x) (ccm)))
-;(transform-test '(wcm 0 (ccm)))
-;(transform-test '(wcm (ccm) (ccm)))
-;(transform-test '(wcm (wcm (ccm) (ccm)) (λ (x) x)))
-;(transform-test '(wcm (wcm (ccm) (ccm)) b))
+(transform-test '1)
+(transform-test '(λ (x) x))
+(transform-test '(ccm))
+(transform-test '((λ (x) x) (ccm)))
+(transform-test '(wcm 0 (ccm)))
+(transform-test '(wcm (ccm) (ccm)))
+(transform-test '(wcm (wcm (ccm) (ccm)) (λ (x) x)))
+(transform-test '(wcm (wcm (ccm) (ccm)) b))
 ;(transform-test '(wcm (λ (a) (λ (b) b)) (ccm)))
-;(transform-test '(wcm (λ (x) x) (ccm)))
-;(transform-test '(wcm (λ (x) (λ (y) x)) (ccm)))
-;(transform-test '(wcm 0 (wcm 1 (ccm))))
+(transform-test '(wcm (λ (x) x) (ccm)))
+(transform-test '(wcm (λ (x) (λ (y) x)) (ccm)))
+(transform-test '(wcm 0 (wcm 1 (ccm))))
 ;(transform-test 'F)
-;(transform-test '(wcm (ccm) 3))
-;(transform-test '((ccm) 2))
-;(transform-test '(wcm ((ccm) 1) (ccm)))
-;(transform-test '(wcm 0 ((ccm) (ccm))))
-;(transform-test '(wcm 1 ((ccm) (λ (x) (λ (y) x)))))
+(transform-test '(wcm (ccm) 3))
+(transform-test '((ccm) 2))
+(transform-test '(wcm ((ccm) 1) (ccm)))
+(transform-test '(wcm 0 ((ccm) (ccm))))
+(transform-test '(wcm 1 ((ccm) (λ (x) (λ (y) x)))))
 ;(transform-test '(a b))
-;(transform-test '(wcm (ccm) (ccm)))
-;(transform-test '((wcm (ccm) (ccm)) 1))
+(transform-test '(wcm (ccm) (ccm)))
+(transform-test '((wcm (ccm) (ccm)) 1))
 ;(transform-test '(Y (wcm (ccm) (ccm))))
+<<<<<<< HEAD
 ;(transform-test '(error (ccm)))
 ;(transform-test '(wcm 1 (wcm (ccm) (ccm))))
 ;(transform-test '(wcm 0 ((λ (x) (wcm x (ccm))) 1)))
@@ -112,6 +113,15 @@
 
 
 
+=======
+(transform-test '(error (ccm)))
+(transform-test '(wcm 1 (wcm (ccm) (ccm))))
+(transform-test '(wcm 0 ((λ (x) (wcm x (ccm))) 1)))
+(transform-test '(wcm 0 ((λ (x) x) (wcm 1 (ccm)))))
+
+(define p '(wcm 0 (ccm)))
+;(trace '(x (λ (y) y)))
+>>>>>>> 9bfdfd1758eb73be65d40a16164483f9002bb043
 
 
 (define (apply-reduction-relation/n rr e n [i 0])
@@ -136,11 +146,11 @@
 ;
 ;(transform-test '(λ (u) u))
 ;(trace (random-cm-term 10))
-;(trace '((λ (x) (x x)) (λ (x) (x x))))
+;(trace '((ccm) 2))
 
 (define (the-important-property-holds program)
-  (let* ((value1 (transform (first (apply-reduction-relation* λcm-rr program))))
-         (value2 (first (apply-reduction-relation* λv-rr (init (transform program))))))
+  (let* ((value1 (first (apply-reduction-relation* λv-rr (transform-c (first (apply-reduction-relation* λcm-rr program))))))
+         (value2 (first (apply-reduction-relation* λv-rr (transform-c program)))))
     (alpha-eq? value1 value2)))
 
 (define (prepare-cm-term term)
@@ -165,5 +175,5 @@
 ;(check random-cm-term the-important-property-holds #:attempts 10)
 
 
+;(redex-check λcm e (the-important-property-holds (term e)) #:attempts 1000 #:prepare prepare-cm-term)
 
-(redex-check λcm e (the-important-property-holds (term e)) #:attempts 10000); #:prepare prepare-cm-term)
