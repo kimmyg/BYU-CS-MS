@@ -8,6 +8,81 @@
 % make beta appear in Redex stuff
 % make sure the paper with Jay's suggestions is satisfied
 
+The evaluation of a \cm\ program proceeds with the evolution of an evaluation context and reducible expression. When evaluation begins, the evaluation context is merely \scheme'hole', a placeholder for the eventual result. The evaluation of arguments--both in application and continuation mark forms--increases the size of the evaluation context. As these results are applied and evaluation continues, the size of the context fluctuates until finally, if the program terminates, we are left with a single value to plug in \scheme'hole'. This value is the value of the program.
+
+The state of evalutation at any given point can be encapsulated by a pair of an evaluation context $E$ and an expression $e$ which we write in unorthodox style as $E[e]$. In order to prove that evaluation in the transformation corresponds to native evaluation, we must formally relate this state with its corresponding transformation.
+
+The first step on this path is to define the transformation of a context. That is, for each context $E\in\lambda_{cm}$, we define $\C{E}$.
+
+\begin{schemedefinition}{\scheme|Ccps[hole]|}
+\begin{schemedisplay}
+(lambda (value)
+  value)
+\end{schemedisplay}
+\end{schemedefinition}
+
+\begin{schemedefinition}{\scheme|Ccps[E[(hole rand-value)]]|}
+\begin{schemedisplay}
+(lambda (rator-value)
+  (((Ccps[rand-expr]
+     (lambda (rand-value)
+       ((((rator-value rand-value) Ccps[E]) xiE) Cpcps[chiE])))
+    FALSE)
+  Cpcps[chiE]))
+\end{schemedisplay}
+\end{schemedefinition}
+
+\begin{schemedefinition}{\scheme|Ccps[E[(v_0 hole)]]|}
+\begin{schemedisplay}
+(lambda (rand-value)
+  ((((v_0 rand-value) Ccps[E]) xiE) Cpcps[chiE]))
+\end{schemedisplay}
+\end{schemedefinition}
+
+\begin{schemedefinition}{\scheme|Ccps[E[(wcm hole body-expr)]]|}
+\begin{schemedisplay}
+(lambda (mark-value) 
+  ((lambda (rest-marks) 
+      (((Ccps[body-expr] Ccps[E]) TRUE) Cpcps[((CONS mark-value) rest-marks)]))
+    ((xiE Chcps[(SND chiE)]) Cpcps[chiE])))
+\end{schemedisplay}
+\end{schemedefinition}
+
+\begin{schemedefinition}{\scheme|Ccps[E[(wcm v_0 hole)]]|}
+\begin{schemedisplay}
+Ccps[E]
+\end{schemedisplay}
+\end{schemedefinition}
+
+Next, we define a function $\xi$ over contexts $E$ which captures the state of \scheme'flag' as it is used in the transformation.
+
+\begin{definition}
+\[
+\xi(E)=\begin{cases}
+\mathbf{true} &\text{if $E=E'[\wcm{v'}{\hole}]$ for some $E'$ and $v'$}\\
+\mathbf{false} &\text{otherwise}
+\end{cases}
+\]
+\end{definition}
+
+We then recognize that \scheme'marks' as used in the transformation is \scheme|Cpcps[chiE]|. This allows us to relate $E[e]$ with $\C{E[e]}$ with the following definition.
+\begin{schemedefinition}{\scheme|Ccps[E[e]]|}
+\begin{schemedisplay}
+(((Ccps[e] Ccps[E]) xiE) Cpcps[chiE])
+\end{schemedisplay}
+\end{schemedefinition}
+
+From this definition, it is apparent that \scheme|Chcps[p]|=\scheme|(((Ccps[p] Ccps[hole]) XI(hole)) Cpcps[hole])|.
+
+Finally, we define ``filling the hole'', the insertion of a value in the context from which it came.
+
+\begin{schemedefinition}{\scheme|Ccps[E[v]]|}
+\begin{schemedisplay}
+(Ccps[E] Cpcps[v])
+\end{schemedisplay}
+\end{schemedefinition}
+
+-----------
 
 Before setting out on a formal proof, it may be useful to discuss certain invariants that
 suggest the transform is correct. In general, there is a direct correspondence between
@@ -74,66 +149,7 @@ $\C{E[v]}=\app{\C{E}}{\Cp{v}}$
 
 
 
-\begin{schemedefinition}{$\C{\app{e_0}{e_1}}$}
-\begin{schemeblock}
-\begin{schemedisplay}
-(lambda (k)
-   (lambda (f)
-     (lambda (m)
-       (((Ce_0
-          (lambda (a)
-            (((Ce_1
-               (lambda (b)
-                 ((((a b) k) f) m)))
-              FALSE)
-             m)))
-         FALSE)
-        m))))
-\end{schemedisplay}
-\end{schemeblock}
-\end{schemedefinition}
 
-\begin{schemedefinition}{$\C{\wcm{e_0}{e_1}}$}
-\begin{schemeblock}
-\begin{schemedisplay}
-(lambda (k)
-  (lambda (f)
-    (lambda (m)
-      (((Ce_0
-         (lambda (n) ((lambda (k) 
-                        (k (((m (lambda (x) x)) (lambda (z) z)) (lambda (z) z))))
-                      (lambda (t) 
-                        ((lambda (k) (k ((f C[(SND t)]) t)))
-                         (lambda (r) 
-                           (((Ce_1 k) TRUE) C[(PAIR v r)])))))))
-        FALSE)
-       m))))
-\end{schemedisplay}
-\end{schemeblock}
-\end{schemedefinition}
-
-\begin{schemedefinition}{$\C{\ccm}$}
-\begin{schemeblock}
-\begin{schemedisplay}
-(lambda (k)
-  (lambda (f)
-    (lambda (m)
-      (((m k) (lambda (z) z)) (lambda (z) z)))))
-\end{schemedisplay}
-\end{schemeblock}
-\end{schemedefinition}
-
-\begin{definition}
-$\C{v_0}=\C{\abs{x}{e'_0}}=\abs{k}{\abs{f}{\abs{m}{\app{k}{\abs{x}{\C{e'_0}}}}}}$
-\end{definition}
-
-\begin{definition}
-$\C{x}=\abs{k}{\abs{f}{\abs{m}{\app{k}{x}}}}$
-\end{definition}
-
-\begin{definition}
-\scheme|C[error]| = \scheme|error|
-\end{definition}
 
 \begin{schemedefinition}{$\C{\hole}$}
 \begin{schemeblock}
