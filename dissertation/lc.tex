@@ -1,13 +1,12 @@
 \chapter{\lc}
 
-The \lc\ is a Turing-complete system of logic extensively used as a formal system for
+The \lc\ \cite{barendregt1984lambda} is a Turing-complete system of logic extensively used as a formal system for
 expressing computation. Terms in the \lc\ are defined inductively; they take the form of
 variables $x$ drawn from an infinite set, abstractions $\abs{x}{M}$ where $M$ is itself a
 \lc\ term, and applications $\app{M}{N}$ where $M$ and $N$ are \lc\ terms.
 
-Variables in the \lc\ are either free or bound. A variable $x$ is free if it does not
-reside in the scope of a \emph{binding instance} of $x$. Otherwise, $x$ is bound. Bound
-variables play a special part in the role of the \lc\ as a computation substrate. Terms
+Variables in the \lc\ are either \emph{free} or \emph{bound}. A variable $x$ is free if it does not
+reside in the scope of a \emph{binding instance} of $x$. Otherwise, $x$ is bound. Terms
 with no free variables can be called closed terms, combinators, or programs. The fact that
 variables are drawn from an infinite set means that, given an arbitrary \lc\ term, we can
 always obtain a \emph{fresh variable}, a variable not present in the term at hand. This is
@@ -17,16 +16,9 @@ In an abstraction of the form $\abs{x}{M}$, $x$ is a binding instance which bind
 occurrences of $x$ in the body $M$. To a first approximation, abstractions are functions.
 For instance, the identity function can be expressed as $\abs{x}{x}$ where $x$ is
 \emph{any} variable. Thus, there are an infinite number of ways to express the identity
-function: $\abs{x}{x}$, $\abs{y}{y}$, $\abs{z}{z}$, etc. It is important to note that,
-while they are not syntactically equivalent, these terms denote the same function. This
-fact gives rise to the notion of $\alpha$-equivalence which captures the idea that
-consistent renaming of bound variables does not change the meaning of a term. There is
-some subtlety in valid renaming as there is the possibility of \emph{variable capture}
-which occurs when the new name of a binding instance is identical to that of some variable
-already present in the body. For instance, in the term $\abs{x}{y}$, if each $x$ is
-renamed to $y$, we obtain the term $\abs{y}{y}$, a fundamentally different term. For this
-reason, we need to take special care when we rename variables, which we will need to do
-regularly.
+function: $\abs{x}{x}$, $\abs{y}{y}$, $\abs{z}{z}$, etc. A consequence of this is that terms which are not syntactically equivalent may be semantically equivalent. This fact naturally gives rise to the notion of $\alpha$-equivalence which captures the idea that consistent renaming of bound variables, and their binding instances, does not change the meaning of a term.
+
+There is some subtlety in valid renaming as there is the possibility of \emph{variable capture} which occurs when the new name of a binding instance is identical to that of some variable already present in the body. For instance, in the term $\abs{x}{y}$, if each $x$ is renamed to $y$, we obtain the term $\abs{y}{y}$, a fundamentally different term. For this reason, we need to take special care when we rename variables, which we will need to do regularly.
 
 One of the ways abstractions approximate functions is that we can apply them to arguments.
 This is signified simply by juxtaposition of function (or operator) and argument (or
@@ -60,8 +52,8 @@ For instance, in $\app{\abs{x}{x}}{\app{\abs{y}{y}}{\abs{z}{z}}}$,
 whereas
 \begin{align*}
       &\app{\abs{x}{x}}{\app{\abs{y}{y}}{\abs{z}{z}}}\\
-\lvrr &\app{\abs{y}{y}}{\abs{z}{z}}\\
-\lvrr &\abs{z}{z}
+\larr &\app{\abs{y}{y}}{\abs{z}{z}}\\
+\larr &\abs{z}{z}
 \end{align*}
 Although both terms reduce to the same term in this example, this distinction is not
 merely pedantic: terms may reduce definitively in one reduction regime and fail to reduce

@@ -328,6 +328,25 @@ The \scheme{lambdacm-subst} metafunction is extended to accommodate the addition
 
 Finally, we define the $\chi$ metafunction. Its definition does not map directly to the formal definition, but matches the intuitive definition that underlies it.
 
-\section{Transformation testing}
 \section{Transformation definition}
+
+
+
+\section{Transformation testing}
+
+We can test that the property described by equation \ref{commutativity-property} holds for a given program \scheme'p' with 
+\begin{schemedisplay}
+(define (meaning-preserved? p)
+  (alpha-eq? (eval lambdav (c-hat (eval lambdacm p))) (eval lambdav (c-hat p)))
+\end{schemedisplay}
+where \scheme'alpha-eq?' determines $\alpha$-equivalence between two \lc\ terms and \scheme'eval' is an alias for the Redex native \scheme'apply-reduction-relation*'.
+
+Redex provides convenient functions to initiate random testing.
+
+\begin{schemedisplay}
+(redex-check lambdacm e (meaning-preserved? e))
+\end{schemedisplay}
+
+\scheme'redex-check' generates random terms according to the grammar of the given language (\scheme'lambdacm') and category (\scheme'e') in search of counterexamples to the predicate. It gradually increases the size of the terms it generates, which we found useful in obtaining minimal test cases. We subjected both the direct and CPS transformation to random testing and each eventually withstood 10,000 random tests. Interestingly, no incorrect transformation withstood more than 500 random tests before failing.
+
 

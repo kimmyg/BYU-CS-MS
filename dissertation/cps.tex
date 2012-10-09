@@ -5,7 +5,7 @@
 The CPS transform is actually a family of language transformations derived from Plotkin
 \cite{plotkin1975call} designed to simplify  programs by representing all data and control
 flow uniformly and explicitly. This, in turn, simplifies compiler construction and
-analyses such as optimization and verification \cite{sabry1994formal}. The standard
+analyses such as optimization and verification \cite{appel2007compiling, sabry1994formal}. The standard
 variation of CPS adds a formal parameter to every function definition and an argument to
 every call site.
 
@@ -13,18 +13,24 @@ As an example, consider once again the two variants of the factorial function, s
 continuation marks, given earlier. In CPS, the properly-recursive variant can be expressed
 as
 \begin{schemeblock}
+\begin{schemedisplay}
 (define (fac n k) 
   (if (= n 0)
       (k 1)
       (fac (- n 1) (lambda (acc) (k (* n acc))))))
+\end{schemedisplay}
 \end{schemeblock}
+\noindent
 and the tail-recursive variant as
 \begin{schemeblock}
+\begin{schemedisplay}
 (define (fac-tr n acc k)
   (if (= n 0)
       (k acc)
       (fac-tr (- n 1) (* n acc) k)))
+\end{schemedisplay}
 \end{schemeblock}
+\noindent
 (For clarity, we have treated ``primitive'' functions--equality comparison, subtraction,
 and multiplication--in a direct manner. In contrast, a comprehensive CPS transformation
 would affect \emph{every} function.)
@@ -48,9 +54,11 @@ continuation function takes one argument which is treated as the result of
 
 As a simple example,
 \begin{schemeblock}
+\begin{schemedisplay}
 (+ 1 (call/cc
        (lambda (k)
          (k 1))))
+\end{schemedisplay}
 \end{schemeblock}
 returns \scheme'2'. In effect, invoking \scheme{k} with \scheme'1' is the same 
 as replacing the entire \scheme{call/cc} invocation with \scheme'1'.
@@ -72,19 +80,24 @@ be built, including generators, coroutines, and threads.
 
 In direct style, the definition of \scheme{call/cc} is conceptually 
 \begin{schemeblock}
+\begin{schemedisplay}
 (define call/cc
   (lambda (f)
     (f (get-function-representing-continuation))))
+\end{schemedisplay}
 \end{schemeblock}
 where \scheme{get-function-representing-continuation} is an opaque function which leverages
 sweeping knowledge of the language implementation. The CPS definition is notably simpler:
 \begin{schemeblock}
+\begin{schemedisplay}
 (define call/cc
   (lambda (f k)
     (f (lambda (x w) (k x)) k)))
+\end{schemedisplay}
 \end{schemeblock}
+Within the definition of \scheme'call/cc', we define an anonymous function which, when given a value $x$ and continuation $w$, applies the captured continuation $k$ to $x$.
 
-Variations on the standard CPS transformation can make the expression of certain control
+Variations of the standard CPS transformation make the expression of certain control
 structures more straightforward. For instance, the ``double-barrelled'' CPS transformation
 is a variation wherein each function signature receives not one but two additional formal
 parameters, each a continuation. One application of this particular variation is error
@@ -122,11 +135,7 @@ suspended in wait of a continuation argument. By priming a term so-transformed w
 continuation function--even as simple as the identity function--we instigate a cascade of
 computation.
 
-GO OVER THE REST OF THIS SECTION
-
-In the case of lone variables and applications, this transformation ultimately has no
-effect on the result of the computation. However, abstractions, the values of the
-\lc, are contaminated by the transform. For example, consider the
+In a sense, the CPS transform contaminates abstractions, the values of the \lc. For example, consider the
 transformation of $\lambda x.x$
 \begin{align*}
 \mathcal{F}[\lambda x.x] &= \lambda k.k\,(\lambda x.\mathcal{F}[x])\\
@@ -138,41 +147,5 @@ If we apply this term to the identity function, it reduces as
 \lvrr &\lambda y.y\,\lambda x.\lambda k.(k\,x)\\
 \lvrr &\lambda x.\lambda k.(k\,x)
 \end{align*}
-The result of this reduction, in common with most others, contains residual terms from the
-CPS transform. We will need to account for this particular property of Fischer's CPS
-transform.
+The result of this reduction contains residue of the CPS transform. This must be accounted for when attempting to formally relate direct and continuation-passing style terms.
 
-One of the many reasons continuation-passing style is useful is that is allows evaluation
-order to be controlled. In fact, Plotkin \cite{plotkin1975call} showed that it can be used
-to simulate the call-by-value \lc\ with the call-by-name \lc
-and vice versa. We can show that, in the call-by-value \lc, the passed
-continuation is applied only to fully-reduced terms. This can be done by verifying this
-property for each case of the CPS transform definition. Before doing so, we remind that no
-reduction is performed by effect of the transformation.
-\[
-T[x]=\lambda k.(k\,x)
-\]
-Variables are irreducible, so the property holds immediately here.
-\[
-T[\lambda x.E]=\lambda k.(k\,\lambda x.T[E])
-\]
-Here we reason inductively by assuming that the property holds for E. Abstractions are
-irreducible in a call-by-value regime, so the property holds in this case also.
-\[
-T[E\,F]=\lambda k.(T[E]\,\lambda e.(T[F]\,\lambda f.((e\,f)\,k))))
-\]
-In this case, we observe that the continuation $k$ provided is not directly applied.
-Instead, the operator is evaluated and a continuation is constructed into which its value
-may be passed. The operand is treated similarly. Finally, the operator is applied to the
-operand and $k$ is not invoked but passed to the result.
-
-Notice that $k$, which represents the rest of the continuation, is passed unmodified.
-Specifically, a new continuation which employs $k$ as a subcontinuation has not been
-constructed. This quality is characteristic of a tail call in which the evaluation context
-for the arguments, no longer necessary, is subsumed by the evaluation context of the newly
-formed application.
-
-Finally, we observe that every transformed application passes--rather than invokes--the
-provided continuation and that occurs only after reduction. Then continuations can be
-invoked only as in the cases of variables and abstractions and we can see that they are 
-only applied to fully-reduced terms.

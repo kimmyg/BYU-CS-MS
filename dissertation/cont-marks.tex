@@ -33,12 +33,8 @@ forms: \scheme{with-continuation-mark} and \scheme{current-continuation-marks}.
 In Scheme-like syntax, a \scheme{with-continuation-mark} expression appears as
 \scheme|(with-continuation-mark key-expr value-expr body-expr)|. The evaluation of this
 expression proceeds by first evaluating \scheme{key-expr} to \scheme{key} and
-\scheme{value-expr} to \scheme{value}. Thereafter, \scheme{body-expr} is evaluated within
-the extent of which \scheme'value' is associated with \scheme 'key'.
-
-For instance, in the expression \scheme|(with-continuation-mark 'fun 'cons (cons 0
-empty))|, the value \scheme{'+} is associated with the key \scheme{'fun} during the
-evaluation of \scheme|(+ 2 2)|.
+\scheme{value-expr} to \scheme{value}. Thereafter, \scheme{body-expr} is evaluated during 
+which \scheme'value' is associated with \scheme'key'.
 
 In the same Scheme-like syntax, a \scheme{current-continuation-marks} expression appears
 as \scheme|(current-continuation-marks key-list)|. This expression evaluates to a list of
@@ -54,11 +50,13 @@ the optimizations unsound. This also requires special consideration of a languag
 supports tail call optimization (which is not an optimization in the above sense since its
 behavior is defined in the semantics of the language).
 
+\subsection{Example}
+
 The canonical example to illustrate the behavior of continuation marks in the presence and
 absence of tail call optimization is the factorial function.
 
-Figure \ref{fig:fac-rec} illustrates the definitional recursive variant of the factorial
-function. In this actualization, a cascade of multiplication operations builds as the
+Figure \ref{fig:fac-rec} illustrates the properly recursive variant of the factorial
+function. In this variation, a cascade of multiplication operations builds as the
 recursive calls are made. Each multiplication is pending computation of which the machine 
 must keep track.
 
@@ -75,8 +73,8 @@ must keep track.
 \label{fig:fac-rec}
 \end{figure}
 
-Figure \ref{fig:fac-tail-rec} illustrates the tail recursive manifestation of the factorial
-function. In contrast to the function in figure \ref{fig:fac-rec}, this formulation performs
+Figure \ref{fig:fac-tail-rec} illustrates the tail recursive variant of the factorial
+function. In contrast to the function in figure \ref{fig:fac-rec}, this variation performs
 the multiplication before the recursive call. Because the function has no pending
 computations after the evaluation of the recursive call, the execution context need not
 grow. Such a call is said to be in tail position.
@@ -97,16 +95,13 @@ grow. Such a call is said to be in tail position.
 Figures \ref{fig:fac-rec-cm} and \ref{fig:fac-tail-rec-cm} represent these two variants of the
 factorial function augmented with continuation marks. Using these definitions, the 
 result of \scheme|(fac 3)| would be
-
 \begin{schemeblock}
 \begin{schemedisplay}
 (((fac 1)) ((fac 2)) ((fac 3)))
 6
 \end{schemedisplay}
 \end{schemeblock}
-
 whereas the result of \scheme|(fac-tr 3 1)| would be
-
 \begin{schemeblock}
 \begin{schemedisplay}
 (((fac 1)))
@@ -144,7 +139,7 @@ whereas the result of \scheme|(fac-tr 3 1)| would be
 \label{fig:fac-tail-rec-cm}
 \end{figure}
 
-This difference is due to the growing continuation in the definitionally recursive
+This difference is due to the growing continuation in the properly recursive
 \scheme{fac}. Each call to \scheme{fac} has a pending computation--namely, the
 multiplication--after the recursive call and so each necessitates the creation of
 additional evaluation context. The effect of this additional context is that each

@@ -3,9 +3,7 @@
 A CPS-like global transformation can compile the \lc\ with continuation marks into
 the plain \lc\ in a semantics-preserving way.
 
-In order to demonstrate this, we must first clarify (and later, formalize) the
-semantics-preservation property. By this, we mean that the transformation commutes with
-evaluation. Call a satisfactory transformation $\mathcal{C}$. Then $\mathcal{C}$ satisfies 
+In order to demonstrate this, we must first clarify (and later, formalize) the semantics-preservation property. We will define a transformation from \cm\ to \lv\ and term it $\mathcal{C}$, as in \emph{compile}, since we are, in essence, compiling away continuation marks. In order to preserve the meaning of \cm, $\mathcal{C}$ must commute with evaluation. More precisely, $\mathcal{C}$ satisfies
 \[
 \begin{array}{ccc}
 p & \cmrrs & v\\
@@ -144,7 +142,7 @@ and we adjust $\hat{\mathcal{C}}$ so that
 
 Finally, we present the definition of $\mathcal{C}$ over the five syntactic forms of \cm.
 
-\begin{definition}{\scheme|C[(rator-expr rand-expr)]|}
+\begin{schemedefinition}{\scheme|C[(rator-expr rand-expr)]|}
 The formal transformation of application follows the \scheme'let' version exactly except the definitions of \scheme'rator-value' and \scheme'rand-value' are folded directly in.
 \begin{schemeblock}
 \begin{schemedisplay}
@@ -156,9 +154,9 @@ The formal transformation of application follows the \scheme'let' version exactl
      marks)))
 \end{schemedisplay}
 \end{schemeblock}
-\end{definition}
+\end{schemedefinition}
 
-\begin{definition}{\scheme|C[(wcm mark-expr body-expr)]|}
+\begin{schemedefinition}{\scheme|C[(wcm mark-expr body-expr)]|}
 The formal transformation of a \scheme'wcm' directive is also extremely similar to the \scheme'let' version. The definition of \scheme'C[cons]' is unfolded and simplified.
 \begin{schemeblock}
 \begin{schemedisplay}
@@ -170,9 +168,9 @@ The formal transformation of a \scheme'wcm' directive is also extremely similar 
       ((flag Ch[(SND marks)]) marks)))))
 \end{schemedisplay}
 \end{schemeblock}
-\end{definition}
+\end{schemedefinition}
 
-\begin{definition}{\scheme|C[(ccm)]|}
+\begin{schemedefinition}{\scheme|C[(ccm)]|}
 The \scheme'let' version of the transformation of a \scheme'ccm' directive remains unchanged.
 \begin{schemeblock}
 \begin{schemedisplay}
@@ -181,9 +179,9 @@ The \scheme'let' version of the transformation of a \scheme'ccm' directive remai
     marks))
 \end{schemedisplay}
 \end{schemeblock}
-\end{definition}
+\end{schemedefinition}
 
-\begin{definition}{\scheme|C[v]|=\scheme|C[(lambda (x) e)]|}
+\begin{schemedefinition}{\scheme|C[v]|=\scheme|C[(lambda (x) e)]|}
 Like other terms, values are modified to receive contextual information. However, being unaffected by context, values discard this information.
 \begin{schemeblock}
 \begin{schemedisplay}
@@ -192,10 +190,9 @@ Like other terms, values are modified to receive contextual information. However
     (lambda (x) C[e])))
 \end{schemedisplay}
 \end{schemeblock}
-\end{definition}
+\end{schemedefinition}
 
-
-\begin{definition}{\scheme|C[x]|}
+\begin{schemedefinition}{\scheme|C[x]|}
 Variables have the property that, when substitution occurs, they reconstitute transformed values. That is, in the midst of application in $\mathcal{C}$, terms of the form \scheme|(Cp[(lambda (x) x)] Cp[(lambda (y) y)])| appear, reducing to $\C{x}[x\leftarrow \Cp{\abs{y}{y}}]=\C{x[x\leftarrow\abs{y}{y}}=\C{\abs{y}{y}}$.
 \begin{schemeblock}
 \begin{schemedisplay}
@@ -204,11 +201,9 @@ Variables have the property that, when substitution occurs, they reconstitute tr
     x))
 \end{schemedisplay}
 \end{schemeblock}
-\end{definition}
+\end{schemedefinition}
 
 \subsection{Definition of $\mathcal{C}$ in CPS}
-
-Many compilers transform source to continuation-passing style (CPS) in the compilation process. The use of CPS as an intermediate language enables a host of optimization analyses and makes the implementation of otherwise-heavyweight features trivial, such as first-class continuations \cite{appel2007compiling}.
 
 We present a continuation mark transformation integrated in CPS.
 
@@ -298,7 +293,7 @@ We include corresponding definitions for $\mathcal{C}'$ and $\hat{\mathcal{C}}$.
 
 \subsection{Example}
 
-Consider the \cm\ program \scheme|(wcm 0 ((lambda (x) (wcm x (ccm))) 1))| which reduces as
+To better illustrate what the transformation does, we step through the reduction of a program which exhibits its more interesting aspects. One \cm\ program suited to this purpose is \scheme|(wcm 0 ((lambda (x) (wcm x (ccm))) 1))|. It reduces according to \cm\ semantics as
 \begin{schemeblock}
 \begin{schemedisplay}
 (wcm 0 ((lambda (x) (wcm x (ccm))) 1))
@@ -308,7 +303,8 @@ Consider the \cm\ program \scheme|(wcm 0 ((lambda (x) (wcm x (ccm))) 1))| which 
 (lambda (z) ((z 1) (lambda (x) (lambda (y) y))))
 \end{schemedisplay}
 \end{schemeblock}
-and transforms as
+
+We now consider the transformation of the same program. We apply the transformation just-in-time as we reduce which has the effect of reducing term size and promoting clarity.
 \begin{schemeblock}
 \begin{schemedisplay}
 Ch[(wcm 0 ((lambda (x) (wcm x (ccm))) 1))]
