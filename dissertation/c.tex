@@ -1,34 +1,3 @@
-\setspecialsymbol{e_0}{$e_0$}
-\setspecialsymbol{e_0p}{$e'_0$}
-\setspecialsymbol{Ce_0}{$\C{e_0}$}
-\setspecialsymbol{Ce_0p}{$\C{e'_0}$}
-\setspecialsymbol{e_1}{$e_1$}
-\setspecialsymbol{Ce_1}{$\C{e_1}$}
-\setspecialsymbol{Ce_1p}{$\C{e'_1}$}
-\setspecialsymbol{Cv}{$\C{v}$}
-\setspecialsymbol{v_0}{$v_0$}
-\setspecialsymbol{Cv_0}{$\C{v_0}$}
-\setspecialsymbol{Cv_0p}{$\C{v'_0}$}
-\setspecialsymbol{Cpv_0}{$\Cp{v_0}$}
-\setspecialsymbol{Cpv_1}{$\Cp{v_1}$}
-\setspecialsymbol{v_1}{$v_1$}
-\setspecialsymbol{T}{$\mathcal{A}$}
-\setspecialsymbol{C}{$\mathcal{C}$}
-\setspecialsymbol{Cp}{$\mathcal{C}'$}
-\setspecialsymbol{Ch}{$\hat{\mathcal{C}}$}
-\setspecialsymbol{Ccps}{$\mathcal{C}_{\mathrm{cps}}$}
-\setspecialsymbol{Cpcps}{$\mathcal{C}'_{\mathrm{cps}}$}
-\setspecialsymbol{Chcps}{$\hat{\mathcal{C}}_{\mathrm{cps}}$}
-\setspecialsymbol{hole}{$\hole$}
-\setspecialsymbol{bottom}{$\perp$}
-\setspecialsymbol{Ce_0p_x_Cpv_1}{$\C{e'_0}[x\leftarrow\Cp{v_1}]$}
-\setspecialsymbol{e_0p_x_v_1}{$e'_0[x\leftarrow v_1]$}
-\setspecialsymbol{Cz}{$\C{z}$}
-\setspecialsymbol{CE}{$\C{E}$}
-\setspecialsymbol{xiE}{$\xi(E)$}
-\setspecialsymbol{chiE}{$\chi(E)$}
-\setspecialsymbol{CchiE}{$\C{\chi(E)}$}
-
 \chapter{$\mathcal{C}$}
 
 A CPS-like global transformation can compile the \lc\ with continuation marks into
@@ -63,6 +32,7 @@ These two pieces of information suffice to correctly simulate continuation marks
 The definition of $\mathcal{C}$ entails transformation over each syntactic form of \cm.
 
 With this in mind, consider a conceptual transformation of application, \scheme|C[(rator-expr rand-expr)]|, as
+\begin{schemeblock}
 \begin{schemedisplay}
 (lambda (flag)
   (lambda (marks)
@@ -70,6 +40,7 @@ With this in mind, consider a conceptual transformation of application, \scheme|
           (rand-value ((C[rand-expr] FALSE) marks))
       (((rator-value rand-value) flag) marks))))
 \end{schemedisplay}
+\end{schemeblock}
 ignoring for the moment that \scheme'let' is in neither \lv\ or \cm. This definition captures that
 \begin{enumerate}
 \item before evaluation, we expect \scheme'flag' to indicate tail position information and \scheme'marks' to provide a list of the current continuation marks,
@@ -78,6 +49,7 @@ ignoring for the moment that \scheme'let' is in neither \lv\ or \cm. This defini
 \end{enumerate}
 
 Now consider a conceptual transformation of a \scheme'wcm' directive, \scheme|C[(wcm mark-expr body-expr)]|, as
+\begin{schemeblock}
 \begin{schemedisplay}
 (lambda (flag)
   (lambda (marks)
@@ -85,6 +57,7 @@ Now consider a conceptual transformation of a \scheme'wcm' directive, \scheme|C[
                                (rest-marks (if flag (snd marks) marks)))
                            (cons mark-value rest-marks)))))
 \end{schemedisplay}
+\end{schemeblock}
 with similar caveats as the previous case. This definition captures that
 \begin{enumerate}
 \item as in application, we expect \scheme'flag' to indicate tail position information and \scheme'marks' to provide a list of the current continuation marks,
@@ -94,11 +67,13 @@ with similar caveats as the previous case. This definition captures that
 \end{enumerate}
 
 Finally, consider the conceptual transformation of a \scheme'ccm' directive, \scheme|C[(ccm)]|, as
+\begin{schemeblock}
 \begin{schemedisplay}
 (lambda (flag)
   (lambda (marks)
     marks))
 \end{schemedisplay}
+\end{schemeblock}
 wherein we reap the fruits of simplicity from our laborious passing: this definition is gratifyingly direct.
 
 The conceptual transformation of variables \scheme'x' and values \scheme'(lambda (x) e)' is straightforward.
@@ -106,22 +81,28 @@ The conceptual transformation of variables \scheme'x' and values \scheme'(lambda
 We now address the absence of \scheme'let', \scheme'if', \scheme'cons', etc. from \lv.
 
 We can express the \scheme'let' construct in \lv\ with application. An expression such as
+\begin{schemeblock}
 \begin{schemedisplay}
 (let ((x_1 e_1)
       ...
       (x_n e_n))
   e)
 \end{schemedisplay}
+\end{schemeblock}
 can be interpreted as
+\begin{schemeblock}
 \begin{schemedisplay}
 (...((lambda (x_1) ... (lambda (x_n)
            e)...) e_1) ...) e_n)
 \end{schemedisplay}
+\end{schemeblock}
 which is the curried form of
+\begin{schemeblock}
 \begin{schemedisplay}
 ((lambda (x_1 ... x_n)
            e) e_1 ... e_n)
 \end{schemedisplay}
+\end{schemeblock}
 We unfold this characterization of \scheme'let' to guide the construction of $\mathcal{C}$ before simplifying.
 [Drop everything after ``with application.''?]
 
@@ -159,26 +140,13 @@ and we adjust $\hat{\mathcal{C}}$ so that
 \Ch{p}=\app{\app{\C{p}}{\false}}{\Cp{\nil}}
 \end{equation}
 
-
-\theoremstyle{definition}
-\newtheorem{case}{Case}
-\newtheorem{defn}{Definition}
-
-\theoremstyle{plain}
-\newtheorem{lemma}{Lemma}
-\newtheorem{theorem}{Theorem}
-
-\newenvironment{schemedefn}[1]{\begin{defn}#1}{\end{defn}}
-\newenvironment{namedschemedefn}[2]{\begin{defn}\label{#1}$#2$}{\end{defn}}
-
 \subsection{Definition of $\mathcal{C}$}
 
 Finally, we present the definition of $\mathcal{C}$ over the five syntactic forms of \cm.
 
-
-\begin{schemedefn}{\scheme|C[(rator-expr rand-expr)]|}
-
+\begin{definition}{\scheme|C[(rator-expr rand-expr)]|}
 The formal transformation of application follows the \scheme'let' version exactly except the definitions of \scheme'rator-value' and \scheme'rand-value' are folded directly in.
+\begin{schemeblock}
 \begin{schemedisplay}
 (lambda (flags)
   (lambda (marks)
@@ -187,51 +155,56 @@ The formal transformation of application follows the \scheme'let' version exactl
       flags)
      marks)))
 \end{schemedisplay}
-\end{schemedefn}
+\end{schemeblock}
+\end{definition}
 
-\begin{schemedefn}{\scheme|C[(wcm mark-expr body-expr)]|}
-
+\begin{definition}{\scheme|C[(wcm mark-expr body-expr)]|}
 The formal transformation of a \scheme'wcm' directive is also extremely similar to the \scheme'let' version. The definition of \scheme'C[cons]' is unfolded and simplified.
+\begin{schemeblock}
 \begin{schemedisplay}
 (lambda (flag)
   (lambda (marks)
     ((C[body-expr] TRUE)
-     (((lambda (mark-value) (lambda (rest-marks) Cp[((CONS mark-value) rest-marks)])))
+     (((lambda (mark-value) (lambda (rest-marks) Cp[((CONS mark-value) rest-marks)]))
        ((C[mark-expr] FALSE) marks))
       ((flag Ch[(SND marks)]) marks)))))
 \end{schemedisplay}
-\end{schemedefn}
+\end{schemeblock}
+\end{definition}
 
-\begin{schemedefn}{\scheme|C[(ccm)]|}
-
+\begin{definition}{\scheme|C[(ccm)]|}
 The \scheme'let' version of the transformation of a \scheme'ccm' directive remains unchanged.
+\begin{schemeblock}
 \begin{schemedisplay}
 (lambda (flag)
   (lambda (marks)
     marks))
 \end{schemedisplay}
-\end{schemedefn}
+\end{schemeblock}
+\end{definition}
 
-\begin{schemedefn}{\scheme|C[v]|=\scheme|C[(lambda (x) e)]|}
-
+\begin{definition}{\scheme|C[v]|=\scheme|C[(lambda (x) e)]|}
 Like other terms, values are modified to receive contextual information. However, being unaffected by context, values discard this information.
+\begin{schemeblock}
 \begin{schemedisplay}
 (lambda (flag)
   (lambda (marks)
     (lambda (x) C[e])))
 \end{schemedisplay}
-\end{schemedefn}
+\end{schemeblock}
+\end{definition}
 
 
-\begin{schemedefn}{\scheme|C[x]|}
-
+\begin{definition}{\scheme|C[x]|}
 Variables have the property that, when substitution occurs, they reconstitute transformed values. That is, in the midst of application in $\mathcal{C}$, terms of the form \scheme|(Cp[(lambda (x) x)] Cp[(lambda (y) y)])| appear, reducing to $\C{x}[x\leftarrow \Cp{\abs{y}{y}}]=\C{x[x\leftarrow\abs{y}{y}}=\C{\abs{y}{y}}$.
+\begin{schemeblock}
 \begin{schemedisplay}
 (lambda (flag)
   (lambda (marks)
     x))
 \end{schemedisplay}
-\end{schemedefn}
+\end{schemeblock}
+\end{definition}
 
 \subsection{Definition of $\mathcal{C}$ in CPS}
 
@@ -239,7 +212,8 @@ Many compilers transform source to continuation-passing style (CPS) in the compi
 
 We present a continuation mark transformation integrated in CPS.
 
-\begin{schemedefn}{\scheme|Ccps[(rator-expr rand-expr)]|}
+\begin{schemedefinition}{\scheme|Ccps[(rator-expr rand-expr)]|}
+\begin{schemeblock}
 \begin{schemedisplay}
 (lambda (kont)
    (lambda (flag)
@@ -249,14 +223,14 @@ We present a continuation mark transformation integrated in CPS.
             (((Ccps[rand-expr]
                (lambda (rand-value)
                  ((((rator-value rand-value) kont) flag) marks)))
-              FALSE)
-             marks)))
-         FALSE)
-        marks))))
+              FALSE) marks)))
+         FALSE) marks))))
 \end{schemedisplay}
-\end{schemedefn}
+\end{schemeblock}
+\end{schemedefinition}
 
-\begin{schemedefn}{\scheme|C[(wcm mark-expr body-expr)]|}
+\begin{schemedefinition}{\scheme|C[(wcm mark-expr body-expr)]|}
+\begin{schemeblock}
 \begin{schemedisplay}
 (lambda (kont)
   (lambda (flag)
@@ -264,57 +238,68 @@ We present a continuation mark transformation integrated in CPS.
       (((Ccps[mark-expr]
           (lambda (mark-value) 
             ((lambda (rest-marks) 
-               (((Ccps[body-expr] kont) TRUE) Cp[((CONS mark-value) rest-marks)])))
+               (((Ccps[body-expr] kont) TRUE) Cp[((CONS mark-value) rest-marks)]))
              ((flag Ch_cps[(SND marks)]) marks))))
-        FALSE)
-       marks))))
+        FALSE) marks))))
 \end{schemedisplay}
-\end{schemedefn}
+\end{schemeblock}
+\end{schemedefinition}
 
-\begin{schemedefn}{\scheme|Ccps[(ccm)]|}
+\begin{schemedefinition}{\scheme|Ccps[(ccm)]|}
+\begin{schemeblock}
 \begin{schemedisplay}
 (lambda (kont)
   (lambda (flag)
     (lambda (marks)
       (kont marks))))
 \end{schemedisplay}
-\end{schemedefn}
+\end{schemeblock}
+\end{schemedefinition}
 
-\begin{schemedefn}{\scheme|Ccps[v]|=\scheme|Ccps[(lambda (x) e)]|}
+\begin{schemedefinition}{\scheme|Ccps[v]|=\scheme|Ccps[(lambda (x) e)]|}
+\begin{schemeblock}
 \begin{schemedisplay}
 (lambda (kont)
   (lambda (flag)
     (lambda (marks)
       (kont (lambda (x) Ccps[e])))))
 \end{schemedisplay}
-\end{schemedefn}
+\end{schemeblock}
+\end{schemedefinition}
 
-\begin{schemedefn}{\scheme|Ccps[x]|}
+\begin{schemedefinition}{\scheme|Ccps[x]|}
+\begin{schemeblock}
 \begin{schemedisplay}
 (lambda (kont)
   (lambda (flag)
     (lambda (marks)
       (kont x))))
 \end{schemedisplay}
-\end{schemedefn}
+\end{schemeblock}
+\end{schemedefinition}
 
 We include corresponding definitions for $\mathcal{C}'$ and $\hat{\mathcal{C}}$.
 
-\begin{schemedefn}{\scheme|Cpcps[(lambda (x) e)]|}
+\begin{schemedefinition}{\scheme|Cpcps[(lambda (x) e)]|}
+\begin{schemeblock}
 \begin{schemedisplay}
 (lambda (x) Ccps[e])
 \end{schemedisplay}
-\end{schemedefn}
+\end{schemeblock}
+\end{schemedefinition}
 
-\begin{schemedefn}{\scheme|Chcps[p]|}
+\begin{schemedefinition}{\scheme|Chcps[p]|}
+\begin{schemeblock}
 \begin{schemedisplay}
 (((Ccps[p] (lambda (x) x)) FALSE) Cpcps[nil])
 \end{schemedisplay}
-\end{schemedefn}
+\end{schemeblock}
+\end{schemedefinition}
 
 \subsection{Example}
 
 Consider the \cm\ program \scheme|(wcm 0 ((lambda (x) (wcm x (ccm))) 1))| which reduces as
+\begin{schemeblock}
 \begin{schemedisplay}
 (wcm 0 ((lambda (x) (wcm x (ccm))) 1))
 (wcm 0 (wcm 1 (ccm)))
@@ -322,7 +307,9 @@ Consider the \cm\ program \scheme|(wcm 0 ((lambda (x) (wcm x (ccm))) 1))| which 
 (wcm 1 (lambda (z) ((z 1) (lambda (x) (lambda (y) y)))))
 (lambda (z) ((z 1) (lambda (x) (lambda (y) y))))
 \end{schemedisplay}
+\end{schemeblock}
 and transforms as
+\begin{schemeblock}
 \begin{schemedisplay}
 Ch[(wcm 0 ((lambda (x) (wcm x (ccm))) 1))]
 
@@ -467,6 +454,9 @@ Ch[(wcm 0 ((lambda (x) (wcm x (ccm))) 1))]
 
 Cp[((CONS 1) NIL)]
 \end{schemedisplay}
+\end{schemeblock}
 
 [This example is way too long. Are trivial examples generally uninteresting?]
+
+
 

@@ -25,31 +25,31 @@ First, we define some useful shorthand.
 
 
 
-\begin{defn}
+\begin{definition}
 $\true=\abs{x}{\abs{y}{x}}$
-\end{defn}
+\end{definition}
 
-\begin{defn}
+\begin{definition}
 $\false=\abs{x}{\abs{y}{y}}$
-\end{defn}
+\end{definition}
 
-\begin{defn}
+\begin{definition}
 $\mathbf{pair}=\abs{a}{\abs{b}{\abs{z}{\app{\app{z}{a}}{b}}}}$
-\end{defn}
+\end{definition}
 
-\begin{defn}
+\begin{definition}
 $\mathbf{fst}=\abs{p}{\app{p}{\true}}$
-\end{defn}
+\end{definition}
 
-\begin{defn}
+\begin{definition}
 $\mathbf{snd}=\abs{p}{\app{p}{\false}}$
-\end{defn}
+\end{definition}
 
-\begin{defn}
+\begin{definition}
 $\nil=\false$
-\end{defn}
+\end{definition}
 
-\begin{defn}
+\begin{definition}
 If $e\lvrrs v$, $\eval{e}=v$.
 
 The intent of this definition is to preserve visual indicators of the meaning of an
@@ -58,23 +58,24 @@ $b$ as $\eval{\pair{a}{b}}$ instead of the less recognizable
 $\abs{z}{\app{\app{z}{a}}{b}}$. However, it is dangerous since, in the case that $e$
 diverges, we refer to a value that doesn't exist. We employ this definition only if it is
 obvious that $e$ converges.
-\end{defn}
+\end{definition}
 
-\begin{defn}
+\begin{definition}
 $\C{E[e]}=\app{\app{\app{\C{e}}{\C{E}}}{\xi(E)}}{\C{\chi(E)}}$
 
 When applied to both a context and term, $\mathcal{C}$ is treated as a two argument
 function. While this in conventionally denoted $\Ct{E}{e}$ or similarly, we adopt the
 unorthodox notation for consistency.
-\end{defn}
+\end{definition}
 
-\begin{defn}
+\begin{definition}
 $\C{E[v]}=\app{\C{E}}{\Cp{v}}$
-\end{defn}
+\end{definition}
 
 
 
-\begin{schemedefn}{\C{\app{e_0}{e_1}}}
+\begin{schemedefinition}{$\C{\app{e_0}{e_1}}$}
+\begin{schemeblock}
 \begin{schemedisplay}
 (lambda (k)
    (lambda (f)
@@ -89,9 +90,11 @@ $\C{E[v]}=\app{\C{E}}{\Cp{v}}$
          FALSE)
         m))))
 \end{schemedisplay}
-\end{schemedefn}
+\end{schemeblock}
+\end{schemedefinition}
 
-\begin{schemedefn}{\C{\wcm{e_0}{e_1}}}
+\begin{schemedefinition}{$\C{\wcm{e_0}{e_1}}$}
+\begin{schemeblock}
 \begin{schemedisplay}
 (lambda (k)
   (lambda (f)
@@ -106,36 +109,42 @@ $\C{E[v]}=\app{\C{E}}{\Cp{v}}$
         FALSE)
        m))))
 \end{schemedisplay}
-\end{schemedefn}
+\end{schemeblock}
+\end{schemedefinition}
 
-\begin{schemedefn}{\C{\ccm}}
+\begin{schemedefinition}{$\C{\ccm}$}
+\begin{schemeblock}
 \begin{schemedisplay}
 (lambda (k)
   (lambda (f)
     (lambda (m)
       (((m k) (lambda (z) z)) (lambda (z) z)))))
 \end{schemedisplay}
-\end{schemedefn}
+\end{schemeblock}
+\end{schemedefinition}
 
-\begin{defn}
+\begin{definition}
 $\C{v_0}=\C{\abs{x}{e'_0}}=\abs{k}{\abs{f}{\abs{m}{\app{k}{\abs{x}{\C{e'_0}}}}}}$
-\end{defn}
+\end{definition}
 
-\begin{defn}
+\begin{definition}
 $\C{x}=\abs{k}{\abs{f}{\abs{m}{\app{k}{x}}}}$
-\end{defn}
+\end{definition}
 
-\begin{defn}
+\begin{definition}
 \scheme|C[error]| = \scheme|error|
-\end{defn}
+\end{definition}
 
-\begin{schemedefn}{\C{\hole}}
+\begin{schemedefinition}{$\C{\hole}$}
+\begin{schemeblock}
 \begin{schemedisplay}
 (lambda (v) C[v])
 \end{schemedisplay}
-\end{schemedefn}
+\end{schemeblock}
+\end{schemedefinition}
 
-\begin{schemedefn}{\C{E[\app{\hole}{e_1}]}}
+\begin{schemedefinition}{$\C{E[\app{\hole}{e_1}]}$}
+\begin{schemeblock}
 \begin{schemedisplay}
 (lambda (a)
   (((Ce_1
@@ -144,15 +153,19 @@ $\C{x}=\abs{k}{\abs{f}{\abs{m}{\app{k}{x}}}}$
     FALSE)
    CchiE))
 \end{schemedisplay}
-\end{schemedefn}
+\end{schemeblock}
+\end{schemedefinition}
 
-\begin{schemedefn}{\C{E[\app{v_0}{\hole}]}}
+\begin{schemedefinition}{$\C{E[\app{v_0}{\hole}]}$}
+\begin{schemeblock}
 \begin{schemedisplay}
 (lambda (b) ((((Cpv_0 b) CE) xiE) CchiE))
 \end{schemedisplay}
-\end{schemedefn}
+\end{schemeblock}
+\end{schemedefinition}
 
-\begin{schemedefn}{\C{E[\wcm{\hole}{e_1}]}}
+\begin{schemedefinition}{$\C{E[\wcm{\hole}{e_1}]}$}
+\begin{schemeblock}
 \begin{schemedisplay}
 (lambda (n) ((lambda (k) 
                (k (((CchiE (lambda (x) x)) (lambda (z) z)) (lambda (z) z))))
@@ -161,13 +174,16 @@ $\C{x}=\abs{k}{\abs{f}{\abs{m}{\app{k}{x}}}}$
                   (lambda (r) 
                     (((Ce_1 CE) TRUE) C[(PAIR v r)]))))))
 \end{schemedisplay}
-\end{schemedefn}
+\end{schemeblock}
+\end{schemedefinition}
 
-\begin{namedschemedefn}{c-wcm-v-hole}{\C{E[\wcm{v_0}{\hole}]}}
+\begin{namedschemedefinition}{c-wcm-v-hole}{$\C{E[\wcm{v_0}{\hole}]}$}
+\begin{schemeblock}
 \begin{schemedisplay}
 CE
 \end{schemedisplay}
-\end{namedschemedefn}
+\end{schemeblock}
+\end{namedschemedefinition}
 
 This definition is used solely as an abbreviation within the definition of
 $\C{\wcm{e_0}{e_1}}$. Note that it is identical to $\C{\app{e_1}{e_1}}$ except that
@@ -178,20 +194,20 @@ $\C{\wcm{e_0}{e_1}}$. In particular, it is necessary to create pairs in $\mathca
 hand'' when manipulating $\C{\chi(E)}$, which is defined in terms of applications in
 $\mathcal{C}$.
 
-\begin{defn}
+\begin{definition}
 $\Cp{v_0}=\Cp{\abs{x}{e_0}}=\abs{x}{\C{e_0}}$
-\end{defn}
+\end{definition}
 
-\begin{defn}
+\begin{definition}
 \[
 \xi(E)=\begin{cases}
 \mathbf{true} &\text{if $E=E'[\wcm{v'}{\hole}]$ for some $E'$ and $v'$}\\
 \mathbf{false} &\text{otherwise}
 \end{cases}
 \]
-\end{defn}
+\end{definition}
 
-\begin{defn}
+\begin{definition}
 \begin{align*}
 \chi(\hole)               &= \nil\\
 \chi(E[\app{\hole}{e_1}]) &= \chi(E)\\
@@ -199,25 +215,25 @@ $\Cp{v_0}=\Cp{\abs{x}{e_0}}=\abs{x}{\C{e_0}}$
 \chi(E[\wcm{\hole}{e_1}]) &= \chi(E)\\
 \chi(E[\wcm{v_0}{\hole}]) &= \eval{\pair{v_0}{\chi(E)}}\\
 \end{align*}
-\end{defn}
+\end{definition}
 
-\begin{defn}
+\begin{definition}
 \[
 \mathrm{eval}_{cm}(p)=\begin{cases}
 v     &\text{if $p\cmrrs v$}\\
 \perp &\text{if $p\cmrrs\cdots$}
 \end{cases}
 \]
-\end{defn}
+\end{definition}
 
-\begin{defn}
+\begin{definition}
 \[
 \mathrm{eval}_{v}(p)=\begin{cases}
 v     &\text{if $p\lvrrs v$}\\
 \perp &\text{if $p\lvrrs\cdots$}
 \end{cases}
 \]
-\end{defn}
+\end{definition}
 
 \begin{lemma}
 \label{cm-app}

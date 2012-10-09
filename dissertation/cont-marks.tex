@@ -27,8 +27,6 @@ stack inspection to enforce security policies of which continuation marks can be
 a generalization. Surprisingly, continuation marks can be encoded in any language with 
 exception facilities \cite{pettyjohn2005continuations}.
 
-
-
 The feature of continuation marks itself is accessible via two surface level syntactic
 forms: \scheme{with-continuation-mark} and \scheme{current-continuation-marks}.
 
@@ -59,79 +57,91 @@ behavior is defined in the semantics of the language).
 The canonical example to illustrate the behavior of continuation marks in the presence and
 absence of tail call optimization is the factorial function.
 
-Figure \ref{fac-rec} illustrates the definitional recursive variant of the factorial
+Figure \ref{fig:fac-rec} illustrates the definitional recursive variant of the factorial
 function. In this actualization, a cascade of multiplication operations builds as the
 recursive calls are made. Each multiplication is pending computation of which the machine 
 must keep track.
 
 \begin{figure}
 \begin{schemeblock}
+\begin{schemedisplay}
 (define (fac n)
   (if (= n 0)
       1
       (* n (fac (- n 1)))))
+\end{schemedisplay}
 \end{schemeblock}
 \caption{The definitionally recursive factorial function}
-\label{fac-rec}
+\label{fig:fac-rec}
 \end{figure}
 
-Figure \ref{fac-tail-rec} illustrates the tail recursive manifestation of the factorial
-function. In contrast to the function in figure \ref{fac-rec}, this formulation performs
+Figure \ref{fig:fac-tail-rec} illustrates the tail recursive manifestation of the factorial
+function. In contrast to the function in figure \ref{fig:fac-rec}, this formulation performs
 the multiplication before the recursive call. Because the function has no pending
 computations after the evaluation of the recursive call, the execution context need not
 grow. Such a call is said to be in tail position.
 
 \begin{figure}
 \begin{schemeblock}
+\begin{schemedisplay}
 (define (fac-tr n acc)
   (if (= n 0)
       acc
       (fac-tr (- n 1) (* n acc))))
+\end{schemedisplay}
 \end{schemeblock}
 \caption{A tail-recursive variant of the factorial function}
-\label{fac-tail-rec}
+\label{fig:fac-tail-rec}
 \end{figure}
 
-Figures \ref{fac-rec-cm} and \ref{fac-tail-rec-cm} represent these two variants of the
+Figures \ref{fig:fac-rec-cm} and \ref{fig:fac-tail-rec-cm} represent these two variants of the
 factorial function augmented with continuation marks. Using these definitions, the 
 result of \scheme|(fac 3)| would be
 
 \begin{schemeblock}
+\begin{schemedisplay}
 (((fac 1)) ((fac 2)) ((fac 3)))
 6
+\end{schemedisplay}
 \end{schemeblock}
 
 whereas the result of \scheme|(fac-tr 3 1)| would be
 
 \begin{schemeblock}
+\begin{schemedisplay}
 (((fac 1)))
 6
+\end{schemedisplay}
 \end{schemeblock}
 
 \begin{figure}
 \begin{schemeblock}
+\begin{schemedisplay}
 (define (fac n)
   (if (= n 0)
       (begin
         (display (current-continuation-marks '(fac)))
         1)
       (with-continuation-mark 'fac n (* n (fac (- n 1)))))
+\end{schemedisplay}
 \end{schemeblock}
 \caption{The definitionally recursive factorial function augmented with continuation marks}
-\label{fac-rec-cm}
+\label{fig:fac-rec-cm}
 \end{figure}
 
 \begin{figure}
 \begin{schemeblock}
+\begin{schemedisplay}
 (define (fac-tr n acc)
   (if (= n 0)
       (begin
         (display (current-continuation-marks '(fac)))
         acc)
       (with-continuation-mark 'fac n (fac-tr (- n 1) (* n acc))))
+\end{schemedisplay}
 \end{schemeblock}
 \caption{The tail-recursive factorial function augmented with continuation marks}
-\label{fac-tail-rec-cm}
+\label{fig:fac-tail-rec-cm}
 \end{figure}
 
 This difference is due to the growing continuation in the definitionally recursive

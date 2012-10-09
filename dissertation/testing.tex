@@ -20,7 +20,7 @@ program which defines a toy language. In contrast to a Redex tutorial, we will n
 ourselves with the syntax and structure of roads not taken and will instead briefly
 explain each component of the program.
 
-\begin{singlespace}
+\begin{schemeblock}
 \begin{schemedisplay}
 (define-language toy
   (x variable-not-otherwise-mentioned)
@@ -28,7 +28,7 @@ explain each component of the program.
   (e (+ e e) (with (x e) e) x v)
   (E hole (+ E e) (+ v E) (with (x E) e)))
 \end{schemedisplay}
-\end{singlespace}
+\end{schemeblock}
 
 This expression defines the abstract syntactic structure of a language named \emph{toy}.
 There are four categories of structures: \scheme'x', \scheme'v', \scheme'e', and
@@ -45,7 +45,7 @@ evaluation of the second; the composition of these contexts imposes an order on 
 evaluation of the arguments. The final context, a \scheme{with} context, specifies a
 variable, a value, and an expression within which that variable is bound to that value.
 
-\begin{singlespace}
+\begin{schemeblock}
 \begin{schemedisplay}
 (define toy-rr
   (reduction-relation toy
@@ -65,7 +65,7 @@ variable, a value, and an expression within which that variable is bound to that
         (in-hole E undefined)
         "undefined in second position")))
 \end{schemedisplay}
-\end{singlespace}
+\end{schemeblock}
 
 This term defines a reduction relation on the \scheme{toy} language. The five defined
 reductions, signalled by \scheme{-->}, match specified patterns and manipulate them
@@ -73,7 +73,7 @@ according to the defined rules. These define: the addition of two numbers; the
 substitution of a \scheme{with} expression; a lone variable; the addition of an undefined
 value on the left; and the addition of an undefined value on the right.
 
-\begin{singlespace}
+\begin{schemeblock}
 \begin{schemedisplay}
 (define-metafunction toy
   substitute : x v e -> e
@@ -90,7 +90,7 @@ value on the left; and the addition of an undefined value on the right.
   [(substitute x_1 v_1 v_2)
    v_2])
 \end{schemedisplay}
-\end{singlespace}
+\end{schemeblock}
 
 The definition of the \scheme{with} reduction rule relies on the \scheme{substitute}
 metafunction. (The language used to define \scheme'toy' (Redex) is the metalanguage. 
@@ -99,13 +99,13 @@ As functions are in the language, metafunctions are in the metalanguage.) The
 a value. The substitution is only propagated as long as a binding with the same name is
 not encountered. At that point, the substitution is performed in the value expression of
 the binding, but not the body. This allows for expressions like
-\begin{singlespace}
+\begin{schemeblock}
 \begin{schemedisplay}
 (with (x 5)
   (with (x x)
     x))
 \end{schemedisplay}
-\end{singlespace}
+\end{schemeblock}
 to behave as we expect (returning \scheme'5').
 
 \subsubsection{Testing}
@@ -113,20 +113,20 @@ to behave as we expect (returning \scheme'5').
 Now that the syntactic forms and reduction rules of the language are defined, we can use 
 the randomized testing built into Redex to investigate properties of the language. We 
 start by defining the helper function 
-\begin{singlespace}
+\begin{schemeblock}
 \begin{schemedisplay}
 (define (reduces-to-one-value? e)
   (let ((results (apply-reduction-relation* toy-rr e)))
     (and (= (length results) 1)
          (value? (first results)))))
 \end{schemedisplay}
-\end{singlespace}
+\end{schemeblock}
 which has its own helper function 
-\begin{singlespace}
+\begin{schemeblock}
 \begin{schemedisplay}
 (define value? (redex-match toy v))
 \end{schemedisplay}
-\end{singlespace}
+\end{schemeblock}
 The \scheme{*} at the end of the function name \scheme{apply-reduction-relation*}
 signifies that all possible reduction rules will be applied as many times as possible. If
 some of the reduction rules don't actually reduce terms, the relation may produce a
@@ -195,11 +195,13 @@ We begin with \lv, the simpler language.
 To begin, we define language terms and evaluation contexts.
 
 \begin{schemeblock}
+\begin{schemedisplay}
 (define-language lambdav
   (e (e e) x v error)
   (x variable-not-otherwise-mentioned)
   (v (lambda (x) e))
   (E (E e) (v E) hole))
+\end{schemedisplay}
 \end{schemeblock}
 
 The characterization of \lv\ seen in figures \ref{lv-language-forms} and
@@ -207,7 +209,7 @@ The characterization of \lv\ seen in figures \ref{lv-language-forms} and
 to be built. Because Redex lives so close to this characterization, the only change we
 make in translation is the addition of \scheme'error'.
 
-\begin{singlespace}
+\begin{schemeblock}
 \begin{schemedisplay}
 (define lambdav-rr
   (reduction-relation lambdav
@@ -224,11 +226,11 @@ make in translation is the addition of \scheme'error'.
         (in-hole E error)
         "error in operand")))
 \end{schemedisplay}
-\end{singlespace}
+\end{schemeblock}
 
 The first rule in the reduction relation corresponds with the sole semantic rule found in \ref{lv-language-semantics}. The remaining handle cases introduced by \scheme'error'.
 
-\begin{singlespace}
+\begin{schemeblock}
 \begin{schemedisplay}
 (define-metafunction lambdav
   lambdav-subst : x v e -> e
@@ -251,7 +253,7 @@ The first rule in the reduction relation corresponds with the sole semantic rule
   [(lambdav-subst x_1 v_1 error)
    error])
 \end{schemedisplay}
-\end{singlespace}
+\end{schemeblock}
 
 The \scheme{lambdav-subst} metafunction presents the conceptual definition of substitution. We omit the capture-avoidance facilities for clarity.
 
@@ -259,18 +261,18 @@ The \scheme{lambdav-subst} metafunction presents the conceptual definition of su
 
 Since \cm\ is a superset of \lv, we need only extend the definition of the \lv\ interpreter to accommodate the additions \cm\ brings.
 
-\begin{singlespace}
+\begin{schemeblock}
 \begin{schemedisplay}
 (define-extended-language lambdacm lambdav
   (e .... (wcm e e) (ccm))
   (E (wcm v F) F)
   (F (E e) (v E) (wcm E e) hole))
 \end{schemedisplay}
-\end{singlespace}
+\end{schemeblock}
 
 Redex allows us to easily define a proper extension of a language, inheriting anything left unspecified. As similar as the \lv\ interpeter definition is to the \lv\ definition in figure \ref{lv-language-forms}, this \cm\ interpreter definition is to the \cm\ definition in figure \ref{cm-language-forms}.
 
-\begin{singlespace}
+\begin{schemeblock}
 \begin{schemedisplay}
 (define lambdacm-rr
   (extend-reduction-relation lambdav-rr lambdacm
@@ -293,11 +295,11 @@ Redex allows us to easily define a proper extension of a language, inheriting an
         (in-hole E error)
         "error in wcm body expression")))
 \end{schemedisplay}
-\end{singlespace}
+\end{schemeblock}
 
 The first three rules in the reduction relation correspond with the three additional semantic rules found in \ref{cm-language-semantics}. The remaining handle cases introduced by the the new language forms' interaction with \scheme'error'.
 
-\begin{singlespace}
+\begin{schemeblock}
 \begin{schemedisplay}
 (define-metafunction/extension lambdav-subst lambdacm
   lambdacm-subst : x v e -> e
@@ -308,11 +310,11 @@ The first three rules in the reduction relation correspond with the three additi
   [(lambdacm-subst x_1 v_1 (ccm))
    (ccm)])
 \end{schemedisplay}
-\end{singlespace}
+\end{schemeblock}
 
 The \scheme{lambdacm-subst} metafunction is extended to accommodate the additional forms in \cm.
 
-\begin{singlespace}
+\begin{schemeblock}
 \begin{schemedisplay}
 (define-metafunction lambdacm
   chi : E v -> v
@@ -322,7 +324,7 @@ The \scheme{lambdacm-subst} metafunction is extended to accommodate the addition
   [(chi (wcm E e) v_ms) (chi E v_ms)]
   [(chi (wcm v E) v_ms) (chi E (lambda (p) ((p v) v_ms)))])
 \end{schemedisplay}
-\end{singlespace}
+\end{schemeblock}
 
 Finally, we define the $\chi$ metafunction. Its definition does not map directly to the formal definition, but matches the intuitive definition that underlies it.
 

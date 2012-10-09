@@ -1,10 +1,95 @@
-\newenvironment{schemeblock}{\begin{schemeregion}\begin{singlespace}\begin{schemedisplay}}{\end{schemedisplay}\end{singlespace}\end{schemeregion}}
+\newenvironment{schemeblock}{\begin{singlespace}}{\end{singlespace}}
+
+\setkeyword{with-continuation-mark current-continuation-marks wcm ccm}
+\setkeyword{fac fac-tr}
+\setkeyword{display}
+\setkeyword{get-function-representing-continuation call/cc}
+\setspecialsymbol{lambda}{$\lambda$}
+
+\newcommand{\lc}{$\lambda$-calculus}
+\newcommand{\lv}{$\lambda_v$}
+\newcommand{\la}{$\lambda_n$}
+\newcommand{\cm}{$\lambda_{cm}$}
+
+
+
+\newcommand{\lvrr}{\rightarrow_{\lambda_v}}
+\newcommand{\lvrrs}{\rightarrow_{\lambda_v}^{*}}
+\newcommand{\larr}{\rightarrow_{\lambda_n}}
+\newcommand{\larrs}{\rightarrow_{\lambda_n}^{*}}
+\newcommand{\cmrr}{\rightarrow_{\lambda_{cm}}}
+\newcommand{\cmrrs}{\rightarrow_{\lambda_{cm}}^{*}}
+\newcommand{\C}[1]{\mathcal{C}[#1]}
+\newcommand{\Ct}[2]{\mathcal{C}[#1,#2]}
+\newcommand{\Cone}[1]{\mathcal{C}_1[#1]}
+\newcommand{\Cp}[1]{\mathcal{C}'[#1]}
+\newcommand{\Ch}[1]{\hat{\mathcal{C}}[#1]}
+\newcommand{\Ccps}[1]{\mathcal{C}_{\mathrm{cps}}[#1]}
+\newcommand{\Cpcps}[1]{\mathcal{C}'_{\mathrm{cps}}[#1]}
+\newcommand{\Chcps}[1]{\hat{\mathcal{C}}_{\mathrm{cps}}[#1]}
+\newcommand{\evalv}[1]{\mathrm{eval}_v(#1)}
+\newcommand{\evalcm}[1]{\mathrm{eval}_{cm}(#1)}
+
+\setspecialsymbol{e_0}{$e_0$}
+\setspecialsymbol{e_0p}{$e'_0$}
+\setspecialsymbol{Ce_0}{$\C{e_0}$}
+\setspecialsymbol{Ce_0p}{$\C{e'_0}$}
+\setspecialsymbol{e_1}{$e_1$}
+\setspecialsymbol{Ce_1}{$\C{e_1}$}
+\setspecialsymbol{Ce_1p}{$\C{e'_1}$}
+\setspecialsymbol{Cv}{$\C{v}$}
+\setspecialsymbol{v_0}{$v_0$}
+\setspecialsymbol{Cv_0}{$\C{v_0}$}
+\setspecialsymbol{Cv_0p}{$\C{v'_0}$}
+\setspecialsymbol{Cpv_0}{$\Cp{v_0}$}
+\setspecialsymbol{Cpv_1}{$\Cp{v_1}$}
+%\setspecialsymbol{v_1}{$v_1$}
+\setspecialsymbol{T}{$\mathcal{A}$}
+\setspecialsymbol{C}{$\mathcal{C}$}
+\setspecialsymbol{Cp}{$\mathcal{C}'$}
+\setspecialsymbol{Ch}{$\hat{\mathcal{C}}$}
+\setspecialsymbol{Ccps}{$\mathcal{C}_{\mathrm{cps}}$}
+\setspecialsymbol{Cpcps}{$\mathcal{C}'_{\mathrm{cps}}$}
+\setspecialsymbol{Chcps}{$\hat{\mathcal{C}}_{\mathrm{cps}}$}
+\setspecialsymbol{hole}{$\hole$}
+\setspecialsymbol{bottom}{$\perp$}
+\setspecialsymbol{Ce_0p_x_Cpv_1}{$\C{e'_0}[x\leftarrow\Cp{v_1}]$}
+\setspecialsymbol{e_0p_x_v_1}{$e'_0[x\leftarrow v_1]$}
+\setspecialsymbol{Cz}{$\C{z}$}
+\setspecialsymbol{CE}{$\C{E}$}
+\setspecialsymbol{xiE}{$\xi(E)$}
+\setspecialsymbol{chiE}{$\chi(E)$}
+\setspecialsymbol{CpchiE}{$\Cp{\chi(E)}$}
+
+\theoremstyle{definition}
+\newtheorem{case}{Case}
+\newtheorem{definition}{Definition}
+
+\newenvironment{schemedefinition}[1]{\begin{definition}#1\par}{\end{definition}}
+\newenvironment{namedschemedefinition}[2]{\begin{definition}\label{#1}#2\par}{\end{definition}}
+
+\theoremstyle{plain}
+\newtheorem{lemma}{Lemma}
+\newtheorem{theorem}{Theorem}
+
+\newcommand{\abs}[2]{(\lambda\,(#1)\,#2)}
+\newcommand{\app}[2]{(#1\,#2)}
+\newcommand{\wcm}[2]{(\mathrm{wcm}\,#1\,#2)}
+\newcommand{\ccm}{(\mathrm{ccm})}
+
+\newcommand{\hole}{\bullet}
 
 % church
 
+\newcommand{\true}{\mathbf{true}}
+\newcommand{\false}{\mathbf{false}}
+\newcommand{\nil}{\mathbf{nil}}
+\newcommand{\pair}[2]{((\mathbf{pair}\,#1)\,#2)}
+\newcommand{\eval}[1]{\overline{#1}}
+
 \setspecialsymbol{TRUE}{$\mathbf{true}$}
 \setspecialsymbol{FALSE}{$\mathbf{false}$}
-\setspecialsymbol{CONS}{$\mathbf{CONS}$}
+\setspecialsymbol{CONS}{$\mathbf{cons}$}
 \setspecialsymbol{FST}{$\mathbf{fst}$}
 \setspecialsymbol{SND}{$\mathbf{snd}$}
 \setspecialsymbol{NIL}{$\mathbf{nil}$}
@@ -19,18 +104,10 @@
 \setspecialsymbol{lambdacm}{$\lambda$cm}
 \setspecialsymbol{lambdacm-rr}{$\lambda$cm-rr}
 \setspecialsymbol{lambdacm-subst}{$\lambda$cm-subst}
-\setconstant{error}
 \setkeyword{chi subst}
+\setkeyword{apply-reduction-relation* define-extended-language define-language define-metafunction define-metafunction/extension extend-reduction-relation first in-hole length number redex-match reduces-to-one-value? redex-check reduction-relation value? substitute term variable-not-otherwise-mentioned}
+\setconstant{toy toy-rr undefined hole error}
 
-
-
-
-\renewenvironment{schemedefn}[1]{\begin{defn}$#1$\begin{singlespace}}{\end{singlespace}\end{defn}}
-\renewenvironment{namedschemedefn}[2]{\begin{defn}\label{#1}$#2$\begin{singlespace}}{\end{singlespace}\end{defn}}
-
-\setkeyword{define-language define-extended-language variable-not-otherwise-mentioned number reduction-relation extend-reduction-relation in-hole substitute term define-metafunction define-metafunction/extension reduces-to-one-value? value? redex-match length apply-reduction-relation* first redex-check}
-\setconstant{toy toy-rr undefined hole}
-\setspecialsymbol{-->}{$\rightarrow$}
 
 
 
