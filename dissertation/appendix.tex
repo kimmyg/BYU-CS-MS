@@ -21,6 +21,9 @@
 \end{schemedisplay}
 \end{schemeblock}
 
+\noindent
+app1
+
 \begin{schemeblock}
 \begin{schemedisplay}
 (((lambda (flag)
@@ -36,6 +39,9 @@
 \end{schemedisplay}
 \end{schemeblock}
 
+\noindent
+app2
+
 \begin{schemeblock}
 \begin{schemedisplay}
 ((lambda (marks)
@@ -49,6 +55,9 @@
 \end{schemedisplay}
 \end{schemeblock}
 
+\noindent
+app3
+
 \begin{schemeblock}
 \begin{schemedisplay}
 (((Ccps[rator-expr]
@@ -61,24 +70,33 @@
 \end{schemedisplay}
 \end{schemeblock}
 
+\noindent
+app4
+
 \begin{schemeblock}
 \begin{schemedisplay}
 (((Ccps[rand-expr]
        (lambda (rand-value)
-         ((((Cpcps[rator-value] rand-value) CE) xiE) Cpcps[chiE])))
+         ((((Cpcps[v_0] rand-value) CE) xiE) Cpcps[chiE])))
   FALSE) Cpcps[chiE])
 \end{schemedisplay}
 \end{schemeblock}
 
-\begin{schemeblock}
-\begin{schemedisplay}
-((((Cpcps[rator-value] Cpcps[rand-value]) CE) xiE) Cpcps[chiE])
-\end{schemedisplay}
-\end{schemeblock}
+\noindent
+app5
 
 \begin{schemeblock}
 \begin{schemedisplay}
-((((Ccps[expr]) CE) xiE) Cpcps[chiE])
+((((Cpcps[v_0] Cpcps[v_1]) CE) xiE) Cpcps[chiE])
+\end{schemedisplay}
+\end{schemeblock}
+
+\noindent
+app6
+
+\begin{schemeblock}
+\begin{schemedisplay}
+((((Ccps[e']) CE) xiE) Cpcps[chiE])
 \end{schemedisplay}
 \end{schemeblock}
 
@@ -101,6 +119,9 @@
 \end{schemedisplay}
 \end{schemeblock}
 
+\noindent
+wcm1
+
 \begin{schemeblock}
 \begin{schemedisplay}
 (((lambda (flag)
@@ -115,6 +136,9 @@
 \end{schemedisplay}
 \end{schemeblock}
 
+\noindent
+wcm2
+
 \begin{schemeblock}
 \begin{schemedisplay}
 ((lambda (marks)
@@ -122,11 +146,14 @@
           (lambda (mark-value) 
             ((lambda (rest-marks) 
                (((Ccps[body-expr] CE) TRUE) Cpcps[((CONS mark-value) rest-marks)]))
-             ((flag Chcps[(SND marks)]) marks))))
+             ((xiE Chcps[(SND marks)]) marks))))
      FALSE) marks))
  Cpcps[chiE])
 \end{schemedisplay}
 \end{schemeblock}
+
+\noindent
+wcm3
 
 \begin{schemeblock}
 \begin{schemedisplay}
@@ -134,18 +161,13 @@
        (lambda (mark-value) 
          ((lambda (rest-marks) 
             (((Ccps[body-expr] CE) TRUE) Cpcps[((CONS mark-value) rest-marks)]))
-          ((flag Chcps[(SND Cpcps[chiE])]) Cpcps[chiE]))))
+          ((xiE Chcps[(SND Cpcps[chiE])]) Cpcps[chiE]))))
   FALSE) Cpcps[chiE])
 \end{schemedisplay}
 \end{schemeblock}
 
-\begin{schemeblock}
-\begin{schemedisplay}
-((lambda (rest-marks) 
-   (((Ccps[body-expr] CE) TRUE) Cpcps[((CONS mark-value) rest-marks)]))
- ((flag Chcps[(SND Cpcps[chiE])]) Cpcps[chiE]))
-\end{schemedisplay}
-\end{schemeblock}
+\noindent
+wcm4tail
 
 \begin{schemeblock}
 \begin{schemedisplay}
@@ -155,6 +177,9 @@
 \end{schemedisplay}
 \end{schemeblock}
 
+\noindent
+wcm5tail
+
 \begin{schemeblock}
 \begin{schemedisplay}
 ((lambda (rest-marks) 
@@ -163,11 +188,17 @@
 \end{schemedisplay}
 \end{schemeblock}
 
+\noindent
+wcm6tail
+
 \begin{schemeblock}
 \begin{schemedisplay}
 (((Ccps[body-expr] CE) TRUE) Cpcps[((CONS mark-value) (SND chiE))])
 \end{schemedisplay}
 \end{schemeblock}
+
+\noindent
+wcm4nontail
 
 \begin{schemeblock}
 \begin{schemedisplay}
@@ -177,6 +208,9 @@
 \end{schemedisplay}
 \end{schemeblock}
 
+\noindent
+wcm5nontail
+
 \begin{schemeblock}
 \begin{schemedisplay}
 ((lambda (rest-marks) 
@@ -184,6 +218,9 @@
  Cpcps[chiE])
 \end{schemedisplay}
 \end{schemeblock}
+
+\noindent
+wcm6nontail
 
 \begin{schemeblock}
 \begin{schemedisplay}
@@ -205,6 +242,9 @@
 \end{schemedisplay}
 \end{schemeblock}
 
+\noindent
+ccm1
+
 \begin{schemeblock}
 \begin{schemedisplay}
 (((lambda (flag)
@@ -214,6 +254,9 @@
 \end{schemedisplay}
 \end{schemeblock}
 
+\noindent
+ccm2
+
 \begin{schemeblock}
 \begin{schemedisplay}
 ((lambda (marks)
@@ -221,6 +264,9 @@
  Cpcps[chiE])
 \end{schemedisplay}
 \end{schemeblock}
+
+\noindent
+ccm3
 
 \begin{schemeblock}
 \begin{schemedisplay}
@@ -243,6 +289,9 @@
 \end{schemedisplay}
 \end{schemeblock}
 
+\noindent
+value1
+
 \begin{schemeblock}
 \begin{schemedisplay}
 (((lambda (flag)
@@ -252,6 +301,9 @@
 \end{schemedisplay}
 \end{schemeblock}
 
+\noindent
+value2
+
 \begin{schemeblock}
 \begin{schemedisplay}
 ((lambda (marks)
@@ -259,6 +311,9 @@
  Cpcps[chiE])
 \end{schemedisplay}
 \end{schemeblock}
+
+\noindent
+value3
 
 \begin{schemeblock}
 \begin{schemedisplay}
@@ -280,6 +335,9 @@
 \end{schemedisplay}
 \end{schemeblock}
 
+\noindent
+x1
+
 \begin{schemeblock}
 \begin{schemedisplay}
 (((lambda (flag)
@@ -289,6 +347,9 @@
 \end{schemedisplay}
 \end{schemeblock}
 
+\noindent
+x2
+
 \begin{schemeblock}
 \begin{schemedisplay}
 ((lambda (marks)
@@ -297,9 +358,30 @@
 \end{schemedisplay}
 \end{schemeblock}
 
+\noindent
+x3
+
 \begin{schemeblock}
 \begin{schemedisplay}
 (CE x)
+\end{schemedisplay}
+\end{schemeblock}
+
+\noindent
+x4
+
+\begin{schemeblock}
+\begin{schemedisplay}
+(CE error)
+\end{schemedisplay}
+\end{schemeblock}
+
+\noindent
+x5
+
+\begin{schemeblock}
+\begin{schemedisplay}
+error
 \end{schemedisplay}
 \end{schemeblock}
 

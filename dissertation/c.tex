@@ -106,6 +106,36 @@ We unfold this characterization of \scheme'let' to guide the construction of $\m
 
 To achieve \scheme'if' and conditionals as well as list primitives \scheme'cons', \scheme'snd', and \scheme'nil', we use the Church encodings of fig. \ref{church-encodings}.
 
+
+\begin{figure}
+\label{church-encodings}
+\caption{Church encodings for booleans and lists.}
+
+\begin{definition}
+$\true=\abs{x}{\abs{y}{x}}$
+\end{definition}
+
+\begin{definition}
+$\false=\abs{x}{\abs{y}{y}}$
+\end{definition}
+
+\begin{definition}
+$\mathbf{cons}=\abs{a}{\abs{b}{\abs{z}{\app{\app{z}{a}}{b}}}}$
+\end{definition}
+
+\begin{definition}
+$\mathbf{fst}=\abs{p}{\app{p}{\true}}$
+\end{definition}
+
+\begin{definition}
+$\mathbf{snd}=\abs{p}{\app{p}{\false}}$
+\end{definition}
+
+\begin{definition}
+$\nil=\false$
+\end{definition}
+\end{figure}
+
 \subsection{Initiation}
 
 Abstracting terms has the effect of suspending evaluation. When an entire program is transformed, all evaluation is suspended, and awaits arguments representing contextual information. At the top level, the context is empty, so we pass the contextual information for the empty context: \scheme'FALSE', indicating evaluation is \emph{not} occurring in \scheme'wcm' tail position and \scheme'NIL', an empty list of marks.
@@ -304,7 +334,7 @@ To better illustrate what the transformation does, we step through the reduction
 \end{schemedisplay}
 \end{schemeblock}
 
-We now consider the transformation of the same program. We apply the transformation just-in-time as we reduce which has the effect of reducing term size and promoting clarity.
+We now consider the transformation of the same program. We apply the transformation just-in-time as we reduce to prevent term size exposion and promote clarity.
 \begin{schemeblock}
 \begin{schemedisplay}
 Ch[(wcm 0 ((lambda (x) (wcm x (ccm))) 1))]
