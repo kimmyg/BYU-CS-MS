@@ -1,4 +1,465 @@
 \appendix
+\chapter{Proof of Lemma \ref{lem:substitution}}
+
+\begin{proof}{Case \scheme|e = (rator-expr rand-expr)|}
+\scheme|Ccps[(rator-expr rand-expr)[x <- v]]|=\scheme|Ccps[(rator-expr[x <- v] rand-expr[x <- v])]|
+
+\noindent
+\scheme|Ccps[(wcm e_0 e_1)][x <- Cpcps[v]]|
+
+\begin{schemeblock}
+\begin{schemedisplay}
+(lambda (kont)
+   (lambda (flag)
+     (lambda (marks)
+       (((Ccps[rator-expr]
+          (lambda (rator-value)
+            (((Ccps[rand-expr]
+               (lambda (rand-value)
+                 ((((rator-value rand-value) kont) flag) marks)))
+              FALSE) marks)))
+         FALSE) marks))))[x <- Cpcps[v]]
+\end{schemedisplay}
+\end{schemeblock}
+
+\begin{schemeblock}
+\begin{schemedisplay}
+(lambda (kont)
+   (lambda (flag)
+     (lambda (marks)
+       (((Ccps[rator-expr]
+          (lambda (rator-value)
+            (((Ccps[rand-expr]
+               (lambda (rand-value)
+                 ((((rator-value rand-value) kont) flag) marks)))
+              FALSE) marks)))
+         FALSE) marks))[x <- Cpcps[v]]))
+\end{schemedisplay}
+\end{schemeblock}
+
+\begin{schemeblock}
+\begin{schemedisplay}
+(lambda (kont)
+   (lambda (flag)
+     (lambda (marks)
+       (((Ccps[rator-expr]
+          (lambda (rator-value)
+            (((Ccps[rand-expr]
+               (lambda (rand-value)
+                 ((((rator-value rand-value) kont) flag) marks)))
+              FALSE) marks)))
+         FALSE) marks)[x <- Cpcps[v]])))
+\end{schemedisplay}
+\end{schemeblock}
+
+\begin{schemeblock}
+\begin{schemedisplay}
+(lambda (kont)
+   (lambda (flag)
+     (lambda (marks)
+       (((Ccps[rator-expr]
+          (lambda (rator-value)
+            (((Ccps[rand-expr]
+               (lambda (rand-value)
+                 ((((rator-value rand-value) kont) flag) marks)))
+              FALSE) marks)))
+         FALSE)[x <- Cpcps[v]] marks[x <- Cpcps[v]]))))
+\end{schemedisplay}
+\end{schemeblock}
+
+\begin{schemeblock}
+\begin{schemedisplay}
+(lambda (kont)
+   (lambda (flag)
+     (lambda (marks)
+       (((Ccps[rator-expr]
+          (lambda (rator-value)
+            (((Ccps[rand-expr]
+               (lambda (rand-value)
+                 ((((rator-value rand-value) kont) flag) marks)))
+              FALSE) marks)))[x <- Cpcps[v]]
+         FALSE[x <- Cpcps[v]]) marks))))
+\end{schemedisplay}
+\end{schemeblock}
+
+\begin{schemeblock}
+\begin{schemedisplay}
+(lambda (kont)
+   (lambda (flag)
+     (lambda (marks)
+       (((Ccps[rator-expr][x <- Cpcps[v]]
+          (lambda (rator-value)
+            (((Ccps[rand-expr]
+               (lambda (rand-value)
+                 ((((rator-value rand-value) kont) flag) marks)))
+              FALSE) marks))[x <- Cpcps[v]])
+         FALSE) marks))))
+\end{schemedisplay}
+\end{schemeblock}
+
+\begin{schemeblock}
+\begin{schemedisplay}
+(lambda (kont)
+   (lambda (flag)
+     (lambda (marks)
+       (((Ccps[rator-expr][x <- Cpcps[v]]
+          (lambda (rator-value)
+            (((Ccps[rand-expr]
+               (lambda (rand-value)
+                 ((((rator-value rand-value) kont) flag) marks)))
+              FALSE) marks)[x <- Cpcps[v]]))
+         FALSE) marks))))
+\end{schemedisplay}
+\end{schemeblock}
+
+\begin{schemeblock}
+\begin{schemedisplay}
+(lambda (kont)
+   (lambda (flag)
+     (lambda (marks)
+       (((Ccps[rator-expr][x <- Cpcps[v]]
+          (lambda (rator-value)
+            (((Ccps[rand-expr]
+               (lambda (rand-value)
+                 ((((rator-value rand-value) kont) flag) marks)))
+              FALSE)[x <- Cpcps[v]] marks[x <- Cpcps[v]])))
+         FALSE) marks))))
+\end{schemedisplay}
+\end{schemeblock}
+
+\begin{schemeblock}
+\begin{schemedisplay}
+(lambda (kont)
+   (lambda (flag)
+     (lambda (marks)
+       (((Ccps[rator-expr][x <- Cpcps[v]]
+          (lambda (rator-value)
+            (((Ccps[rand-expr]
+               (lambda (rand-value)
+                 ((((rator-value rand-value) kont) flag) marks)))[x <- Cpcps[v]]
+              FALSE[x <- Cpcps[v]]) marks)))
+         FALSE) marks))))
+\end{schemedisplay}
+\end{schemeblock}
+
+\begin{schemeblock}
+\begin{schemedisplay}
+(lambda (kont)
+   (lambda (flag)
+     (lambda (marks)
+       (((Ccps[rator-expr][x <- Cpcps[v]]
+          (lambda (rator-value)
+            (((Ccps[rand-expr][x <- Cpcps[v]]
+               (lambda (rand-value)
+                 ((((rator-value rand-value) kont) flag) marks))[x <- Cpcps[v]])
+              FALSE) marks)))
+         FALSE) marks))))
+\end{schemedisplay}
+\end{schemeblock}
+
+\begin{schemeblock}
+\begin{schemedisplay}
+(lambda (kont)
+   (lambda (flag)
+     (lambda (marks)
+       (((Ccps[rator-expr][x <- Cpcps[v]]
+          (lambda (rator-value)
+            (((Ccps[rand-expr][x <- Cpcps[v]]
+               (lambda (rand-value)
+                 ((((rator-value rand-value) kont) flag) marks)[x <- Cpcps[v]]))
+              FALSE) marks)))
+         FALSE) marks))))
+\end{schemedisplay}
+\end{schemeblock}
+
+\begin{schemeblock}
+\begin{schemedisplay}
+(lambda (kont)
+   (lambda (flag)
+     (lambda (marks)
+       (((Ccps[rator-expr][x <- Cpcps[v]]
+          (lambda (rator-value)
+            (((Ccps[rand-expr][x <- Cpcps[v]]
+               (lambda (rand-value)
+                 ((((rator-value rand-value) kont) flag)[x <- Cpcps[v]] marks[x <- Cpcps[v]])))
+              FALSE) marks)))
+         FALSE) marks))))
+\end{schemedisplay}
+\end{schemeblock}
+
+\begin{schemeblock}
+\begin{schemedisplay}
+(lambda (kont)
+   (lambda (flag)
+     (lambda (marks)
+       (((Ccps[rator-expr][x <- Cpcps[v]]
+          (lambda (rator-value)
+            (((Ccps[rand-expr][x <- Cpcps[v]]
+               (lambda (rand-value)
+                 ((((rator-value rand-value) kont)[x <- Cpcps[v]] flag[x <- Cpcps[v]]) marks)))
+              FALSE) marks)))
+         FALSE) marks))))
+\end{schemedisplay}
+\end{schemeblock}
+
+\begin{schemeblock}
+\begin{schemedisplay}
+(lambda (kont)
+   (lambda (flag)
+     (lambda (marks)
+       (((Ccps[rator-expr][x <- Cpcps[v]]
+          (lambda (rator-value)
+            (((Ccps[rand-expr][x <- Cpcps[v]]
+               (lambda (rand-value)
+                 ((((rator-value rand-value)[x <- Cpcps[v]] kont[x <- Cpcps[v]]) flag) marks)))
+              FALSE) marks)))
+         FALSE) marks))))
+\end{schemedisplay}
+\end{schemeblock}
+
+\begin{schemeblock}
+\begin{schemedisplay}
+(lambda (kont)
+   (lambda (flag)
+     (lambda (marks)
+       (((Ccps[rator-expr][x <- Cpcps[v]]
+          (lambda (rator-value)
+            (((Ccps[rand-expr][x <- Cpcps[v]]
+               (lambda (rand-value)
+                 ((((rator-value[x <- Cpcps[v]] rand-value[x <- Cpcps[v]]) kont) flag) marks)))
+              FALSE) marks)))
+         FALSE) marks))))
+\end{schemedisplay}
+\end{schemeblock}
+
+\begin{schemeblock}
+\begin{schemedisplay}
+(lambda (kont)
+   (lambda (flag)
+     (lambda (marks)
+       (((Ccps[rator-expr][x <- Cpcps[v]]
+          (lambda (rator-value)
+            (((Ccps[rand-expr][x <- Cpcps[v]]
+               (lambda (rand-value)
+                 ((((rator-value rand-value) kont) flag) marks)))
+              FALSE) marks)))
+         FALSE) marks))))
+\end{schemedisplay}
+\end{schemeblock}
+
+\begin{schemeblock}
+\begin{schemedisplay}
+(lambda (kont)
+   (lambda (flag)
+     (lambda (marks)
+       (((Ccps[rator-expr[x <- v]]
+          (lambda (rator-value)
+            (((Ccps[rand-expr[x <- v]]
+               (lambda (rand-value)
+                 ((((rator-value rand-value) kont) flag) marks)))
+              FALSE) marks)))
+         FALSE) marks))))
+\end{schemedisplay}
+\end{schemeblock}
+
+\noindent
+\scheme|Ccps[(rator-expr[x <- v] rand-expr[x <- v])]|
+\end{proof}
+
+\begin{proof}{Case \scheme|e = (wcm mark-expr body-expr)|}
+
+
+\end{proof}
+
+\begin{proof}{Case \scheme'e'=\scheme|(ccm)|}
+
+\scheme|Ccps[(ccm)[x <- v]]|=\scheme|Ccps[(ccm)]|
+
+\scheme|Ccps[(ccm)][x <- Cpcps[v]]|
+
+\begin{schemeblock}
+\begin{schemedisplay}
+(lambda (kont)
+  (lambda (flag)
+    (lambda (marks)
+      (kont marks))))[x <- Cpcps[v]]
+\end{schemedisplay}
+\end{schemeblock}
+
+\begin{schemeblock}
+\begin{schemedisplay}
+(lambda (kont)
+  (lambda (flag)
+    (lambda (marks)
+      (kont marks)))[x <- Cpcps[v]])
+\end{schemedisplay}
+\end{schemeblock}
+
+\begin{schemeblock}
+\begin{schemedisplay}
+(lambda (kont)
+  (lambda (flag)
+    (lambda (marks)
+      (kont marks))[x <- Cpcps[v]]))
+\end{schemedisplay}
+\end{schemeblock}
+
+\begin{schemeblock}
+\begin{schemedisplay}
+(lambda (kont)
+  (lambda (flag)
+    (lambda (marks)
+      (kont marks)[x <- Cpcps[v]])))
+\end{schemedisplay}
+\end{schemeblock}
+
+\begin{schemeblock}
+\begin{schemedisplay}
+(lambda (kont)
+  (lambda (flag)
+    (lambda (marks)
+      (kont[x <- Cpcps[v]] marks[x <- Cpcps[v]]))))
+\end{schemedisplay}
+\end{schemeblock}
+
+\begin{schemeblock}
+\begin{schemedisplay}
+(lambda (kont)
+  (lambda (flag)
+    (lambda (marks)
+      (kont marks))))
+\end{schemedisplay}
+\end{schemeblock}
+
+\noindent
+\scheme|Ccps[(ccm)]|
+
+\begin{align*}
+\Ccps{\ccm}[x\leftarrow \Cpcps{v}] &=\abs{k}{\abs{f}{\abs{m}{\app{k}{m}}}}[x\leftarrow \Cpcps{v}]\\
+                                   &=\abs{k}{\abs{f}{\abs{m}{\app{k}{m}}}[x\leftarrow \Cpcps{v}]}\\
+                                   &=\abs{k}{\abs{f}{\abs{m}{\app{k}{m}}[x\leftarrow \Cpcps{v}]}}\\
+                                   &=\abs{k}{\abs{f}{\abs{m}{\app{k}{m}[x\leftarrow \Cpcps{v}]}}}\\
+                                   &=\abs{k}{\abs{f}{\abs{m}{\app{k[x\leftarrow \Cpcps{v}]}{m[x\leftarrow \Cpcps{v}]}}}}\\
+                                   &=\abs{k}{\abs{f}{\abs{m}{\app{k}{m}}}}\\
+                                   &=\Ccps{\ccm}
+\end{align*}
+Therefore $\Ccps{\ccm[x\leftarrow v]}=\Ccps{\ccm}[x\leftarrow \Cpcps{v}]$.
+\end{proof}
+
+\begin{proof}{Case $e=\abs{x}{e'}$}
+
+$\Ccps{\abs{x}{e'}[x\leftarrow v]}=\Ccps{\abs{x}{e'}}$
+\begin{align*}
+\Ccps{\abs{x}{e'}}[x\leftarrow \Cpcps{v}] &=\abs{k}{\abs{f}{\abs{m}{\app{k}{\abs{x}{\Ccps{e'}}}}}}[x\leftarrow v]\\
+                                          &=\abs{k}{\abs{f}{\abs{m}{\app{k}{\abs{x}{\Ccps{e'}}}}}[x\leftarrow v]}\\
+                                          &=\abs{k}{\abs{f}{\abs{m}{\app{k}{\abs{x}{\Ccps{e'}}}}[x\leftarrow v]}}\\
+                                          &=\abs{k}{\abs{f}{\abs{m}{\app{k}{\abs{x}{\Ccps{e'}}}[x\leftarrow v]}}}\\
+                                          &=\abs{k}{\abs{f}{\abs{m}{\app{k[x\leftarrow v]}{\abs{x}{\Ccps{e'}}[x\leftarrow v]}}}}\\
+                                          &=\abs{k}{\abs{f}{\abs{m}{\app{k}{\abs{x}{\Ccps{e'}}}}}}\\
+                                          &=\Ccps{\abs{x}{e'}}
+\end{align*}
+Therefore, $\Ccps{\abs{x}{e'}[x\leftarrow v]}=\Ccps{\abs{x}{e'}}[x\leftarrow \Cpcps{v}]$.
+\end{proof}
+
+\begin{proof}{Case $e=\abs{x'}{e'}$ where $x'\ne x$}
+
+$\Ccps{\abs{x'}{e'}[x\leftarrow v]}=\Ccps{\abs{x}{e'[x\leftarrow v]}}$
+\begin{align*}
+\Ccps{\abs{x'}{e'}}[x\leftarrow \Cpcps{v}] &=\abs{k}{\abs{f}{\abs{m}{\app{k}{\abs{x'}{\Ccps{e'}}}}}}[x\leftarrow \Cpcps{v}]\\
+                                           &=\abs{k}{\abs{f}{\abs{m}{\app{k}{\abs{x'}{\Ccps{e'}}}}}[x\leftarrow \Cpcps{v}]}\\
+                                           &=\abs{k}{\abs{f}{\abs{m}{\app{k}{\abs{x'}{\Ccps{e'}}}}[x\leftarrow \Cpcps{v}]}}\\
+                                           &=\abs{k}{\abs{f}{\abs{m}{\app{k}{\abs{x'}{\Ccps{e'}}}[x\leftarrow \Cpcps{v}]}}}\\
+                                           &=\abs{k}{\abs{f}{\abs{m}{\app{k[x\leftarrow \Cpcps{v}]}{\abs{x'}{\Ccps{e'}}[x\leftarrow \Cpcps{v}]}}}}\\
+                                           &=\abs{k}{\abs{f}{\abs{m}{\app{k}{\abs{x'}{\Ccps{e'}[x\leftarrow \Cpcps{v}]}}}}}\\
+                                           &=\abs{k}{\abs{f}{\abs{m}{\app{k}{\abs{x'}{\Ccps{e'[x\leftarrow v]}}}}}} &\text{by induction}\\
+                                           &=\Ccps{\abs{x'}{e'[x\leftarrow v]}}
+\end{align*}
+Therefore, $\Ccps{\abs{x'}{e'}[x\leftarrow v]}=\Ccps{\abs{x'}{e'}}[x\leftarrow \Cpcps{v}]$.
+\end{proof}
+
+\begin{proof}{Case $e=x$}
+
+$\Ccps{x[x\leftarrow v]}=\Ccps{v}$
+\begin{align*}
+\Ccps{x}[x\leftarrow \Cpcps{v}] &=\abs{k}{\abs{f}{\abs{m}{\app{k}{x}}}}[x\leftarrow \Cpcps{v}]\\
+                                &=\abs{k}{\abs{f}{\abs{m}{\app{k}{\Cpcps{v}}}}}\\
+                                &=\Ccps{v}
+\end{align*}
+Therefore, $\Ccps{x[x\leftarrow v]}=\Ccps{x}[x\leftarrow \Cpcps{v}]$.
+\end{proof}
+
+\begin{proof}{Case $e=x'$ where $x'\ne x$}
+
+\scheme|Ccps[xp[x <- v]]|=\scheme|Ccps[xp]|
+
+\scheme|Ccps[xp][x <- Cpcps[v]]|
+
+\begin{schemeblock}
+\begin{schemedisplay}
+(lambda (kont)
+  (lambda (flag)
+    (lambda (marks)
+      (kont xp))))[x <- Cpcps[v]]
+\end{schemedisplay}
+\end{schemeblock}
+
+\begin{schemeblock}
+\begin{schemedisplay}
+(lambda (kont)
+  (lambda (flag)
+    (lambda (marks)
+      (kont xp)))[x <- Cpcps[v]])
+\end{schemedisplay}
+\end{schemeblock}
+
+\begin{schemeblock}
+\begin{schemedisplay}
+(lambda (kont)
+  (lambda (flag)
+    (lambda (marks)
+      (kont xp))[x <- Cpcps[v]]))
+\end{schemedisplay}
+\end{schemeblock}
+
+\begin{schemeblock}
+\begin{schemedisplay}
+(lambda (kont)
+  (lambda (flag)
+    (lambda (marks)
+      (kont xp)[x <- Cpcps[v]])))
+\end{schemedisplay}
+\end{schemeblock}
+
+\begin{schemeblock}
+\begin{schemedisplay}
+(lambda (kont)
+  (lambda (flag)
+    (lambda (marks)
+      (kont[x <- Cpcps[v]] xp[x <- Cpcps[v]]))))
+\end{schemedisplay}
+\end{schemeblock}
+
+\begin{schemeblock}
+\begin{schemedisplay}
+(lambda (kont)
+  (lambda (flag)
+    (lambda (marks)
+      (kont xp))))
+\end{schemedisplay}
+\end{schemeblock}
+
+\noindent
+\scheme|Ccps[xp]|
+
+$\Ccps{x'[x\leftarrow v]}=\Ccps{x'}$
+\begin{align*}
+\Ccps{x'}[x\leftarrow \Cpcps{v}] &=\abs{k}{\abs{f}{\abs{m}{\app{k}{x'}}}}[x\leftarrow \Cpcps{v}]\\
+                                 &=\abs{k}{\abs{f}{\abs{m}{\app{k}{x'}}}}\\
+                                 &=\Ccps{x'}
+\end{align*}
+Therefore, $\Ccps{x'[x\leftarrow v]}=\Ccps{x'}[x\leftarrow \Cpcps{v}]$.
+\end{proof}
+
 \chapter{Mechanical Proof}
 
 \section{application form}
@@ -91,12 +552,19 @@ app5
 \end{schemedisplay}
 \end{schemeblock}
 
+\begin{schemeblock}
+\begin{schemedisplay}
+((((Cpcps[(lambda (x) e_0)] Cpcps[v_1]) CE) xiE) Cpcps[chiE])
+\end{schemedisplay}
+\end{schemeblock}
+
+
 \noindent
 app6
 
 \begin{schemeblock}
 \begin{schemedisplay}
-((((Ccps[e']) CE) xiE) Cpcps[chiE])
+(((Ccps[e_0][x <- Cpcps[v_1]] CE) xiE) Cpcps[chiE])
 \end{schemedisplay}
 \end{schemeblock}
 

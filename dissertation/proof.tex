@@ -8,7 +8,7 @@
 % make beta appear in Redex stuff
 % make sure the paper with Jay's suggestions is satisfied
 
-The evaluation of a \cm\ program proceeds with the evolution of an evaluation context and possibly reducible expression. When evaluation begins, the evaluation context is merely \scheme'hole', a placeholder for the eventual result and the reducible expression, or redex, is the program itself. The evaluation of arguments--both in application and continuation mark forms--defers evaluation of the expression at hand by storing its evaluation context and evaluating subterms. As these results are applied and evaluation continues, the size of the context fluctuates until finally, if the program terminates, we are left with a single value to plug in \scheme'hole'. This value is the value of the program.
+The evaluation of a \cm\ program proceeds with the evolution of an evaluation context and possibly reducible expression. When evaluation begins, the evaluation context is merely \scheme'hole', a placeholder for the eventual result, and the reducible expression, or redex, is the program itself. The evaluation of arguments--both in application and continuation mark forms--defers evaluation of the expression at hand by storing its evaluation context and evaluating subterms. As these results are applied and evaluation continues, the size of the context fluctuates until finally, if the program terminates, we are left with a single value to plug in \scheme'hole'. This value is the value of the program.
 
 The state of evaluation at any given point can be encapsulated by a pair of an evaluation context $E$ and an expression $e$ which we write in unorthodox style as $E[e]$. In order to prove that evaluation in the transformation corresponds to native evaluation, we must relate this state with its corresponding transformation.
 
@@ -86,6 +86,15 @@ This allows us to define $\mathcal{C}_{\mathrm{cps}}$ over a context-expression 
 
 From this definition, it is apparent that \scheme|Chcps[p]|=\scheme|(((Ccps[p] Ccps[hole]) XI(hole)) Cpcps[hole])|=\scheme|Ccps[hole[p]]|.
 
+Now we show that substitution is preserved by the transformation.
+
+\begin{lemma}[Substitution]
+\label{substitution}
+For all $e,x,v\in\lambda_{cm}$, $\C{e[x\leftarrow v]}=\C{e}[x\leftarrow \Cp{v}]$.
+\end{lemma}
+
+See appendix \ref{app:substitution} for proof.
+
 Finally, we define ``filling the hole'', the insertion of a value in the context from which it came.
 
 \begin{schemedefinition}{\scheme|Ccps[E[v]]|}
@@ -136,7 +145,7 @@ By step app4, $\Ccps{E[v_0]}\lvrr\Ccps{E'[\app{v_0}{\hole}][e_1]}$.
 \begin{proof}{Case $E=E'[\app{v_0}{\hole}]$}
 By step app5, $\Ccps{E[v_0]}\lvrr\Ccps{E'[\app{v_0}{v_1}]}$.
 
-By lemma ..., $E'[\app{v_0}{v_1}]\cmrr E'[e']\implies\Ccps{E'[\app{v_0}{v_1}]}\lvrr\Ccps{E'[e']}$.
+By step app6 and lemma \ref{substitution}, $\Ccps{E'[\app{v_0}{v_1}]}\lvrr\Ccps{E'[e']}$.
 \end{proof}
 
 \begin{proof}{Case $E=E'[\wcm{\hole}{e_1}]$}
@@ -149,7 +158,16 @@ Otherwise, $\Ccps{E'[\wcm{\hole}{e_1}][v_0]}\lvrrs\Ccps{E'[\wcm{v_0}{\hole}][e_1
 By definition, $\Ccps{E[v_1]}=\Ccps{E'[v_1]}$.
 \end{proof}
 
-\newtheorem*{maintheorem}{Correctness of $\mathcal{C}$}
+\begin{lemma}
+For all contexts $E$ and terms $e\in\lambda_{cm}$, if $E[e]\cmrrs v$, then $\C{E[e]}\lvrrs\Cp{v}$.
+\end{lemma}
+
+\begin{proof}
+%Let $E\in\lambda_{cm}$ and $e\in\lambda_{cm}$ be arbitrary.
+By simulation.
+\end{proof}
+
+\newtheorem*{maintheorem}{Correctness of $\hat{\mathcal{C}}$}
 \begin{maintheorem}
 For all programs $p\in\lambda_{cm}$, $\Chcps{\mathrm{eval}_{cm}(p)}=\mathrm{eval}_{v}(\Chcps{p})$.
 \end{maintheorem}
@@ -157,19 +175,20 @@ For all programs $p\in\lambda_{cm}$, $\Chcps{\mathrm{eval}_{cm}(p)}=\mathrm{eval
 \begin{proof}
 
 \begin{align*}
-p\cmrrs v &\implies\mathrm{eval}_{cm}(p)=v &\text{(by definition of $\mathrm{eval}_{cm}$)}\\
-          &\implies\C{\mathrm{eval}_{cm}(p)}=\C{v} &\text{(by well-definedness of $\mathcal{C}$)}
+p\cmrrs v &\implies\mathrm{eval}_{cm}(p)=v &\text{by definition of $\mathrm{eval}_{cm}$}\\
+          &\implies\Ch{\mathrm{eval}_{cm}(p)}\lvrrs\Cp{v} &\text{by definition of $\hat{\mathcal{C}}$}\\
+          &\implies\Ch{\mathrm{eval}_{cm}(p)}\equiv\Cp{v} &\text{by definition of equivalency}\\
 \end{align*}
-
 
 \begin{align*}
 p\cmrrs v &\implies\hole[p]\cmrrs v &\text{(since $p\cmrr\hole[p]$)}\\
-          &\implies\C{\hole[p]}\lvrrs\C{v} &\text{(by the Great Lemma)}\\
-          &\implies\app{\app{\C{p}}{\C{\hole}}}{\eval{\pair{\xi(\hole)}{\C{\chi(\hole)}}}}\lvrrs\C{v}&\text{(by definition of $\mathcal{C}$)}\\
-          &\implies\mathrm{eval}_{v}(\C{p})=\C{v} &\text{(by definition of $\mathrm{eval}_v$)}
+          &\implies\C{\hole[p]}\lvrrs\Cp{v} &\text{(by the Great Lemma)}\\
+          &\implies\app{\app{\app{\C{p}}{\C{\hole}}}{\xi(\hole)}}{\Cp{\chi(\hole)}}\lvrrs\C{v}&\text{by definition of $\mathcal{C}$}\\
+          &\implies\Ch{p}\lvrrs\C{v}&\text{(by definition of $\hat{\mathcal{C}}$)}\\
+          &\implies\mathrm{eval}_{v}(\Ch{p})=\Cp{v} &\text{(by definition of $\mathrm{eval}_v$)}
 \end{align*}
 
-Therefore, $\C{\mathrm{eval}_{cm}(p)}=\mathrm{eval}_{v}(\C{p})$.
+Therefore, $\C{\mathrm{eval}_{cm}(p)}\equiv\mathrm{eval}_{v}(\C{p})$.
 \end{proof}
 -----------
 
