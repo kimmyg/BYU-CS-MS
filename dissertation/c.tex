@@ -193,7 +193,7 @@ The formal transformation of a \scheme'wcm' directive is also extremely similar 
 (lambda (flag)
   (lambda (marks)
     ((C[body-expr] TRUE)
-     (((lambda (mark-value) (lambda (rest-marks) Cp[((CONS mark-value) rest-marks)]))
+     (((lambda (mark-value) (lambda (rest-marks) Chcps[((CONS mark-value) rest-marks)]))
        ((C[mark-expr] FALSE) marks))
       ((flag Ch[(SND marks)]) marks)))))
 \end{schemedisplay}
@@ -263,8 +263,8 @@ We present a continuation mark transformation integrated in CPS.
       (((Ccps[mark-expr]
           (lambda (mark-value) 
             ((lambda (rest-marks) 
-               (((Ccps[body-expr] kont) TRUE) Cp[((CONS mark-value) rest-marks)]))
-             ((flag Ch_cps[(SND marks)]) marks))))
+               (((Ccps[body-expr] kont) TRUE) Chcps[((CONS mark-value) rest-marks)]))
+             ((flag Chcps[(SND marks)]) marks))))
         FALSE) marks))))
 \end{schemedisplay}
 \end{schemeblock}
@@ -344,30 +344,30 @@ Ch[(wcm 0 ((lambda (x) (wcm x (ccm))) 1))]
 (((lambda (flag)
     (lambda (marks)
       ((C[((lambda (x) (wcm x (ccm))) 1)] TRUE)
-       (((lambda (mark-value) (lambda (rest-marks) Cp[((CONS mark-value) rest-marks)]))
+       (((lambda (mark-value) (lambda (rest-marks) Chcps[((CONS mark-value) rest-marks)]))
          ((C[0] FALSE) marks)) ((flag Ch[(SND marks)]) marks)))))
   FALSE) Cp[NIL])
 
 ((lambda (marks)
    ((C[((lambda (x) (wcm x (ccm))) 1)] TRUE)
-    (((lambda (mark-value) (lambda (rest-marks) Cp[((CONS mark-value) rest-marks)]))
+    (((lambda (mark-value) (lambda (rest-marks) Chcps[((CONS mark-value) rest-marks)]))
       ((C[0] FALSE) marks)) ((FALSE Ch[(SND marks)]) marks))))
  Cp[NIL])
 
 ((C[((lambda (x) (wcm x (ccm))) 1)] TRUE)
- (((lambda (mark-value) (lambda (rest-marks) Cp[((CONS mark-value) rest-marks)]))
+ (((lambda (mark-value) (lambda (rest-marks) Chcps[((CONS mark-value) rest-marks)]))
    ((C[0] FALSE) Cp[NIL])) ((FALSE Ch[(SND NIL)]) Cp[NIL])))
 
 ((C[((lambda (x) (wcm x (ccm))) 1)] TRUE)
- (((lambda (mark-value) (lambda (rest-marks) Cp[((CONS mark-value) rest-marks)]))
+ (((lambda (mark-value) (lambda (rest-marks) Chcps[((CONS mark-value) rest-marks)]))
    (((lambda (flag) (lambda (marks) 0)) FALSE) Cp[NIL])) ((FALSE Ch[(SND NIL)]) Cp[NIL])))
 
 ((C[((lambda (x) (wcm x (ccm))) 1)] TRUE)
- (((lambda (mark-value) (lambda (rest-marks) Cp[((CONS mark-value) rest-marks)]))
+ (((lambda (mark-value) (lambda (rest-marks) Chcps[((CONS mark-value) rest-marks)]))
    ((lambda (marks) 0) Cp[NIL])) ((FALSE Ch[(SND NIL)]) Cp[NIL])))
 
 ((C[((lambda (x) (wcm x (ccm))) 1)] TRUE)
- (((lambda (mark-value) (lambda (rest-marks) Cp[((CONS mark-value) rest-marks)]))
+ (((lambda (mark-value) (lambda (rest-marks) Chcps[((CONS mark-value) rest-marks)]))
    0) ((FALSE Ch[(SND NIL)]) Cp[NIL])))
 
 ((C[((lambda (x) (wcm x (ccm))) 1)] TRUE)
@@ -420,46 +420,46 @@ Ch[(wcm 0 ((lambda (x) (wcm x (ccm))) 1))]
 (((lambda (flag)
     (lambda (marks)
       ((C[(ccm)] TRUE)
-       (((lambda (mark-value) (lambda (rest-marks) Cp[((CONS mark-value) rest-marks)]))
+       (((lambda (mark-value) (lambda (rest-marks) Chcps[((CONS mark-value) rest-marks)]))
          ((C[1] FALSE) marks))
         ((flag Ch[(SND marks)]) marks)))))
   TRUE) Cp[((CONS 0) NIL)])
 
 ((lambda (marks)
    ((C[(ccm)] TRUE)
-    (((lambda (mark-value) (lambda (rest-marks) Cp[((CONS mark-value) rest-marks)]))
+    (((lambda (mark-value) (lambda (rest-marks) Chcps[((CONS mark-value) rest-marks)]))
       ((C[1] FALSE) marks))
      ((TRUE Ch[(SND marks)]) marks))))
  Cp[((CONS 0) NIL)])
 
 ((C[(ccm)] TRUE)
- (((lambda (mark-value) (lambda (rest-marks) Cp[((CONS mark-value) rest-marks)]))
+ (((lambda (mark-value) (lambda (rest-marks) Chcps[((CONS mark-value) rest-marks)]))
    ((C[1] FALSE) Cp[((CONS 0) NIL)]))
   ((TRUE Ch[(SND ((CONS 0) NIL))]) Cp[((CONS 0) NIL)])))
 
 (((lambda (flag) (lambda (marks) marks))
   TRUE)
- (((lambda (mark-value) (lambda (rest-marks) Cp[((CONS mark-value) rest-marks)]))
+ (((lambda (mark-value) (lambda (rest-marks) Chcps[((CONS mark-value) rest-marks)]))
    ((C[1] FALSE) Cp[((CONS 0) NIL)]))
   ((TRUE Ch[(SND ((CONS 0) NIL))]) Cp[((CONS 0) NIL)])))
 
 ((lambda (marks) marks)
- (((lambda (mark-value) (lambda (rest-marks) Cp[((CONS mark-value) rest-marks)]))
+ (((lambda (mark-value) (lambda (rest-marks) Chcps[((CONS mark-value) rest-marks)]))
    ((C[1] FALSE) Cp[((CONS 0) NIL)]))
   ((TRUE Ch[(SND ((CONS 0) NIL))]) Cp[((CONS 0) NIL)])))
 
 ((lambda (marks) marks)
- (((lambda (mark-value) (lambda (rest-marks) Cp[((CONS mark-value) rest-marks)]))
+ (((lambda (mark-value) (lambda (rest-marks) Chcps[((CONS mark-value) rest-marks)]))
    (((lambda (flag) (lambda (marks) 1)) FALSE) Cp[((CONS 0) NIL)]))
   ((TRUE Ch[(SND ((CONS 0) NIL))]) Cp[((CONS 0) NIL)])))
 
 ((lambda (marks) marks)
- (((lambda (mark-value) (lambda (rest-marks) Cp[((CONS mark-value) rest-marks)]))
+ (((lambda (mark-value) (lambda (rest-marks) Chcps[((CONS mark-value) rest-marks)]))
    ((lambda (marks) 1) Cp[((CONS 0) NIL)]))
   ((TRUE Ch[(SND ((CONS 0) NIL))]) Cp[((CONS 0) NIL)])))
 
 ((lambda (marks) marks)
- (((lambda (mark-value) (lambda (rest-marks) Cp[((CONS mark-value) rest-marks)]))
+ (((lambda (mark-value) (lambda (rest-marks) Chcps[((CONS mark-value) rest-marks)]))
    1)
   ((TRUE Ch[(SND ((CONS 0) NIL))]) Cp[((CONS 0) NIL)])))
 

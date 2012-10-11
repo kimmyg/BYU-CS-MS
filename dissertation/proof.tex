@@ -89,7 +89,7 @@ From this definition, it is apparent that \scheme|Chcps[p]|=\scheme|(((Ccps[p] C
 Now we show that substitution is preserved by the transformation.
 
 \begin{lemma}[Substitution]
-\label{substitution}
+\label{lem:substitution}
 For all $e,x,v\in\lambda_{cm}$, $\C{e[x\leftarrow v]}=\C{e}[x\leftarrow \Cp{v}]$.
 \end{lemma}
 
@@ -145,7 +145,7 @@ By step app4, $\Ccps{E[v_0]}\lvrr\Ccps{E'[\app{v_0}{\hole}][e_1]}$.
 \begin{proof}{Case $E=E'[\app{v_0}{\hole}]$}
 By step app5, $\Ccps{E[v_0]}\lvrr\Ccps{E'[\app{v_0}{v_1}]}$.
 
-By step app6 and lemma \ref{substitution}, $\Ccps{E'[\app{v_0}{v_1}]}\lvrr\Ccps{E'[e']}$.
+By step app6 and lemma \ref{lem:substitution}, $\Ccps{E'[\app{v_0}{v_1}]}\lvrr\Ccps{E'[e']}$.
 \end{proof}
 
 \begin{proof}{Case $E=E'[\wcm{\hole}{e_1}]$}
