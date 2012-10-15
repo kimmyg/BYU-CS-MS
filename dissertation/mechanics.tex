@@ -1,13 +1,23 @@
 \chapter{Proof of Lemma \ref{lem:substitution}}
 \label{app:substitution}
 
+\section{Application Form}
 \begin{proof}{Case \scheme|e = (rator-expr rand-expr)|}
 
-\noindent
-\scheme|Ccps[(rator-expr rand-expr)[x <- v]]|=\scheme|Ccps[(rator-expr[x <- v] rand-expr[x <- v])]|
+First, we have on the left side
+\begin{schemeblock}
+\begin{schemedisplay}
+Ccps[(rator-expr rand-expr)[x <- v]] = Ccps[(rator-expr[x <- v] rand-expr[x <- v])]
+\end{schemedisplay}
+\end{schemeblock}
 
-\noindent
-\scheme|Ccps[(rator-expr rand-expr)][x <- Cpcps[v]]|
+We have on the right side
+\begin{schemeblock}
+\begin{schemedisplay}
+Ccps[(rator-expr rand-expr)][x <- Cpcps[v]]
+\end{schemedisplay}
+\end{schemeblock}
+which, expanded, follows this sequence of equivalences:
 
 \begin{schemeblock}
 \begin{schemedisplay}
@@ -249,6 +259,7 @@
 \end{schemedisplay}
 \end{schemeblock}
 
+And finally, by induction, we have
 \begin{schemeblock}
 \begin{schemedisplay}
 (lambda (kont)
@@ -263,21 +274,38 @@
          FALSE) marks))))
 \end{schemedisplay}
 \end{schemeblock}
+which is equal to
+\begin{schemeblock}
+\begin{schemedisplay}
+Ccps[(rator-expr[x <- v] rand-expr[x <- v])]
+\end{schemedisplay}
+\end{schemeblock}
 
-\noindent
-\scheme|Ccps[(rator-expr[x <- v] rand-expr[x <- v])]|
-
-\noindent
-Therefore, \scheme|Ccps[(rator-expr rand-expr)[x <- v]] = Ccps[(rator-expr rand-expr)][x <- Cpcps[v]]|.
+Therefore,
+\begin{schemeblock}
+\begin{schemedisplay}
+Ccps[(rator-expr rand-expr)[x <- v]] = Ccps[(rator-expr rand-expr)][x <- Cpcps[v]]
+\end{schemedisplay}
+\end{schemeblock}
 \end{proof}
 
+\section{wcm Form}
 \begin{proof}{Case \scheme|e = (wcm mark-expr body-expr)|}
 
-\noindent
-\scheme|Ccps[(wcm mark-expr body-expr)[x <- v]] = Ccps[(wcm mark-expr[x <- v] body-expr[x <- v])]|
+First, we have on the left side
+\begin{schemeblock}
+\begin{schemedisplay}
+Ccps[(wcm mark-expr body-expr)[x <- v]] = Ccps[(wcm mark-expr[x <- v] body-expr[x <- v])]
+\end{schemedisplay}
+\end{schemeblock}
 
-\noindent
-\scheme|Ccps[(wcm mark-expr body-expr)][x <- Cpcps[v]]|
+We have on the right side
+\begin{schemeblock}
+\begin{schemedisplay}
+Ccps[(wcm mark-expr body-expr)][x <- Cpcps[v]]
+\end{schemedisplay}
+\end{schemeblock}
+which, expanded, follows this sequence of equivalences:
 
 \begin{schemeblock}
 \begin{schemedisplay}
@@ -475,6 +503,7 @@ Therefore, \scheme|Ccps[(rator-expr rand-expr)[x <- v]] = Ccps[(rator-expr rand-
 \end{schemedisplay}
 \end{schemeblock}
 
+And finally, by induction, we have
 \begin{schemeblock}
 \begin{schemedisplay}
 (lambda (kont)
@@ -488,19 +517,38 @@ Therefore, \scheme|Ccps[(rator-expr rand-expr)[x <- v]] = Ccps[(rator-expr rand-
         FALSE) marks))))
 \end{schemedisplay}
 \end{schemeblock}
+which is equal to
+\begin{schemeblock}
+\begin{schemedisplay}
+Ccps[(wcm mark-expr[x <- v] body-expr[x <- v])]
+\end{schemedisplay}
+\end{schemeblock}
 
-\noindent
-\scheme|Ccps[(wcm mark-expr[x <- v] body-expr[x <- v])]|
-
-\noindent
-Therefore, \scheme|Ccps[(wcm mark-expr body-expr)[x <- v]] = Ccps[(wcm mark-expr body-expr)][x <- Cpcps[v]]|.
+Therefore,
+\begin{schemeblock}
+\begin{schemedisplay}
+Ccps[(wcm mark-expr body-expr)[x <- v]] = Ccps[(wcm mark-expr body-expr)][x <- Cpcps[v]]
+\end{schemedisplay}
+\end{schemeblock}
 \end{proof}
 
+\section{ccm Form}
 \begin{proof}{Case \scheme'e'=\scheme|(ccm)|}
 
-\scheme|Ccps[(ccm)[x <- v]]|=\scheme|Ccps[(ccm)]|
+First, we have on the left side
+\begin{schemeblock}
+\begin{schemedisplay}
+Ccps[(ccm)[x <- v]] = Ccps[(ccm)]
+\end{schemedisplay}
+\end{schemeblock}
 
-\scheme|Ccps[(ccm)][x <- Cpcps[v]]|
+We have on the right side
+\begin{schemeblock}
+\begin{schemedisplay}
+Ccps[(ccm)][x <- Cpcps[v]]
+\end{schemedisplay}
+\end{schemeblock}
+which, expanded, follows this sequence of equivalences:
 
 \begin{schemeblock}
 \begin{schemedisplay}
@@ -555,21 +603,33 @@ Therefore, \scheme|Ccps[(wcm mark-expr body-expr)[x <- v]] = Ccps[(wcm mark-expr
       (kont marks))))
 \end{schemedisplay}
 \end{schemeblock}
+which is equal to
+\begin{schemeblock}
+\begin{schemedisplay}
+Ccps[(ccm)]
+\end{schemedisplay}
+\end{schemeblock}
 
-\noindent
-\scheme|Ccps[(ccm)]|
-
-Therefore \scheme|Ccps[(ccm)[x <- v]]=Ccps[(ccm)][x <- Cpcps[v]]|.
+Therefore, \scheme|Ccps[(ccm)[x <- v]]=Ccps[(ccm)][x <- Cpcps[v]]|.
 \end{proof}
 
+\section{Value Form}
 \begin{proof}{Case \scheme|e = (lambda (x) ep)|}
 
-\noindent
-\scheme|Ccps[(lambda (x) ep)[x <- v]] = Ccps[(lambda (x) ep)]|
+On the left side, we have
+\begin{schemeblock}
+\begin{schemedisplay}
+Ccps[(lambda (x) ep)[x <- v]] = Ccps[(lambda (x) ep)]
+\end{schemedisplay}
+\end{schemeblock}
 
-\noindent
-\scheme|Ccps[(lambda (x) ep)][x <- Cpcps[v]]|
-
+On the right side, we have
+\begin{schemeblock}
+\begin{schemedisplay}
+Ccps[(lambda (x) ep)][x <- Cpcps[v]]
+\end{schemedisplay}
+\end{schemeblock}
+which follows
 \begin{schemeblock}
 \begin{schemedisplay}
 (lambda (kont)
@@ -624,20 +684,31 @@ Therefore \scheme|Ccps[(ccm)[x <- v]]=Ccps[(ccm)][x <- Cpcps[v]]|.
 \end{schemedisplay}
 \end{schemeblock}
 
-\noindent
-\scheme|Ccps[(lambda (x) ep)]|
+\begin{schemeblock}
+\begin{schemedisplay}
+Ccps[(lambda (x) ep)]
+\end{schemedisplay}
+\end{schemeblock}
 
 Therefore, \scheme|Ccps[(lambda (x) ep)[x <- v]] = Ccps[(lambda (x) ep)][x <- Cpcps[v]]|.
 \end{proof}
 
 \begin{proof}{Case \scheme|e = (lambda (xp) ep)| where $x'\ne x$}
 
-\noindent
-\scheme|Ccps[(lambda (xp) ep)[x <- v]] = Ccps[(lambda (x) ep[x <- v])]|
+On the left side, we have
+\begin{schemeblock}
+\begin{schemedisplay}
+Ccps[(lambda (xp) ep)[x <- v]] = Ccps[(lambda (xp) ep)]
+\end{schemedisplay}
+\end{schemeblock}
 
-\noindent
-\scheme|Ccps[(lambda (xp) ep)][x <- Cpcps[v]]|
-
+On the right side, we have
+\begin{schemeblock}
+\begin{schemedisplay}
+Ccps[(lambda (xp) ep)][x <- Cpcps[v]]
+\end{schemedisplay}
+\end{schemeblock}
+which follows
 \begin{schemeblock}
 \begin{schemedisplay}
 (lambda (kont)
@@ -692,6 +763,7 @@ Therefore, \scheme|Ccps[(lambda (x) ep)[x <- v]] = Ccps[(lambda (x) ep)][x <- Cp
 \end{schemedisplay}
 \end{schemeblock}
 
+By induction, this is
 \begin{schemeblock}
 \begin{schemedisplay}
 (lambda (kont)
@@ -700,21 +772,22 @@ Therefore, \scheme|Ccps[(lambda (x) ep)[x <- v]] = Ccps[(lambda (x) ep)][x <- Cp
       (kont (lambda (xp) Ccps[ep[x <- v]])))))
 \end{schemedisplay}
 \end{schemeblock}
+which equals
+\begin{schemeblock}
+\begin{schemedisplay}
+Ccps[(lambda (xp) ep[x <- v])]
+\end{schemedisplay}
+\end{schemeblock}
 
-\noindent
-\scheme|Ccps[(lamba (xp) ep[x <- v])]|
-
-Therefore, \scheme|Ccps[(lamba (xp) ep)[x <- v]] = Ccps[(lamba (xp) ep)][x <- Cpcps[v]]|.
+Therefore, \scheme|Ccps[(lambda (xp) ep)[x <- v]] = Ccps[(lambda (xp) ep)][x <- Cpcps[v]]|.
 \end{proof}
 
+\section{Variable Form}
 \begin{proof}{Case \scheme|e = x|}
 
-\noindent
-\scheme|Ccps[x[x <- v]] = Ccps[v]|
+On the left, we have \scheme|Ccps[x[x <- v]] = Ccps[v]|.
 
-\noindent
-\scheme|Ccps[x][x <- Cpcps[v]]|
-
+On the right, we have \scheme|Ccps[x][x <- Cpcps[v]]| which follows
 \begin{schemeblock}
 \begin{schemedisplay}
 (lambda (kont)
@@ -769,18 +842,20 @@ Therefore, \scheme|Ccps[(lamba (xp) ep)[x <- v]] = Ccps[(lamba (xp) ep)][x <- Cp
 \end{schemedisplay}
 \end{schemeblock}
 
-\noindent
-\scheme|Ccps[v]|
+\begin{schemeblock}
+\begin{schemedisplay}
+Ccps[v]
+\end{schemedisplay}
+\end{schemeblock}
 
 Therefore, \scheme|Ccps[x[x <- v]] = Ccps[x][x <- Cpcps[v]]|.
 \end{proof}
 
 \begin{proof}{Case \scheme|e = xp| where $x'\ne x$}
 
-\scheme|Ccps[xp[x <- v]]|=\scheme|Ccps[xp]|
+On the left, we have \scheme|Ccps[xp[x <- v]]|=\scheme|Ccps[xp]|.
 
-\scheme|Ccps[xp][x <- Cpcps[v]]|
-
+On the right, we have \scheme|Ccps[xp][x <- Cpcps[v]]|, which follows
 \begin{schemeblock}
 \begin{schemedisplay}
 (lambda (kont)
@@ -835,15 +910,18 @@ Therefore, \scheme|Ccps[x[x <- v]] = Ccps[x][x <- Cpcps[v]]|.
 \end{schemedisplay}
 \end{schemeblock}
 
-\noindent
-\scheme|Ccps[xp]|
+\begin{schemeblock}
+\begin{schemedisplay}
+Ccps[xp]
+\end{schemedisplay}
+\end{schemeblock}
 
 Therefore, \scheme|Ccps[xp[x <- v]] = Ccps[xp][x <- Cpcps[v]|.
 \end{proof}
 
-\chapter{Mechanical Proof}
+\chapter{Reductions}
 
-\section{application form}
+\section{Application Form}
 
 \noindent
 \scheme|Ccps[E[(rator-expr rand-expr)]]|
@@ -1123,7 +1201,7 @@ ccm3
 \end{schemedisplay}
 \end{schemeblock}
 
-\section{value form}
+\section{Value Form}
 
 \noindent
 \scheme|Ccps[E[v]]|=\scheme|Ccps[E[(lambda (x) e)]]|
@@ -1170,7 +1248,7 @@ value3
 \end{schemedisplay}
 \end{schemeblock}
 
-\section{variable form}
+\section{Variable Form}
 
 \noindent
 \scheme|Ccps[E[x]]|

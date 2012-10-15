@@ -1,4 +1,8 @@
 \chapter{Conclusion}
 
-Continuation marks support a bevy of instrumentation tools and advanced language features in a generalized, portable way. Despite their demonstrated utility, they have not yet found their way into most languages. A verified characterization of continuation marks in a pure computational language provides implementors of higher-order languages a correct compiler for continuation marks.
+Continuation marks support a bevy of instrumentation tools and advanced language features in a generalized, portable way. Despite their demonstrated utility, they have not yet found their way into most languages. A verified characterization of continuation marks in a pure computational language provides implementors of higher-order languages a correct compiler for continuation marks which we have demonstrated for JavaScript.
+
+Our macro-style approach would be more useful if deployed as a proper macro, but this requires a hygienic macro system which many languages lack. \texttt{sweet.js} is just such a system for JavaScript in early stages and is ideal for our transformation.
+
+Although we used some level of mechanization in the proof of the theorem, a formal proof assistant, such as Coq \cite{barras1997coq}, would increase confidence out of the gate that the transformation was correct.
 
