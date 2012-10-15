@@ -4,7 +4,7 @@
 \begin{proof}{Case \scheme|e = (rator-expr rand-expr)|}
 
 \noindent
-\scheme|Ccps[(rator-expr rand-expr)[x <- v]]|=\scheme|Ccps[(rator-expr[x <- v] rand-expr[x <- v])]|
+\scheme|Ccps[(rator-expr rand-expr)[x <- v]]| = \scheme|Ccps[(rator-expr[x <- v] rand-expr[x <- v])]|
 
 \noindent
 \scheme|Ccps[(rator-expr rand-expr)][x <- Cpcps[v]]|
@@ -841,7 +841,7 @@ Therefore, \scheme|Ccps[x[x <- v]] = Ccps[x][x <- Cpcps[v]]|.
 Therefore, \scheme|Ccps[xp[x <- v]] = Ccps[xp][x <- Cpcps[v]|.
 \end{proof}
 
-\chapter{Mechanical Proof}
+\chapter{Reduction}
 
 \section{application form}
 
@@ -1010,7 +1010,7 @@ wcm3
        (lambda (mark-value) 
          ((lambda (rest-marks) 
             (((Ccps[body-expr] CE) TRUE) Cpcps[((CONS mark-value) rest-marks)]))
-          ((xiE Chcps[(SND Cpcps[chiE])]) Cpcps[chiE]))))
+          ((xiE Chcps[(SND chiE)]) Cpcps[chiE]))))
   FALSE) Cpcps[chiE])
 \end{schemedisplay}
 \end{schemeblock}
@@ -1022,7 +1022,7 @@ wcm4tail
 \begin{schemedisplay}
 ((lambda (rest-marks) 
    (((Ccps[body-expr] CE) TRUE) Cpcps[((CONS mark-value) rest-marks)]))
- ((TRUE Chcps[(SND Cpcps[chiE])]) Cpcps[chiE]))
+ ((TRUE Chcps[(SND chiE)]) Cpcps[chiE]))
 \end{schemedisplay}
 \end{schemeblock}
 
@@ -1033,7 +1033,7 @@ wcm5tail
 \begin{schemedisplay}
 ((lambda (rest-marks) 
    (((Ccps[body-expr] CE) TRUE) Cpcps[((CONS mark-value) rest-marks)]))
- Cpcps[(SND Cpcps[chiE])])
+ Cpcps[(SND chiE)])
 \end{schemedisplay}
 \end{schemeblock}
 
@@ -1053,7 +1053,7 @@ wcm4nontail
 \begin{schemedisplay}
 ((lambda (rest-marks) 
    (((Ccps[body-expr] CE) TRUE) Cpcps[((CONS mark-value) rest-marks)]))
- ((FALSE Chcps[(SND Cpcps[chiE])]) Cpcps[chiE]))
+ ((FALSE Chcps[(SND chiE)]) Cpcps[chiE]))
 \end{schemedisplay}
 \end{schemeblock}
 
