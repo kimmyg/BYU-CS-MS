@@ -1,141 +1,106 @@
 #lang racket
-
-;; paired flag and marks
-#;(define (transform e)
-    (let ([k (gensym 'k)]
-          [m (gensym 'm)]
-          [n (gensym 'n)]
-          [s (gensym 's)]
-          [t (gensym 't)]
-          [r (gensym 'r)]
+;; direct style
+(define (c e)
+    (let ([flag (gensym 'f)]
+          [marks (gensym 'm)]
           [a (gensym 'a)]
-          [b (gensym 'b)]
-          [f (gensym 'f)])
+          [b (gensym 'b)])
       (match e
         [(list 'ccm)
-         `(λ (,k) (λ (,m) (((,m (λ (x) (λ (y) y))) ,k) (λ (z) z))))]
-        [(list 'wcm e0 e1)
-         `(λ (,k)
-            (λ (,m)
-              ((λ (,k) (,k (,m (λ (x) (λ (y) y)))))
-               (λ (,s) ((,(transform e0)
-                         (λ (,f) ((λ (,k) (,k ((,s (λ (x) x)) (λ (z) z))))
-                                  (λ (,t) ((λ (,k) (,k (((,m (λ (x) (λ (y) x))) (((,t (λ (x) (λ (k) (λ (m) (k (λ (y) (λ (k) (λ (m) (k y))))))))) (λ (x) x)) (λ (z) z))) ,t)))
-                                           (λ (,r) ((,(transform e1) ,k) (λ (z) ((z (λ (x) (λ (y) x))) ,(transform `(λ (z) ((z ,f) ,r))))))))))))
-                        ((λ (b) (λ (z) ((z (λ (x) (λ (y) y))) b))) ,s))))))]
-        [(list 'λ (list x1) e1)
-         `(λ (,k) (λ (,m) (,k (λ (,x1) ,(transform e1)))))]
-        [(list e0 e1)
-         `(λ (,k) (λ (,m) ((λ (,k) (,k ((λ (b) (λ (z) ((z (λ (x) (λ (y) y))) b))) (,m (λ (x) (λ (y) y))))))
-                           (λ (,n) ((,(transform e0)
-                                     (λ (,a) ((,(transform e1)
-                                               (λ (,b) (((,a ,b) ,k) ,m)))
-                                              ,n)))
-                                    ,n)))))]
+         `(lambda (,flag)
+            (lambda (,marks)
+              ,marks))]
+        [(list 'wcm mark-expr body-expr)
+         `(lambda (flag)
+            (lambda (marks)
+              ((,(c body-expr) (lambda (x) (lambda (y) x)))
+               (((lambda (,mark-value) (lambda (,rest-marks) ,(c-hat `(lambda (z) ,(c `((z ,mark-value) ,rest-marks))))))
+                 ((,(c mark-expr) (lambda (x) (lambda (y) y))) ,marks))
+                ((flag ,(c-hat `((lambda (p) (p (lambda (x) (lambda (y) y)))) ,marks))) ,marks)))))]
+        [(list 'lambda (list x0) e0)
+         `(lambda (,flag)
+            (lambda (,marks)
+              (lambda (,x0)
+                ,(c e0))))]
+        [(list rator-expr rand-expr)
+         `(lambda (,flag)
+            (lambda (,marks)
+              (((((,(c rator-expr) (lambda (x) (lambda (y) y))) ,marks)
+                 ((,(c rand-expr) (lambda (x) (lambda (y) y))) ,marks))
+                ,flag)
+               ,marks)))]
         ['error
          'error]
-        [x1
-         `(λ (,k) (λ (,m) (,k ,x1)))])))
+        [x0
+         `(lambda (flag) (lambda (marks) ,x0))])))
 
-;; separate flag and marks
-(define (transform e)
-  (let ([k (gensym 'k)]
-        [m (gensym 'm)]
-        [n (gensym 'n)]
-        [s (gensym 's)]
-        [t (gensym 't)]
-        [r (gensym 'r)]
+(define (c-hat e)
+    (let ([f (gensym 'f)]
+          [m (gensym 'm)])
+      `((,(c e) (lambda (x) (lambda (y) y))) (lambda (x) ,(c '(lambda (y) y))))))
+
+;; continuation-passing style
+(define (c-cps e)
+  (let ([kont (gensym 'k)]
+        [flag (gensym 'f)]
+        [marks (gensym 'm)]
+        [rator-value (gensym 't)]
+        [rand-value (gensym 'n)]
+        [rest-marks (gensym 'r)]
         [a (gensym 'a)]
         [b (gensym 'b)]
         [f (gensym 'f)])
     (match e
       [(list 'ccm)
-       `(λ (,k) (λ (,f) (λ (,m) (,k ,m))))];(((,m ,k) (λ (z) z)) (λ (z) z)))))]
-      [(list 'wcm e0 e1)
-       `(λ (,k)
-          (λ (,f)
-            (λ (,m)
-              (((,(transform e0)
-                 (λ (,n) ((λ (,r) 
-                            (((,(transform e1)
-                               ,k)
-                              (λ (x) (λ (y) x)))
-                             (λ (z) ,(transform `((z ,n) ,r)))))
-                          ((,f ((((,m (λ (x) (λ (k) (λ (f) (λ (m) (k (λ (y) (λ (k) (λ (f) (λ (m) (k y))))))))))) (λ (x) x)) (λ (z) z)) (λ (z) z))) ,m))))
-                (λ (x) (λ (y) y)))
-               ,m))))]
-      [(list 'λ (list x0) e0)
-       `(λ (,k) (λ (,f) (λ (,m) (,k (λ (,x0) ,(transform e0))))))]
-      [(list e0 e1)
-       `(λ (,k)
-          (λ (,f)
-            (λ (,m)
-              (((,(transform e0)
-                 (λ (,a)
-                   (((,(transform e1)
-                      (λ (,b)
-                        ((((,a ,b) ,k) ,f) ,m)))
-                     (λ (x) (λ (y) y)))
-                    ,m)))
-                (λ (x) (λ (y) y)))
-               ,m))))]
+       `(lambda (,kont)
+          (lambda (,flag)
+            (lambda (,marks)
+              (,kont ,marks))))]
+      [(list 'wcm mark-expr body-expr)
+       `(lambda (,kont)
+          (lambda (,flag)
+            (lambda (,marks)
+              (((,(c-cps mark-expr)
+                 (lambda (,mark-value)
+                   ((lambda (,rest-marks) 
+                      (((,(c-cps body-expr)
+                         ,kont)
+                        (lambda (x) (lambda (y) x)))
+                       ,(c-hat `(lambda (z) ((z ,mark-value) ,rest-marks)))))
+                    ((flag ,(c-hat `((lambda (p) (p (lambda (x) (lambda (y) y)))) ,marks))) ,marks))))
+                (lambda (x) (lambda (y) y)))
+               ,marks))))]
+      [(list 'lambda (list x0) e0)
+       `(lambda (,kont)
+          (lambda (,flag)
+            (lambda (,marks)
+              (kont (lambda (,x0) ,(c-cps e0))))))]
+      [(list rator-expr rand-expr)
+       `(lambda (,kont)
+          (lambda (,flag)
+            (lambda (,marks)
+              (((,(c-cps rator-expr)
+                 (lambda (,rator-value)
+                   (((,(c-cps rand-expr)
+                      (lambda (,rand-value)
+                        ((((,rator-value ,rand-value) ,kont) ,flag) ,marks)))
+                     (lambda (x) (lambda (y) y)))
+                    ,marks)))
+                (lambda (x) (lambda (y) y)))
+               ,marks))))]
       ['error
        'error]
       [x0
-       `(λ (,k) (λ (,f) (λ (,m) (,k ,x0))))])))
+       `(lambda (,kont)
+          (lambda (,flag)
+            (lambda (,marks)
+              (,kont ,x0))))])))
 
-
-;; no continuation
-#;(define (transform e)
-    (let ([f (gensym 'f)]
-          [m (gensym 'm)]
-          [a (gensym 'a)]
-          [b (gensym 'b)])
-      (match e
-        [(list 'ccm)
-         `(λ (,f) (λ (,m) ,m))]
-        [(list 'wcm e0 e1)
-         `(λ (,f)
-            (λ (,m)
-              ((,(transform e1)
-                (λ (x) (λ (y) x)))
-               (((λ (,a) (λ (,b) (λ (z) ,(transform `((z ,a) ,b)))))
-                 ((,(transform e0) (λ (x) (λ (y) y))) ,m))
-                ((,f
-                  ((,(transform `((λ (p) (p (λ (x) (λ (y) y)))) ,m)) (λ (z) z)) (λ (z) z)))
-                 ,m)))))]
-        [(list 'λ (list x0) e0)
-         `(λ (,f) (λ (,m) (λ (,x0) ,(transform e0))))]
-        [(list e0 e1)
-         `(λ (,f)
-            (λ (,m)
-              (((((,(transform e0) (λ (x) (λ (y) y))) ,m)
-                 ((,(transform e1) (λ (x) (λ (y) y))) ,m))
-                ,f)
-               ,m)))]
-        ['error
-         'error]
-        [x0
-         `(λ (,f) (λ (,m) ,x0))])))
-
-;; paired flag and marks
-#;(define (init e)
-    (let ([k (gensym 'k)]
-          [m (gensym 'm)])
-      `((,e (λ (v) (λ (,k) (λ (,m) (,k v))))) (λ (z) ((z (λ (x) (λ (y) y))) ,(transform '(λ (x) (λ (y) y))))))))
-
-
-;; separate flag and marks
-(define (transform-c e)
+(define (c-hat-cps e)
   (let ([k (gensym 'k)]
         [f (gensym 'f)]
         [m (gensym 'm)])
-    `(((,(transform e) (λ (v) (λ (,k) (λ (,f) (λ (,m) (,k v)))))) (λ (x) (λ (y) y))) (λ (x) ,(transform '(λ (y) y))))))
+    `(((,(c-cps e) (lambda (x) x)) (lambda (x) (lambda (y) y))) (lambda (x) ,(c-cps '(lambda (y) y))))))
 
-;; no continuation
-#;(define (transform-c e)
-    (let ([f (gensym 'f)]
-          [m (gensym 'm)])
-      `((,(transform e) (λ (x) (λ (y) y))) (λ (x) ,(transform '(λ (y) y))))))
-
-(provide transform-c)
+(provide c-hat
+         c-hat-cps)
