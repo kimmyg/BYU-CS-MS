@@ -1088,7 +1088,7 @@ wcm3
        (lambda (mark-value) 
          ((lambda (rest-marks) 
             (((Ccps[body-expr] CE) TRUE) Cpcps[((CONS mark-value) rest-marks)]))
-          ((xiE Chcps[(SND Cpcps[chiE])]) Cpcps[chiE]))))
+          ((xiE Chcps[(SND chiE)]) Cpcps[chiE]))))
   FALSE) Cpcps[chiE])
 \end{schemedisplay}
 \end{schemeblock}
@@ -1100,7 +1100,7 @@ wcm4tail
 \begin{schemedisplay}
 ((lambda (rest-marks) 
    (((Ccps[body-expr] CE) TRUE) Cpcps[((CONS mark-value) rest-marks)]))
- ((TRUE Chcps[(SND Cpcps[chiE])]) Cpcps[chiE]))
+ ((TRUE Chcps[(SND chiE)]) Cpcps[chiE]))
 \end{schemedisplay}
 \end{schemeblock}
 
@@ -1111,7 +1111,7 @@ wcm5tail
 \begin{schemedisplay}
 ((lambda (rest-marks) 
    (((Ccps[body-expr] CE) TRUE) Cpcps[((CONS mark-value) rest-marks)]))
- Cpcps[(SND Cpcps[chiE])])
+ Cpcps[(SND chiE)])
 \end{schemedisplay}
 \end{schemeblock}
 
@@ -1131,7 +1131,7 @@ wcm4nontail
 \begin{schemedisplay}
 ((lambda (rest-marks) 
    (((Ccps[body-expr] CE) TRUE) Cpcps[((CONS mark-value) rest-marks)]))
- ((FALSE Chcps[(SND Cpcps[chiE])]) Cpcps[chiE]))
+ ((FALSE Chcps[(SND chiE)]) Cpcps[chiE]))
 \end{schemedisplay}
 \end{schemeblock}
 
