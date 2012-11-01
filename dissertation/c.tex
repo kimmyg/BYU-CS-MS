@@ -42,8 +42,8 @@ With this in mind, consider a conceptual transformation of application, \scheme|
 ignoring for the moment that \scheme'let' is in neither \lv\ or \cm. This definition captures that
 \begin{enumerate}
 \item before evaluation, we expect \scheme'flag' to indicate tail position information and \scheme'marks' to provide a list of the current continuation marks,
-\item we would like to evaluate \scheme'C[rator-expr]' and \scheme'C[rand-expr]' in the same manner, providing to each its contextual information--specifically that neither is evaluated in tail position of a \scheme'wcm' directive and the continuation marks for each are unchanged from the parent context,
-\item and, following evaluation of operator and operand and application, evaluation of the resultant term is performed with the original contextual information.
+\item we would like to evaluate \scheme'C[rator-expr]' and \scheme'C[rand-expr]' in the same manner, providing to each its contextual information--specifically that neither is evaluated in tail position of a \scheme'wcm' directive and the continuation marks for each are unchanged from the parent context, and
+\item following evaluation of operator and operand and application, evaluation of the resultant term is performed with the original contextual information.
 \end{enumerate}
 
 Now consider a conceptual transformation of a \scheme'wcm' directive, \scheme|C[(wcm mark-expr body-expr)]|, as
@@ -60,8 +60,8 @@ with similar caveats as the previous case. This definition captures that
 \begin{enumerate}
 \item as in application, we expect \scheme'flag' to indicate tail position information and \scheme'marks' to provide a list of the current continuation marks,
 \item we evaluate \scheme'mark-expr' with correct contextual information,
-\item we discard the first continuation mark of the parent context if evaluation is occurring in tail position of a \scheme'wcm' directive,
-\item and we evaluate \scheme'C[body-expr]' with the correct tail-position flag and current continuation marks.
+\item we discard the first continuation mark of the parent context if evaluation is occurring in tail position of a \scheme'wcm' directive, and
+\item we evaluate \scheme'C[body-expr]' with the correct tail-position flag and current continuation marks.
 \end{enumerate}
 
 Finally, consider the conceptual transformation of a \scheme'ccm' directive, \scheme|C[(ccm)]|, as
@@ -172,6 +172,7 @@ and we adjust $\hat{\mathcal{C}}$ so that
 Finally, we present the definition of $\mathcal{C}$ over the five syntactic forms of \cm.
 
 \begin{schemedefinition}{\scheme|C[(rator-expr rand-expr)]|}
+\noindent
 The formal transformation of application follows the \scheme'let' version exactly except the definitions of \scheme'rator-value' and \scheme'rand-value' are folded directly in.
 \begin{schemeblock}
 \begin{schemedisplay}
@@ -186,6 +187,7 @@ The formal transformation of application follows the \scheme'let' version exactl
 \end{schemedefinition}
 
 \begin{schemedefinition}{\scheme|C[(wcm mark-expr body-expr)]|}
+\noindent
 The formal transformation of a \scheme'wcm' directive is also extremely similar to the \scheme'let' version. The definition of \scheme'C[cons]' is unfolded and simplified.
 \begin{schemeblock}
 \begin{schemedisplay}
@@ -200,6 +202,7 @@ The formal transformation of a \scheme'wcm' directive is also extremely similar 
 \end{schemedefinition}
 
 \begin{schemedefinition}{\scheme|C[(ccm)]|}
+\noindent
 The \scheme'let' version of the transformation of a \scheme'ccm' directive remains unchanged.
 \begin{schemeblock}
 \begin{schemedisplay}
@@ -211,6 +214,7 @@ The \scheme'let' version of the transformation of a \scheme'ccm' directive remai
 \end{schemedefinition}
 
 \begin{schemedefinition}{\scheme|C[v]|=\scheme|C[(lambda (x) e)]|}
+\noindent
 Like other terms, values are modified to receive contextual information. However, being unaffected by context, values discard this information.
 \begin{schemeblock}
 \begin{schemedisplay}
@@ -222,6 +226,7 @@ Like other terms, values are modified to receive contextual information. However
 \end{schemedefinition}
 
 \begin{schemedefinition}{\scheme|C[x]|}
+\noindent
 Variables have the property that, when substitution occurs, they reconstitute transformed values. That is, in the midst of application in $\mathcal{C}$, terms of the form \scheme|(Cp[(lambda (x) x)] Cp[(lambda (y) y)])| appear, reducing to $\C{x}[x\leftarrow \Cp{\abs{y}{y}}]=\C{x[x\leftarrow\abs{y}{y}}=\C{\abs{y}{y}}$.
 \begin{schemeblock}
 \begin{schemedisplay}
