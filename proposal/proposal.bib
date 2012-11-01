@@ -1,20 +1,20 @@
 @book{barendregt1984lambda,
-  title={The lambda calculus: its syntax and semantics},
+  title={The Lambda Calculus: Its Syntax and Semantics},
   author={Barendregt, H.P.},
   year={1984},
   publisher={North Holland}
 }
 
 @book{barras1997coq,
-  title={The coq proof assistant reference manual: version 6.1},
+  title={The Coq Proof Assistant Reference Manual: Version 6.1},
   author={Barras, B. and Boutin, S. and Cornes, C. and Courant, J. and Filliatre, J.C. and Gimenez, E. and Herbelin, H. and Huet, G. and Munoz, C. and Murthy, C. and others},
   year={1997}
 }
 
-@article{clements2001modeling,
+@inproceedings{clements2001modeling,
   title={Modeling an algebraic stepper},
   author={Clements, J. and Flatt, M. and Felleisen, M.},
-  journal={Programming Languages and Systems},
+  booktitle={Proceedings of the 10th European Symposium on Programming Languages and Systems},
   pages={320--334},
   year={2001},
   publisher={Springer}
@@ -32,7 +32,7 @@
 }
 
 @phdthesis{clements2006portable,
-  title={Portable and high-level access to the stack with continuation marks},
+  title={Portable and High-Level Access to the Stack with Continuation Marks},
   author={Clements, J.},
   year={2006},
   school={Northeastern University Boston},
@@ -136,7 +136,7 @@
 }
 
 @book{findler2010redex,
-  title={Redex: practical semantics engineering},
+  title={Redex: Practical Semantics Engineering},
   author={Findler, R.B. and Klein, C.},
   publisher={MIT Press},
   year={2010},
@@ -146,7 +146,7 @@
 @inproceedings{fischer1972lambda,
   title={Lambda calculus schemata},
   author={Fischer, M.J.},
-  booktitle={Proceedings of the ACM Conference on Proving Assertions about Programs},
+  booktitle={Proceedings of the ACM Conference on Proving Assertions About Programs},
   volume={6},
   number={7},
   organization={ACM},
@@ -189,7 +189,7 @@
 }
 
 @phdthesis{sabry1994formal,
-  title={The formal relationship between direct and continuation-passing style optimizing compilers: a synthesis of two paradigms},
+  title={The Formal Relationship Between Direct and Continuation-Passing Style Optimizing Compilers: A Synthesis of Two Paradigms},
   author={Sabry, A.A.},
   year={1994},
   school={Rice University},
@@ -227,16 +227,17 @@
 }
 
 @book{appel2007compiling,
-  title={Compiling with continuations},
+  title={Compiling with Continuations},
   author={Appel, A.W.},
   year={2007},
   publisher={Cambridge University Press}
 }
 
-@article{clements2008implementing,
+@inproceedings{clements2008implementing,
   title={Implementing continuation marks in JavaScript},
   author={Clements, J. and Sundaram, A. and Herman, D.},
-  journal={Computer Science and Software Engineering},
+  booktitle={Proceedings of the Workshop on Scheme and Functional Programming},
+  organization={ACM},
   pages={45--55},
   year={2008},
   annotate={Clements et al. discuss the design and performance of a \emph{JavaScript} continuation marks implementation in terms of stack marks (in accordance with the representation of continuations in the imperative \emph{JavaScript}). They present a subset language of \emph{JavaScript} which they believe includes all critical components of the whole and discuss implementation considerations supporting tail-call optimization. They present a debugger built upon stack marks as is typical of continuation marks. Interestingly, they champion Scheme's hygienic macro system having devoted a portion of their efforts to syntactic manipulation.}
