@@ -1,0 +1,273 @@
+#lang slideshow
+
+(require slideshow/code)
+(require (planet jaymccarthy/slideshow-latex:1:1))
+
+;(define-syntax (slide/reduction
+
+(define c-diagram ($ "\\begin{array}{ccc}p & \\rightarrow_{cm}^{*} & v\\\\\\downarrow_\\mathcal{C} & & \\downarrow_\\mathcal{C}\\\\\\mathcal{C}[p] & \\rightarrow_{v}^{*} & \\mathcal{C}[v]\\end{array}"))
+
+(define (t-s t s)
+  (text t (current-main-font) s))
+
+(define (emphasize l inner r)
+  (hc-append (colorize (tt l) "gray")
+             (colorize (tt inner) "black")
+             (colorize (tt r) "gray")))
+
+#;(slide
+   (let ([s1 (emphasize "" "(fac 2)" "")]
+         [s2 (emphasize "" "(if0 2 1 (wcm 2 (* 2 (fac (- 2 1))))" "")]
+         [s3 (emphasize "" "(wcm 2 (* 2 (fac (- 2 1))))" "")]
+         [s4 (emphasize "(wcm 2 " "(* 2 (fac (- 2 1)))" ")")]
+         [s5 (emphasize "(wcm 2 (* 2 " "(fac (- 2 1))" "))")]
+         [s6 (emphasize "(wcm 2 (* 2 " "(if0 1 1 (wcm 1 (* 1 (fac 0))" "))")])
+     (vc-append s1 s2 s3)))
+
+(slide
+   (t "A CPS-like Transformation of Continutation Marks")
+   (t-s "Kimball Germane" (* (current-font-size) 3/4))
+   (t-s "with Jay McCarthy advising" (* (current-font-size) 3/4)))
+
+(slide
+ #:title "Thesis"
+ (para "A CPS-like transformation can transform the" ($ "\\lambda") "-calculus"
+       "with continuation marks into the plain" ($ "\\lambda") "-calculus in a"
+       "meaning-preserving way."))
+
+(slide
+ #:title (para ($ "\\lambda") "-calculus")
+ ; the lambda-calculus is a Turing-complete system of logic
+ ; where the Turing machine exposes a machine model of computation,
+ ; the lambda-calculus exposes a language model
+ 'next
+ (para "A language model of computation")
+ ; this makes it ideal for reasoning formally about languages
+ 'next
+ (para "Terms " ($ "e") " take the form of")
+ ; terms in this language are defined inductively
+ 'next
+ (item "variables " ($ "x"))
+ ; these correspond to mathematical variables
+ ; in other words, we don't think of assigning values to variables
+ ; but rather substituting variables with values
+ 'next
+ (item "abstractions " ($ "\\lambda x.e"))
+ ; ...where e is itself a lambda calculus term
+ ; this is the first of two ways we see the inductive structure of lambda calculus terms
+ ; these correspond to functions: x is the parameter of the function and e is the body of
+ ; the function
+ 'next
+ (item "applications " ($ "(e_0\\,e_1)"))
+ ; ...where e_0 and e_1 are lambda calculus terms
+ ; this form corresponds to application; e_0 represents the function and e_1
+ ; represents the argument
+ )
+ 
+(slide
+ #:title (para ($ "\\lambda") "-calculus evaluation")
+ ; evaluation of the lambda calculus is defined recursively
+ ; which parallels its inductive definition
+ (para "Evaluation of a term " ($ "e") "depends on its form")
+ 'next
+ (item "variables " ($ "x") " error on evaluation")
+ ; lone variables are unbound and we consider unbound variables an error
+ 'next
+ (item "abstractions " ($ "\\lambda x.e") " are left as is")
+ 'next
+ (item "applications " ($ "(e_0\\,e_1)") " are evaluated by recursively evaluating " ($ "e_0") " then " ($ "e_1"))
+ 'next
+ (para "If " ($ "e_0") " evaluates to " ($ "\\lambda x.e'") " for some " ($ "x") " and " ($ "e'")
+       " and " ($ "e_1") " evaluates to " ($ "v") ", then " ($ "(\\lambda x.e' v)\\rightarrow e'[x\\leftarrow v]"))
+ )
+
+(slide
+ #:title (para ($ "\\lambda") "-calculus evaluation")
+ 'next
+ (emphasize "" "((λx.λy.y ((λx.λy.x 1) 2)) 3)" "")
+ 'next
+ (emphasize "(" "(λx.λy.y ((λx.λy.x 1) 2))" " 3)")
+ 'next
+ (emphasize "((λx.λy.y (" "(λx.λy.x 1)" " 2)) 3)")
+ 'next
+ (emphasize "((λx.λy.y ((" "λx.λy.x" " 1) 2)) 3)")
+ 'next
+ (emphasize "((λx.λy.y ((λx.λy.x " "1" ") 2)) 3)")
+ 'next
+ (emphasize "((λx.λy.y (" "(λx.λy.x 1)" " 2)) 3)")
+ 'next
+ (emphasize "((λx.λy.y (" "λy.1" " 2)) 3)")
+ ;(emphasize "((λx.λy.y (λy.1 " "2" ")) 3)")
+ ;(emphasize "((λx.λy.y " "(λy.1 2)" ") 3)")
+ ;(emphasize "((λx.λy.y " "1" ") 3)")
+ ;(emphasize "(" "(λx.λy.y 1)" " 3)")
+ ;(emphasize "(" "λy.y" " 3)")
+ 'next
+ (tt "...")
+ (emphasize "(λy.y " "3" ")")
+ 'next
+ (emphasize "" "(λy.y 3)" "")
+ 'next
+ (emphasize "" "3" ""))
+
+(slide
+ #:title (para ($ "\\lambda") "-calculus evaluation contexts")
+ ; there is a formal definition for these contexts
+ ; the recursive evaluation strategy gives rise to an inductive definition
+ 'next
+ (para "An evaluation context " ($ "E") " takes the form of")
+ 'next
+ (item "a hole " ($ "\\bullet") " to be filled with a value or more context")
+ 'next
+ (item ($ "(E\\,e)"))
+ ; the evaluation of the function or operator
+ 'next
+ (item ($ "(v\\,E)"))
+ ; the evaluation of the argument or operand
+ 
+(slide
+   (t "A quick refresher on continuation marks"))
+
+(slide
+ (text "Suppose we have a module in our system with a function")
+ (code (explode-death-star)))
+
+;(slide/reduction '(fac 2))
+
+; review single-argument lambda calculus briefly
+; \x.x is like function(x) { return x; }
+; if f is \x.x, (f y) is like f(y)
+; review continuation-passing style
+; introduce lambda cm
+
+(slide
+ #:title ($ "\\lambda_{cm}")
+ (para "test"))
+
+(slide
+ #:title "Languages"
+ ($ "\\lambda_{v}")
+ ($ "e = x\\,|\\,\\lambda x.e\\,|\\,(e\\,e)"))
+
+(slide
+ ($ "\\mathcal{C}:\\lambda_{cm}\\rightarrow\\lambda_{v}"))
+
+(slide
+ ; the essence of lambda cm is that it can annotate and observe its continuation
+ (para "Programs in " ($ "\\lambda_{cm}") " can annotate and observe their context.")
+ ; lambda v cannot
+ 'next
+ (para "Programs in " ($ "\\lambda_{v}") " cannot."))
+
+(slide
+ (para "In fact, terms in " ($ "\\lambda_{v}") " programs can \"see\""
+       "only things in their environment.")
+ 'next
+ (para "(This is not the same as a context.)"))
+
+(slide
+ #:title "Intuition behind the transformation"
+ (para "Pass contextual information explicitly to terms.")
+ 'next
+ (para "This introduces it into the environment."))
+
+(slide
+ #:title "What information do we pass?"
+ 'next
+ (para "Anything the original " ($ "\\lambda_{cm}") " program could observe:")
+ ; this is our guiding principle
+ 'next
+ (item "the list of current continuation marks")
+ ; certainly the continuation marks. these are observable in the original program with (ccm)
+ )
+;'next
+ ;(item "???")
+ ; is that it? is there anything else the program can observe?
+ ;)
+
+(slide
+ #:title "Mark-passing style"
+ (t "Transform")
+ (para (code (λ (x) ...)) "->" (code (λ (marks) (λ (x) ...))))
+ (t "and")
+ (para (code (f x)) "->" (code ((f <marks>) x))))
+
+(slide
+ #:title "Tail position"
+ (para "Marks placed in tail position annotate the newest part"
+       "of the continuation, overwriting previous marks (if they"
+       "exist).")
+ ; this makes tail position observable, albeit indirectly
+ )
+
+(slide
+ #:title "What information do we pass?"
+ (para "Anything the original " ($ "\\lambda_{cm}") " program could observe:")
+ (item "the list of current continuation marks")
+ 'alts
+ (list (list (item "???"))
+             (list (item "a flag reflecting tail position")))
+ )
+; so we provide to each redex contextual information--anything that the corresponding 
+; cm program could observe
+; took the approach of mark-passing style
+; naive mark-passing is not enough
+; observe: (fac 2) -> (list 1 2), (fac-tr 2) -> (list 1 2)
+; this approach does not preserve correct tail-call behavior
+; this aspect of the continuation is observable, so we must pass it to the term
+; fortunately, this isn't a lot of information: we just need a flag
+; these two pieces of information--a flag and a list of marks--capture all contextual information
+; now, the tranformation is fairly straightforward:
+; variables are abstracted:
+; x -> \f m.x
+; values are independent of their context and so ignore that information:
+; \x.e -> \f m.\x.C[e]
+; application:
+; evaluate the operator with contextual information
+; evaluate the operand with contextual information
+; does evaluation of either of these occur in the body of a wcm?
+; no, let the flags reflect that
+; what is the list of marks at this point?
+; whatever it was before evaluation of this application began
+; pass the marks unaltered
+; note: this list is persistent (in a data structures sense)
+
+(slide
+ #:title "Testing"
+ (para "")
+ (item "generate random " ($ "\\lambda_{cm}") " program")
+ 'next
+ (item "reduce according to " ($ "\\rightarrow_{cm}") " and transform the result")
+ 'next
+ (item "transform the program and reduce according to " ($ "\\rightarrow_{v}"))
+ 'next
+ (item "compare the results")
+ )
+
+(define (pin-arrow-lines pict . arrows)
+  (if (empty? arrows)
+      pict
+      (match-let ([(list src find-src dest find-dest) (first arrows)])
+        (apply pin-arrow-lines
+               (pin-arrow-line 8 pict src find-src dest find-dest)
+               (rest arrows)))))
+
+#;(slide
+ #:title "Proof strategy"
+ 'alts
+ (let ([cmb ($ "E[e]")]
+       [cma ($ "E'[e']")]
+       [vb ($ "\\mathcal{C}_{cps}[E[e]]")]
+       [va ($ "\\mathcal{C}_{cps}[E[e]]")])
+   (let ([cm-rr (hc-append 8 cmb ($ "\\rightarrow_{cm}") cma)]
+         [v-rr (hc-append 8 vb ($ "\\rightarrow_{v}^{*}") vb)])
+     (let ([fst-pict (vc-append cm-rr (blank 0 128) (ghost v-rr))]
+           [snd-pict (pin-arrow-lines (vc-append cm-rr (blank 0 128) v-rr)
+                                      (list cmb ct-find vb ct-find)
+                                      (list cma ct-find va ct-find))])
+       (list (list fst-pict)
+             (list snd-pict))))))
+
+   
+
+; now we can easily add continuation marks to a higher-order language, like JavaScript
