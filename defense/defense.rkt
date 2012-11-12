@@ -8,6 +8,12 @@
    (vc-append p (colorize (linewidth 4 (hline (pict-width p) 0)) "red"))
    p))
 
+(define (frame/blue pict)
+  (frame pict #:color "blue" #:line-width 4))
+
+(define (vc-append/gap . picts)
+  (apply vc-append gap-size picts))
+
 (define (select-and-collect f xs)
   (if (empty? xs)
       empty
@@ -60,39 +66,6 @@
      (vc-append s1 s2 s3)))
 
 (slide
- (t-s "Proof" 64))
-
-; we prove that the continuation-passing style transformation preserves meaning
-
-(slide
- ($ "p\\rightarrow^{*}_{cm} v\\Rightarrow\\mathcal{C}_{cps}[p]\\rightarrow^{*}_{v}\\mathcal{C}_{cps}[v]"))
-
-; there's a problem with this:
-; the transformation abstracts each term so it won't reduce
-
-(slide
- ($ "\\mathcal{C}_{cps}[x]=\\lambda k.\\lambda f.\\lambda m.(k\\,x)"))
-
-(let ([cmb ($ "E[e]")]
-      [cma ($ "E'[e']")]
-      [vb ($ "\\mathcal{C}_{cps}[E[e]]")]
-      [va ($ "\\mathcal{C}_{cps}[E[e]]")])
-  (let ([cm-rr (hc-append 8 cmb ($ "\\rightarrow_{cm}") cma)]
-        [v-rr (hc-append 8 vb ($ "\\rightarrow_{v}^{*}") vb)])
-    (slide
-     #:title "Proof strategy"
-     cm-rr
-     v-rr)))
-;'alts
-;   (let ([fst-pict (vc-append cm-rr (blank 0 128) (ghost v-rr))]
-;        [snd-pict (pin-arrow-lines (vc-append cm-rr (blank 0 128) v-rr)
-;                                  (list cmb ct-find vb ct-find)
-;                                 (list cma ct-find va ct-find))])
-; (list (list fst-pict)
-;      (list snd-pict))))))
-
-
-(slide
  (t "A CPS-like Transformation of Continutation Marks")
  (t-s "Kimball Germane" (* (current-font-size) 3/4))
  (t-s "with Jay McCarthy advising" (* (current-font-size) 3/4)))
@@ -113,21 +86,21 @@
  (para "Terms " ($ "e") " take the form of")
  ; terms in this language are defined inductively
  'alts
- (underline-them #t vl-append
-                 (item "variables " ($ "x"))
-                 ; these correspond to mathematical variables
-                 ; in other words, we don't think of assigning values to variables
-                 ; but rather substituting variables with values
-                 (item "abstractions " ($ "\\lambda x.e"))
-                 ; ...where e is itself a lambda calculus term
-                 ; this is the first of two ways we see the inductive structure of lambda calculus terms
-                 ; these correspond to functions: x is the parameter of the function and e is the body of
-                 ; the function
-                 (item "applications " ($ "(e_0\\,e_1)"))
-                 ; ...where e_0 and e_1 are lambda calculus terms
-                 ; this form corresponds to application; e_0 represents the function and e_1
-                 ; represents the argument
-                 ))
+ (select-them #t vc-append/gap frame/blue
+              (item "variables " ($ "x"))
+              ; these correspond to mathematical variables
+              ; in other words, we don't think of assigning values to variables
+              ; but rather substituting variables with values
+              (item "abstractions " ($ "\\lambda x.e"))
+              ; ...where e is itself a lambda calculus term
+              ; this is the first of two ways we see the inductive structure of lambda calculus terms
+              ; these correspond to functions: x is the parameter of the function and e is the body of
+              ; the function
+              (item "applications " ($ "(e_0\\,e_1)"))
+              ; ...where e_0 and e_1 are lambda calculus terms
+              ; this form corresponds to application; e_0 represents the function and e_1
+              ; represents the argument
+              ))
 
 (slide
  #:title (para ($ "\\lambda") "-calculus evaluation")
@@ -135,7 +108,7 @@
  ; which parallels its inductive definition
  (para "Evaluation of a term " ($ "e") "depends on its form")
  'alts
- (underline-them #t vc-append
+ (underline-them #t vc-append/gap
                  (item "variables " ($ "x") " error on evaluation")
                  ; lone variables are unbound and we consider unbound variables an error
                  (item "abstractions " ($ "\\lambda x.e") " are left as is")
@@ -150,7 +123,7 @@
  ; the recursive evaluation strategy gives rise to an inductive definition
  (para "An evaluation context " ($ "E") " takes the form of")
  'alts
- (underline-them #t vc-append
+ (underline-them #t vc-append/gap
                  (item "a hole " ($ "\\bullet") " to be filled with a value or more context")
                  (item ($ "(E\\,e)"))
                  ; the evaluation of the function or operator
@@ -159,7 +132,7 @@
                  ))
 
 (slide
- #:title (para ($ "\\lambda") "-calculus evaluation")
+ #:title (para "Example " ($ "\\lambda") "-calculus evaluation")
  'alts
  (underline-them #t vc-append
                  (emphasize "" "((λx.λy.y ((λx.λy.x 1) 2)) 3)" "")
@@ -169,12 +142,12 @@
                  (emphasize "((λx.λy.y ((λx.λy.x " "1" ") 2)) 3)")
                  (emphasize "((λx.λy.y (" "(λx.λy.x 1)" " 2)) 3)")
                  (emphasize "((λx.λy.y (" "λy.1" " 2)) 3)")
-                 ;(emphasize "((λx.λy.y (λy.1 " "2" ")) 3)")
-                 ;(emphasize "((λx.λy.y " "(λy.1 2)" ") 3)")
-                 ;(emphasize "((λx.λy.y " "1" ") 3)")
-                 ;(emphasize "(" "(λx.λy.y 1)" " 3)")
-                 ;(emphasize "(" "λy.y" " 3)")
-                 (tt "...")
+                 (emphasize "((λx.λy.y (λy.1 " "2" ")) 3)")
+                 (emphasize "((λx.λy.y " "(λy.1 2)" ") 3)")
+                 (emphasize "((λx.λy.y " "1" ") 3)")
+                 (emphasize "(" "(λx.λy.y 1)" " 3)")
+                 (emphasize "(" "λy.y" " 3)")
+                 ;(tt "...")
                  (emphasize "(λy.y " "3" ")")
                  (emphasize "" "(λy.y 3)" "")
                  (emphasize "" "3" "")))
@@ -200,7 +173,7 @@
    #:title "Languages"
    ; the first thing we must do is formally define the languages we are working with
    'alts
-   (select-them #t (λ picts (apply vc-append gap-size picts)) (λ (pict) (frame pict #:color "blue" #:line-width 4))
+   (select-them #t vc-append/gap frame/blue
                 (inset (vl-append gap-size
                                   ($ "\\lambda_{v}")
                                   (para ($ "e = x\\,|\\,\\lambda x.e\\,|\\,(e\\,e)"))
@@ -308,28 +281,28 @@
 ; with this in mind, we build the tranformation
 
 #;(slide
- #:title (para "Definition of " ($ "\\mathcal{C}"))
- )
+   #:title (para "Definition of " ($ "\\mathcal{C}"))
+   )
 
 
 #;(slide
- #:title (para ($ "\\mathcal{C}[(\\mathit{rator_expr}\\,\\mathit{rand_expr})]"))
- (code (λ (flags)
-         (λ (marks)
-           (((((C[rator_expr] FALSE) marks)
-              ((C[rand_expr] FALSE) marks))
-             flags)
-            marks)))))
+   #:title (para ($ "\\mathcal{C}[(\\mathit{rator_expr}\\,\\mathit{rand_expr})]"))
+   (code (λ (flags)
+           (λ (marks)
+             (((((C[rator_expr] FALSE) marks)
+                ((C[rand_expr] FALSE) marks))
+               flags)
+              marks)))))
 
 #;(slide
- #:title (para ($ "\\mathcal{C}[(\\mathrm{wcm}\\,\\mathit{mark_expr}\\,\\mathit{body_expr})]"))
- (code (λ (flag)
-  (λ (marks)
-    ((C[body_expr] TRUE)
-     (((λ (mark-value) (λ (rest-marks) C[((CONS mark-value) rest-marks)]))
-       ((C[mark-expr] FALSE) marks))
-      ((flag C[(SND marks)]) marks))))))
-)
+   #:title (para ($ "\\mathcal{C}[(\\mathrm{wcm}\\,\\mathit{mark_expr}\\,\\mathit{body_expr})]"))
+   (code (λ (flag)
+           (λ (marks)
+             ((C[body_expr] TRUE)
+              (((λ (mark-value) (λ (rest-marks) C[((CONS mark-value) rest-marks)]))
+                ((C[mark-expr] FALSE) marks))
+               ((flag C[(SND marks)]) marks))))))
+   )
 
 
 ; so we provide to each redex contextual information--anything that the corresponding 
@@ -358,15 +331,47 @@
 
 (slide
  #:title "Testing"
- (para "")
- (item "generate random " ($ "\\lambda_{cm}") " program")
- 'next
- (item "reduce according to " ($ "\\rightarrow_{cm}") " and transform the result")
- 'next
- (item "transform the program and reduce according to " ($ "\\rightarrow_{v}"))
- 'next
- (item "compare the results")
+ (para "Process")
+ 'alts
+ (select-them #t vc-append underline
+              (para "1. generate a random " ($ "\\lambda_{cm}") " program")
+              (para "2. reduce according to " ($ "\\rightarrow_{cm}") " and transform the result")
+              (para "3. transform the program and reduce according to " ($ "\\rightarrow_{v}"))
+              (para "4. compare the results"))
+ (t "Repeat 10,000 times")
  )
+
+(slide
+ (t-s "Proof" 64))
+
+; we prove that the continuation-passing style transformation preserves meaning
+
+(slide
+ ($ "p\\rightarrow^{*}_{cm} v\\Rightarrow\\mathcal{C}_{cps}[p]\\rightarrow^{*}_{v}\\mathcal{C}_{cps}[v]"))
+
+; there's a problem with this:
+; the transformation abstracts each term so it won't reduce
+
+(slide
+ ($ "\\mathcal{C}_{cps}[x]=\\lambda k.\\lambda f.\\lambda m.(k\\,x)"))
+
+(let ([cmb ($ "E[e]")]
+      [cma ($ "E'[e']")]
+      [vb ($ "\\mathcal{C}_{cps}[E[e]]")]
+      [va ($ "\\mathcal{C}_{cps}[E[e]]")])
+  (let ([cm-rr (hc-append 8 cmb ($ "\\rightarrow_{cm}") cma)]
+        [v-rr (hc-append 8 vb ($ "\\rightarrow_{v}^{*}") vb)])
+    (slide
+     #:title "Proof strategy"
+     cm-rr
+     v-rr)))
+;'alts
+;   (let ([fst-pict (vc-append cm-rr (blank 0 128) (ghost v-rr))]
+;        [snd-pict (pin-arrow-lines (vc-append cm-rr (blank 0 128) v-rr)
+;                                  (list cmb ct-find vb ct-find)
+;                                 (list cma ct-find va ct-find))])
+; (list (list fst-pict)
+;      (list snd-pict))))))
 
 (define (pin-arrow-lines pict . arrows)
   (if (empty? arrows)
