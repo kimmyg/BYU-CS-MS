@@ -1,5 +1,7 @@
 #lang slideshow
 
+; a2ps
+
 (require slideshow/code)
 (require (planet jaymccarthy/slideshow-latex:1:1))
 
@@ -75,6 +77,11 @@
          [s6 (emphasize "(wcm 2 (* 2 " "(if0 1 1 (wcm 1 (* 1 (fac 0))" "))")])
      (vc-append s1 s2 s3)))
 
+
+
+(define (strike pict)
+  (refocus (cc-superimpose pict (linewidth 4 (hline (pict-width pict) (pict-height pict)))) pict))
+
 (slide
  (t "A CPS-like Transformation of Continuation Marks")
  (t-s "Kimball Germane" (* (current-font-size) 3/4))
@@ -86,10 +93,12 @@
        "with continuation marks into the plain" ($ "\\lambda") "-calculus in a"
        "meaning-preserving way."))
 
- ; the lambda-calculus is a Turing-complete system of logic
- ; where the Turing machine exposes a machine model of computation,
- ; the lambda-calculus exposes a language model
- ; this makes it ideal for reasoning formally about languages
+; a Turing machine is a machine model of computation
+; we fix the program and feed input to the machine
+; computation is performed as the machine goes from state to state
+; the lambda-calculus is a Turing-complete system of logic
+; akin to algebra. program and data are combined into a term
+; computation is performed as the term reduces and evolves
 (slide
  #:title (para "What is the " ($ "\\lambda") "-calculus?")
  (t-s "A language model of computation" 48))
@@ -125,50 +134,50 @@
               (item2 "variables " ($ "x") " are substituted with their binding in the environment")
               ; lone variables are unbound and we consider unbound variables an error
               (item2 "abstractions " ($ "\\lambda x.e") " evaluate to closures")
-              (item2 "applications " ($ "(e_0\\,e_1)") " are evaluated by recursively evaluating " ($ "e_0") " then " ($ "e_1"))))
+              (item2 "applications " ($ "(e_0\\,e_1)") " are evaluated by recursively evaluating " ($ "e_0")
+                     " then " ($ "e_1") " and then substituting")))
 
 (slide
- #:title (para ($ "\\lambda") "-calculus evaluation")
+ #:title (para ($ "\\lambda") "-calculus substitution")
  (para "When a term of the form " ($ "(\\lambda x.e' v)") " is encountered in evaluation,"
        "it is" (it "reduced") "by the rule " ($ "(\\lambda x.e' v)\\rightarrow e'[x\\leftarrow v]") ".")
  )
 
 (slide
  #:title (para "Example " ($ "\\lambda") "-calculus evaluation")
- 'alts
- (select-them #t vc-append frame/blue
-              (emphasize "" "((λx.λy.y ((λx.λy.x 1) 2)) 3)" "")
-              (emphasize "(" "(λx.λy.y ((λx.λy.x 1) 2))" " 3)")
-              (emphasize "((" "λx.λy.y" " ((λx.λy.x 1) 2)) 3)")
-              (emphasize "((λx.λy.y " "((λx.λy.x 1) 2)" ") 3)")
-              (emphasize "((λx.λy.y (" "(λx.λy.x 1)" " 2)) 3)")
-              (emphasize "((λx.λy.y ((" "λx.λy.x" " 1) 2)) 3)")
-              (emphasize "((λx.λy.y ((λx.λy.x " "1" ") 2)) 3)")
-              (emphasize "((λx.λy.y (" "(λx.λy.x 1)" " 2)) 3)")
-              (emphasize "((λx.λy.y (" "λy.1" " 2)) 3)")
-              (emphasize "((λx.λy.y (λy.1 " "2" ")) 3)")
-              (emphasize "((λx.λy.y " "(λy.1 2)" ") 3)")
-              (emphasize "((λx.λy.y " "1" ") 3)")
-              (emphasize "(" "(λx.λy.y 1)" " 3)")
-              (emphasize "(" "λy.y" " 3)")
-              ;(tt "...")
-              (emphasize "(λy.y " "3" ")")
-              (emphasize "" "(λy.y 3)" "")
-              (emphasize "" "3" "")))
+ (vl-append
+  (emphasize "" "((λx.λy.y ((λx.λy.x 1) 2)) 3)" "")
+  (emphasize "(" "(λx.λy.y ((λx.λy.x 1) 2))" " 3)")
+  (emphasize "((" "λx.λy.y" " ((λx.λy.x 1) 2)) 3)")
+  (emphasize "((λx.λy.y " "((λx.λy.x 1) 2)" ") 3)")
+  (emphasize "((λx.λy.y (" "(λx.λy.x 1)" " 2)) 3)")
+  (emphasize "((λx.λy.y ((" "λx.λy.x" " 1) 2)) 3)")
+  (emphasize "((λx.λy.y ((λx.λy.x " "1" ") 2)) 3)")
+  (emphasize "((λx.λy.y (" "(λx.λy.x 1)" " 2)) 3)")
+  (emphasize "((λx.λy.y (" "λy.1" " 2)) 3)")
+  (emphasize "((λx.λy.y (λy.1 " "2" ")) 3)")
+  (emphasize "((λx.λy.y " "(λy.1 2)" ") 3)")
+  (emphasize "((λx.λy.y " "1" ") 3)")
+  (emphasize "(" "(λx.λy.y 1)" " 3)")
+  (emphasize "(" "λy.y" " 3)")
+  ;(tt "...")
+  (emphasize "(λy.y " "3" ")")
+  (emphasize "" "(λy.y 3)" "")
+  (emphasize "" "3" "")))
 
 #;(slide
- #:title (para ($ "\\lambda") "-calculus evaluation contexts")
- ; there is a formal definition for these contexts
- ; the recursive evaluation strategy gives rise to an inductive definition
- (para "An evaluation context " ($ "E") " takes the form of")
- 'alts
- (select-them #t vc-append/gap frame/blue
-              (item2 "a hole " ($ "\\bullet") " to be filled with a value or more context")
-              (item2 ($ "(E\\,e)"))
-              ; the evaluation of the function or operator
-              (item2 ($ "(v\\,E)"))
-              ; the evaluation of the argument or operand
-              ))
+   #:title (para ($ "\\lambda") "-calculus evaluation contexts")
+   ; there is a formal definition for these contexts
+   ; the recursive evaluation strategy gives rise to an inductive definition
+   (para "An evaluation context " ($ "E") " takes the form of")
+   'alts
+   (select-them #t vc-append/gap frame/blue
+                (item2 "a hole " ($ "\\bullet") " to be filled with a value or more context")
+                (item2 ($ "(E\\,e)"))
+                ; the evaluation of the function or operator
+                (item2 ($ "(v\\,E)"))
+                ; the evaluation of the argument or operand
+                ))
 
 
 
@@ -185,67 +194,67 @@
               (item2 "obtain the current marks with " ($ "(\\mathrm{ccm})"))))
 
 #;(slide
- (t "Suppose")
- (tt "(fac n)")
- (t "is defined as")
- 'alts
- (list (list (emphasize "" "(if0 n (begin (print (ccm)) 1) (wcm n (* n (fac (- n 1))))" ""))
-       (list (emphasize "(if0 n " "(begin (print (ccm)) 1)" " (wcm n (* n (fac (- n 1))))"))
-       (list (emphasize "(if0 n (begin (print (ccm)) 1) " "(wcm n (* n (fac (- n 1)))" ")"))
-       (list (emphasize "" "(if0 n (begin (print (ccm)) 1) (wcm n (* n (fac (- n 1))))" ""))))
+   (t "Suppose")
+   (tt "(fac n)")
+   (t "is defined as")
+   'alts
+   (list (list (emphasize "" "(if0 n (begin (print (ccm)) 1) (wcm n (* n (fac (- n 1))))" ""))
+         (list (emphasize "(if0 n " "(begin (print (ccm)) 1)" " (wcm n (* n (fac (- n 1))))"))
+         (list (emphasize "(if0 n (begin (print (ccm)) 1) " "(wcm n (* n (fac (- n 1)))" ")"))
+         (list (emphasize "" "(if0 n (begin (print (ccm)) 1) (wcm n (* n (fac (- n 1))))" ""))))
 
 #;(slide
- 'alts
- (select-them #f vc-append frame/blue
-              (emphasize "" "(fac 2)" "")
-              (emphasize "" "(if0 2 ... (wcm 2 (* 2 (fac (- 2 1))))" "")
-              (emphasize "(if0 " "2" " ... (wcm 2 (* 2 (fac (- 2 1)))))")
-              (emphasize "" "(wcm 2 (* 2 (fac (- 2 1))))" "")
-              (emphasize "(wcm " "2" " (* 2 (fac (- 2 1))))")
-              (emphasize "(wcm 2 " "(* 2 (fac (- 2 1)))" ")")
-              (emphasize "(wcm 2 (* " "2" " (fac (- 2 1))))")
-              (emphasize "(wcm 2 (* 2 " "(fac (- 2 1))" "))")
-              (emphasize "(wcm 2 (* 2 (" "fac" " (- 2 1))))")
-              (emphasize "(wcm 2 (* 2 (fac " "(- 2 1)" ")))")
-              (emphasize "(wcm 2 (* 2 (fac (- " "2" " 1))))")
-              (emphasize "(wcm 2 (* 2 (fac (- 2 " "1" "))))")
-              (emphasize "(wcm 2 (* 2 (fac " "1" ")))")
-              (emphasize "(wcm 2 (* 2 " "(fac 1)" "))")
-              (emphasize "(wcm 2 (* 2 " "(if0 1 ... (wcm 1 (* 1 (fac (- 1 1)))))" "))")
-              (emphasize "(wcm 2 (* 2 (if0 " "1" " ... (wcm 1 (* 1 (fac (- 1 1)))))))")
-              (emphasize "(wcm 2 (* 2 " "(wcm 1 (* 1 (fac (- 1 1))))" "))")
-              (emphasize "(wcm 2 (* 2 (wcm " "1" " (* 1 (fac (- 1 1))))))")
-              (emphasize "(wcm 2 (* 2 (wcm 1 " "(* 1 (fac (- 1 1)))" ")))")
-              (emphasize "(wcm 2 (* 2 (wcm 1 (* " "1" " (fac (- 1 1))))))")
-              (emphasize "(wcm 2 (* 2 (wcm 1 (* 1 " "(fac (- 1 1))" "))))")
-              (emphasize "(wcm 2 (* 2 (wcm 1 (* 1 (" "fac" " (- 1 1))))))")
-              (emphasize "(wcm 2 (* 2 (wcm 1 (* 1 (fac " "(- 1 1)" ")))))")
-              (emphasize "(wcm 2 (* 2 (wcm 1 (* 1 (fac (- " "1" " 1))))))")
-              (emphasize "(wcm 2 (* 2 (wcm 1 (* 1 (fac (- 1 " "1" "))))))")
-              (emphasize "(wcm 2 (* 2 (wcm 1 (* 1 (fac " "(- 1 1)" ")))))")
-              (emphasize "(wcm 2 (* 2 (wcm 1 (* 1 (fac " "0" ")))))")
-              (emphasize "(wcm 2 (* 2 (wcm 1 (* 1 " "(fac 0)" "))))")
-              (emphasize "(wcm 2 (* 2 (wcm 1 (* 1 " "(if0 0 (begin (print (ccm)) 1) ...)" "))))")
-              (emphasize "(wcm 2 (* 2 (wcm 1 (* 1 (if0 " "0" " (begin (print (ccm)) 1) ...)))))")
-              (emphasize "(wcm 2 (* 2 (wcm 1 (* 1 " "(begin (print (ccm)) 1)" "))))")
-              (emphasize "(wcm 2 (* 2 (wcm 1 (* 1 (begin " "(print (ccm))" " 1)))))")
-              (emphasize "(wcm 2 (* 2 (wcm 1 (* 1 (begin (" "print" " (ccm)) 1)))))")
-              (emphasize "(wcm 2 (* 2 (wcm 1 (* 1 (begin (print " "(ccm)" ") 1)))))")
-              (emphasize "(wcm 2 (* 2 (wcm 1 (* 1 (begin (print " "(cons 2 (cons 1 nil))" ") 1)))))")
-              (emphasize "(wcm 2 (* 2 (wcm 1 (* 1 (begin " "(print (cons 2 (cons 1 nil)))" " 1)))))")
-              (emphasize "(wcm 2 (* 2 (wcm 1 (* 1 (begin " "<void>" " 1)))))")
-              (emphasize "(wcm 2 (* 2 (wcm 1 (* 1 " "(begin <void> 1)" "))))")
-              (emphasize "(wcm 2 (* 2 (wcm 1 (* 1 " "(begin 1)" "))))")
-              (emphasize "(wcm 2 (* 2 (wcm 1 (* 1 " "1" "))))")
-              (emphasize "(wcm 2 (* 2 (wcm 1 " "(* 1 1)" ")))")
-              (emphasize "(wcm 2 (* 2 (wcm 1 " "1" ")))")
-              (emphasize "(wcm 2 (* 2 " "(wcm 1 1)" "))")
-              (emphasize "(wcm 2 (* 2 " "1" "))")
-              (emphasize "(wcm 2 " "(* 2 1)" ")")
-              (emphasize "(wcm 2 " "2" ")")
-              (emphasize "" "(wcm 2 2)" "")
-              (emphasize "" "2" "")))
-              
+   'alts
+   (select-them #f vc-append frame/blue
+                (emphasize "" "(fac 2)" "")
+                (emphasize "" "(if0 2 ... (wcm 2 (* 2 (fac (- 2 1))))" "")
+                (emphasize "(if0 " "2" " ... (wcm 2 (* 2 (fac (- 2 1)))))")
+                (emphasize "" "(wcm 2 (* 2 (fac (- 2 1))))" "")
+                (emphasize "(wcm " "2" " (* 2 (fac (- 2 1))))")
+                (emphasize "(wcm 2 " "(* 2 (fac (- 2 1)))" ")")
+                (emphasize "(wcm 2 (* " "2" " (fac (- 2 1))))")
+                (emphasize "(wcm 2 (* 2 " "(fac (- 2 1))" "))")
+                (emphasize "(wcm 2 (* 2 (" "fac" " (- 2 1))))")
+                (emphasize "(wcm 2 (* 2 (fac " "(- 2 1)" ")))")
+                (emphasize "(wcm 2 (* 2 (fac (- " "2" " 1))))")
+                (emphasize "(wcm 2 (* 2 (fac (- 2 " "1" "))))")
+                (emphasize "(wcm 2 (* 2 (fac " "1" ")))")
+                (emphasize "(wcm 2 (* 2 " "(fac 1)" "))")
+                (emphasize "(wcm 2 (* 2 " "(if0 1 ... (wcm 1 (* 1 (fac (- 1 1)))))" "))")
+                (emphasize "(wcm 2 (* 2 (if0 " "1" " ... (wcm 1 (* 1 (fac (- 1 1)))))))")
+                (emphasize "(wcm 2 (* 2 " "(wcm 1 (* 1 (fac (- 1 1))))" "))")
+                (emphasize "(wcm 2 (* 2 (wcm " "1" " (* 1 (fac (- 1 1))))))")
+                (emphasize "(wcm 2 (* 2 (wcm 1 " "(* 1 (fac (- 1 1)))" ")))")
+                (emphasize "(wcm 2 (* 2 (wcm 1 (* " "1" " (fac (- 1 1))))))")
+                (emphasize "(wcm 2 (* 2 (wcm 1 (* 1 " "(fac (- 1 1))" "))))")
+                (emphasize "(wcm 2 (* 2 (wcm 1 (* 1 (" "fac" " (- 1 1))))))")
+                (emphasize "(wcm 2 (* 2 (wcm 1 (* 1 (fac " "(- 1 1)" ")))))")
+                (emphasize "(wcm 2 (* 2 (wcm 1 (* 1 (fac (- " "1" " 1))))))")
+                (emphasize "(wcm 2 (* 2 (wcm 1 (* 1 (fac (- 1 " "1" "))))))")
+                (emphasize "(wcm 2 (* 2 (wcm 1 (* 1 (fac " "(- 1 1)" ")))))")
+                (emphasize "(wcm 2 (* 2 (wcm 1 (* 1 (fac " "0" ")))))")
+                (emphasize "(wcm 2 (* 2 (wcm 1 (* 1 " "(fac 0)" "))))")
+                (emphasize "(wcm 2 (* 2 (wcm 1 (* 1 " "(if0 0 (begin (print (ccm)) 1) ...)" "))))")
+                (emphasize "(wcm 2 (* 2 (wcm 1 (* 1 (if0 " "0" " (begin (print (ccm)) 1) ...)))))")
+                (emphasize "(wcm 2 (* 2 (wcm 1 (* 1 " "(begin (print (ccm)) 1)" "))))")
+                (emphasize "(wcm 2 (* 2 (wcm 1 (* 1 (begin " "(print (ccm))" " 1)))))")
+                (emphasize "(wcm 2 (* 2 (wcm 1 (* 1 (begin (" "print" " (ccm)) 1)))))")
+                (emphasize "(wcm 2 (* 2 (wcm 1 (* 1 (begin (print " "(ccm)" ") 1)))))")
+                (emphasize "(wcm 2 (* 2 (wcm 1 (* 1 (begin (print " "(cons 2 (cons 1 nil))" ") 1)))))")
+                (emphasize "(wcm 2 (* 2 (wcm 1 (* 1 (begin " "(print (cons 2 (cons 1 nil)))" " 1)))))")
+                (emphasize "(wcm 2 (* 2 (wcm 1 (* 1 (begin " "<void>" " 1)))))")
+                (emphasize "(wcm 2 (* 2 (wcm 1 (* 1 " "(begin <void> 1)" "))))")
+                (emphasize "(wcm 2 (* 2 (wcm 1 (* 1 " "(begin 1)" "))))")
+                (emphasize "(wcm 2 (* 2 (wcm 1 (* 1 " "1" "))))")
+                (emphasize "(wcm 2 (* 2 (wcm 1 " "(* 1 1)" ")))")
+                (emphasize "(wcm 2 (* 2 (wcm 1 " "1" ")))")
+                (emphasize "(wcm 2 (* 2 " "(wcm 1 1)" "))")
+                (emphasize "(wcm 2 (* 2 " "1" "))")
+                (emphasize "(wcm 2 " "(* 2 1)" ")")
+                (emphasize "(wcm 2 " "2" ")")
+                (emphasize "" "(wcm 2 2)" "")
+                (emphasize "" "2" "")))
+
 #;(slide
    (text "Suppose we have a module in our system with a function")
    (code (explode-death-star)))
@@ -285,22 +294,28 @@
                 ))
 
 #;(slide
- (t-s "Languages" 64))
+   (t-s "Languages" 64))
 
 (slide
  #:title "Thesis"
- (para "A CPS-like transformation can transform the" ($ "\\lambda") "-calculus"
-       "with continuation marks into the plain" ($ "\\lambda") "-calculus in a"
-       "meaning-preserving way."))
+ (para "A CPS-like transformation can transform the "
+       (underline (hc-append ($ "\\lambda") (t "-calculus with continuation marks")))
+       "into the"
+       (underline (hc-append (t "plain ") ($ "\\lambda") (t "-calculus")))
+       "in a meaning-preserving way."))
 
 (slide
  #:title (para ($ "\\lambda_{v}"))
  (para "Terms")
  (para ($ "e = x\\,|\\,\\lambda x.e\\,|\\,(e\\,e)"))
  (para "Contexts")
- (para ($ "E = (E\\,e)\\,|\\,(v\\,E)\\,|\\,\\bullet"))
+ (para ($ "E = (E\\,e)\\,|\\,(v\\,E)\\,|\\,\\bullet")
+       (ghost ($ "F = (\\mathrm{wcm}\\,E\\,e)\\,|\\,(E\\,e)\\,|\\,(v\\,E)\\,|\\,\\bullet")))
  (para "Reduction rules " ($ "\\rightarrow_{v}"))
- (para ($ "E[(\\lambda x.e'\\,v)]\\rightarrow E[e'[x\\leftarrow v]]")))
+ (para ($ "E[(\\lambda x.e'\\,v)]\\rightarrow E[e'[x\\leftarrow v]]")
+       (ghost ($ "E[(\\mathrm{wcm}\\,v\\,(\\mathrm{wcm}\\,v'\\,e))]\\rightarrow E[(\\mathrm{wcm}\\,v'\\,e)]"))
+       (ghost ($ "E[(\\mathrm{wcm}\\,v\\,v')]\\rightarrow E[v']")) (blank 64 0) ;hack
+       (ghost ($ "E[(\\mathrm{ccm})]\\rightarrow E[\\chi(E)]"))))
 
 (slide
  #:title (para ($ "\\lambda_{cm}"))
@@ -323,31 +338,37 @@
 
 
 (slide
- #:title (para "So what's the problem?")
- ; the essence of lambda cm is that it can annotate and observe its continuation
- (para "Terms in " ($ "\\lambda_{cm}") " have access to their environment and context.")
- ; lambda v cannot
- (para "Programs in " ($ "\\lambda_{v}") " have access to their environment."))
-
-(slide
- #:title "Intuition behind the transformation"
+ #:title (para "What makes this difficult?")
+ (para "Terms in " ($ "\\lambda_{v}") " have access to their environment")
+ 'alts
+ (list (list (para "Terms in " ($ "\\lambda_{cm}") " have access to their environment"))
+       (list (para "Terms in " ($ "\\lambda_{cm}") " have access to their environment and context")))
+ 'next
+ (blank 0 32)
+ (para "Intuition")
  (para "Pass contextual information explicitly to terms as arguments, introducing"
        "it into the environment."))
 
 (slide
- #:title "What information do we pass?"
- (para "Anything the original " ($ "\\lambda_{cm}") " program could observe:")
+ (para "What information do we pass?")
+ 'next
+ (para "Anything the original " ($ "\\lambda_{cm}") " program could observe")
  ; this is our guiding principle
+ 'next
  (item "the list of current continuation marks " ($ "\\chi(E)"))
  ; certainly the continuation marks. these are observable in the original program with (ccm)
  )
 
 (slide
- #:title "Mark-passing style"
- (t "Transform")
- ($ "\\lambda x.\\dots\\mapsto\\lambda\\mathit{marks}.\\lambda x.\\dots")
- (t "and")
- ($ "(f\\,x)\\mapsto((f\\,\\mathit{marks})\\,x)"))
+ ($ "\\mathcal{C}[\\lambda x.e]=\\lambda \\mathit{marks}.\\lambda x.\\mathcal{C}[e]")
+ ($ "\\mathcal{C}[(e\\,f)]=((e\\,\\mathit{marks})\\,(f\\,\\mathit{marks}))\\,\\mathit{marks})"))
+ 
+ ;#:title "Mark-passing style"
+ ;(t "Transform")
+ ;($ "\\lambda x.\\dots\\mapsto\\lambda\\mathit{marks}.\\lambda x.\\dots")
+ ;(t "and")
+ ;($ "(f\\,x)\\mapsto((f\\,\\mathit{marks})\\,x)"))
+
 
 
 (slide
@@ -355,6 +376,7 @@
  (para "Marks placed in tail position annotate the newest part"
        "of the continuation, overwriting previous marks (if they"
        "exist).")
+ (para "put the three rules that work and the one rule that don't")
  ; this makes tail position observable, albeit indirectly
  )
 
@@ -365,11 +387,12 @@
  'alts
  (list (list (item "???"))
        (list (item "a flag reflecting tail position " ($ "\\xi(E)"))))
- 'next
- (para "We then attempted to build a transformation based on this.")
  )
 
-; with this in mind, we build the tranformation
+; now we would like to verify
+; proof is expensive
+; so we test
+; testing is like the naive approach to solving the halting problem
 
 #;(slide
    #:title (para "Definition of " ($ "\\mathcal{C}"))
@@ -436,6 +459,9 @@
  (t "Repeat 10,000 times")
  )
 
+; after that's done, you end up with something like this:
+; show all the terms
+
 ; once a transform withstood 10,000 tests, we considered it for...
 
 (slide
@@ -451,7 +477,8 @@
 ; there's a problem with this:
 ; the transformation abstracts each term so it won't reduce
 
-(slide
+; change this to 
+#;(slide
  ($ "\\mathcal{T}[(e\\,f)]=\\lambda k.(\\mathcal{T}[e]\\,\\lambda e'.(\\mathcal{T}[f]\\,\\lambda f'.((e'\\,f')\\,k)))"))
 
 ; we address this problem with our proof strategy
@@ -472,8 +499,9 @@
 
 
 (slide
- #:title "Solution"
- (para "Define " ($ "\\mathcal{C}") " over")
+ (para ($ "\\mathcal{C}") " is defined over terms " ($ "E"))
+ 'next
+ (para "Extend " ($ "\\mathcal{C}") " over")
  (item "contexts " ($ "E"))
  (item "context-expression pairs " ($ "(E,e)") " (which we write as " ($ "E[e]") ")")
  'next
@@ -514,9 +542,34 @@
  (item ($ "\\mathcal{C}[(\\mathrm{ccm})]=\\lambda k.\\lambda f.\\lambda m.(k\\,m)")))
 
 (slide
+ (t "QED and put the proof pages up"))
+
+(slide
+ #:title (para (strike (t "Thesis")) (t "Fact"))
+ (para "A CPS-like transformation can transform the" ($ "\\lambda") "-calculus"
+       "with continuation marks into the plain" ($ "\\lambda") "-calculus in a"
+       "meaning-preserving way."))
+
+(slide
  #:title "Conclusion"
  (para "Now we can correctly and easily add continuation marks to a higher-order"
-       "language, like JavaScript."))
+       "language such as")
+ (item "JavaScript")
+ 'next
+ (item "Ruby")
+ 'next
+ (item "Python (sort of)")
+ 'next
+ (item "Haskell")
+ 'next
+ (item "Lisp")
+ 'next
+ (item "Perl")
+ 'next
+ (item "etc."))
+
+(slide
+ (t "run factorial"))
 
 
 
