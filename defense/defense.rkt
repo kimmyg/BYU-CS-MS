@@ -365,6 +365,8 @@
  'alts
  (list (list (item "???"))
        (list (item "a flag reflecting tail position " ($ "\\xi(E)"))))
+ 'next
+ (para "We then attempted to build a transformation based on this.")
  )
 
 ; with this in mind, we build the tranformation
@@ -419,7 +421,7 @@
 ; note: this list is persistent (in a data structures sense)
 
 (slide
- #:title "Testing"
+ #:title "Testing with Redex"
  (para "Process")
  'alts
  (map list
