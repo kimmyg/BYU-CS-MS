@@ -27,15 +27,24 @@
 (define (underline-each picts)
   (select-and-collect underline picts))
 
-(define (select-them before-and-after? combiner f . xs)
+(define (select-them-inner before-and-after? combiner f . xs)
   (let ([ys (select-and-collect f xs)])
-    (map list
-         (map (λ (xs)
-                (apply combiner xs))
-              (if before-and-after? (cons xs (append ys (list xs))) ys)))))
+    (map (λ (xs)
+           (apply combiner xs))
+         (if before-and-after? (cons xs (append ys (list xs))) ys))))
+
+(define (select-them before-and-after? combiner f . xs)
+  (map list (apply select-them-inner before-and-after? combiner f xs)))
 
 (define (underline-them display-first? combiner . items)
   (apply select-them display-first? combiner underline items))
+
+(define (pin-arrows-lines arrow-size pict locs [prefix empty])
+  (if (empty? locs)
+      pict
+      (match-let ([(list src find-src dest find-dest) (first locs)])
+        (let ([result-pict (pin-arrows-line arrow-size pict (append prefix src) find-src (append prefix dest) find-dest)])
+          (pin-arrows-lines arrow-size result-pict (rest locs) (cons pict prefix))))))
 
 (define (item2 . args)
   (inset (apply item args) 16 4))
@@ -290,7 +299,7 @@
  (para ($ "e = x\\,|\\,\\lambda x.e\\,|\\,(e\\,e)"))
  (para "Contexts")
  (para ($ "E = (E\\,e)\\,|\\,(v\\,E)\\,|\\,\\bullet"))
- (para "Reduction rules")
+ (para "Reduction rules " ($ "\\rightarrow_{v}"))
  (para ($ "E[(\\lambda x.e'\\,v)]\\rightarrow E[e'[x\\leftarrow v]]")))
 
 (slide
@@ -300,7 +309,7 @@
  (para "Contexts")
  (para ($ "E = (\\mathrm{wcm}\\,v\\,F)\\,|\\,F")
        ($ "F = (\\mathrm{wcm}\\,E\\,e)\\,|\\,(E\\,e)\\,|\\,(v\\,E)\\,|\\,\\bullet"))
- (para "Reduction rules")
+ (para "Reduction rules " ($ "\\rightarrow_{cm}"))
  (para ($ "E[(\\lambda x.e'\\,v)]\\rightarrow E[e'[x\\leftarrow v]]")
        ($ "E[(\\mathrm{wcm}\\,v\\,(\\mathrm{wcm}\\,v'\\,e))]\\rightarrow E[(\\mathrm{wcm}\\,v'\\,e)]")
        ($ "E[(\\mathrm{wcm}\\,v\\,v')]\\rightarrow E[v']") (blank 64 0) ;hack
@@ -329,11 +338,8 @@
  #:title "What information do we pass?"
  (para "Anything the original " ($ "\\lambda_{cm}") " program could observe:")
  ; this is our guiding principle
- (item "the list of current continuation marks")
+ (item "the list of current continuation marks " ($ "\\chi(E)"))
  ; certainly the continuation marks. these are observable in the original program with (ccm)
- ;'next
- (item "???")
- ; is that it? is there anything else the program can observe?
  )
 
 (slide
@@ -355,10 +361,10 @@
 (slide
  #:title "What information do we pass?"
  (para "Anything the original " ($ "\\lambda_{cm}") " program could observe:")
- (item "the list of current continuation marks")
+ (item "the list of current continuation marks " ($ "\\chi(E)"))
  'alts
  (list (list (item "???"))
-       (list (item "a flag reflecting tail position")))
+       (list (item "a flag reflecting tail position " ($ "\\xi(E)"))))
  )
 
 ; with this in mind, we build the tranformation
@@ -416,15 +422,19 @@
  #:title "Testing"
  (para "Process")
  'alts
- (select-them #t vc-append/gap frame/blue
-              (inset (para "1. generate a random " ($ "\\lambda_{cm}") " program") 16 4)
-              (inset (para "2. reduce according to " ($ "\\rightarrow_{cm}") " and transform the result") 16 4)
-              (inset (para "3. transform the program and reduce according to " ($ "\\rightarrow_{v}")) 16 4)
-              (inset (para "4. compare the results") 16 4))
- c-diagram
+ (map list
+      (map (λ (pict) (hc-append pict c-diagram))
+           (parameterize ([current-para-width (- (current-para-width) (pict-width c-diagram))])
+             (select-them-inner #t vc-append/gap frame/blue
+                                (inset (para "1. generate a random " ($ "\\lambda_{cm}") " program") 16 4)
+                                (inset (para "2. reduce according to " ($ "\\rightarrow_{cm}") " and transform the result") 16 4)
+                                (inset (para "3. transform the program and reduce according to " ($ "\\rightarrow_{v}")) 16 4)
+                                (inset (para "4. compare the results") 16 4)))))
  'next
  (t "Repeat 10,000 times")
  )
+
+; once a transform withstood 10,000 tests, we considered it for...
 
 (slide
  (t-s "Proof" 64))
@@ -432,7 +442,9 @@
 ; we prove that the continuation-passing style transformation preserves meaning
 
 (slide
- ($ "p\\rightarrow^{*}_{cm} v\\Rightarrow\\mathcal{C}_{cps}[p]\\rightarrow^{*}_{v}\\mathcal{C}_{cps}[v]"))
+ c-diagram
+ (t "unfolds to")
+ ($ "p\\rightarrow^{*}_{cm} v\\Rightarrow\\mathcal{C}[p]\\rightarrow^{*}_{v}\\mathcal{C}[v]"))
 
 ; there's a problem with this:
 ; the transformation abstracts each term so it won't reduce
@@ -440,32 +452,71 @@
 (slide
  ($ "\\mathcal{T}[(e\\,f)]=\\lambda k.(\\mathcal{T}[e]\\,\\lambda e'.(\\mathcal{T}[f]\\,\\lambda f'.((e'\\,f')\\,k)))"))
 
+; we address this problem with our proof strategy
+
 (let ([cmb ($ "E[e]")]
       [cma ($ "E'[e']")]
-      [vb ($ "\\mathcal{C}_{cps}[E[e]]")]
-      [va ($ "\\mathcal{C}_{cps}[E'[e']]")])
+      [vb ($ "\\mathcal{C}[E[e]]")]
+      [va ($ "\\mathcal{C}[E'[e']]")])
   (let ([cm-rr (hc-append 8 cmb ($ "\\rightarrow_{cm}") cma)]
-        [v-rr (hc-append 8 vb ($ "\\rightarrow_{v}^{*}") vb)])
+        [v-rr (hc-append 8 vb ($ "\\rightarrow_{v}^{*}") va)])
     (slide
      #:title "Proof strategy"
-     cm-rr
-     (blank 0 32)
-     v-rr)))
-;'alts
-;   (let ([fst-pict (vc-append cm-rr (blank 0 128) (ghost v-rr))]
-;        [snd-pict (pin-arrow-lines (vc-append cm-rr (blank 0 128) v-rr)
-;                                  (list cmb ct-find vb ct-find)
-;                                 (list cma ct-find va ct-find))])
-; (list (list fst-pict)
-;      (list snd-pict))))))
+     (t "Show simulation")
+     (linewidth 8 (pin-arrows-lines 24
+                                    (vc-append cm-rr (blank 0 128) v-rr)
+                                    (list (list (list cm-rr cmb) cb-find (list v-rr vb) ct-find)
+                                          (list (list cm-rr cma) cb-find (list v-rr va) ct-find)))))))
 
-(define (pin-arrow-lines pict . arrows)
-  (if (empty? arrows)
-      pict
-      (match-let ([(list src find-src dest find-dest) (first arrows)])
-        (apply pin-arrow-lines
-               (pin-arrow-line 8 pict src find-src dest find-dest)
-               (rest arrows)))))
+
+(slide
+ #:title "Solution"
+ (para "Define " ($ "\\mathcal{C}") " over")
+ (item "contexts " ($ "E"))
+ (item "context-expression pairs " ($ "(E,e)") " (which we write as " ($ "E[e]") ")")
+ 'next
+ (blank 0 16)
+ ($ "\\mathcal{C}[E[e]]=(((\\mathcal{C}[e]\\,\\mathcal{C}[E])\\,\\xi(E))\\,\\mathcal{C}[\\chi(E)])")
+ 'next
+ ($ "\\mathcal{C}[\\bullet[p]]=(((\\mathcal{C}[p]\\,\\mathcal{C}[\\bullet])\\,\\xi(\\bullet))\\,\\mathcal{C}[\\chi(\\bullet)])"))
+
+(slide
+ (para "We must simulate")
+ (item "context manipulation")
+ (item "reduction rules"))
+
+(slide
+ #:title "Context manipulation"
+ 'alts
+ (select-them #t vc-append/gap frame/blue
+              (item2 ($ "E[(e_0\\,e_1)]\\rightarrow E[(\\bullet\\,e_1)][e_0]"))
+              (item2 ($ "E[(\\bullet\\,e_1)][v_0]\\rightarrow E[(v_0\\,\\bullet)][e_1]")))
+ (item2 "etc."))
+
+(slide
+ #:title "Reduction rules"
+ (para ($ "E[(\\lambda x.e'\\,v)]\\rightarrow E[e'[x\\leftarrow v]]"))
+ 'next
+ (item "substitution lemma " ($ "\\mathcal{C}[e[x\\leftarrow v]]=\\mathcal{C}[e][x\\leftarrow\\mathcal{C}[v]]"))
+ 'next
+ (para ($ "E[(\\mathrm{wcm}\\,v\\,(\\mathrm{wcm}\\,v'\\,e))]\\rightarrow E[(\\mathrm{wcm}\\,v'\\,e)]"))
+ 'next
+ (item "use " ($ "\\xi(E)") " to know correct mark behavior")
+ 'next
+ (para ($ "E[(\\mathrm{wcm}\\,v\\,v')]\\rightarrow E[v']"))
+ 'next
+ (item "by definition of " ($ "\\mathcal{C}[E[e]]"))
+ 'next
+ (para ($ "E[(\\mathrm{ccm})]\\rightarrow E[\\chi(E)]"))
+ 'next
+ (item ($ "\\mathcal{C}[(\\mathrm{ccm})]=\\lambda k.\\lambda f.\\lambda m.(k\\,m)")))
+
+(slide
+ #:title "Conclusion"
+ (para "Now we can correctly and easily add continuation marks to a higher-order"
+       "language, like JavaScript."))
+
+
 
 
 
