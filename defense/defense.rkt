@@ -76,7 +76,7 @@
      (vc-append s1 s2 s3)))
 
 (slide
- (t "A CPS-like Transformation of Continutation Marks")
+ (t "A CPS-like Transformation of Continuation Marks")
  (t-s "Kimball Germane" (* (current-font-size) 3/4))
  (t-s "with Jay McCarthy advising" (* (current-font-size) 3/4)))
 
