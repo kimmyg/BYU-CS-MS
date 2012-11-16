@@ -598,7 +598,7 @@
  'next
  (item "etc."))
 
-(slide
+#;(slide
  (t "run factorial"))
 
 
