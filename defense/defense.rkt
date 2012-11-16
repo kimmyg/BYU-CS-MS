@@ -324,12 +324,12 @@
 (slide
  #:title (para ($ "\\lambda_{cm}"))
  (para "Terms")
- (para ($ "e = x\\,|\\,\\lambda x.e\\,|\\,(e\\,e)\\,|\\,(\\mathrm{wcm}\\,e\\,e)\\,|\\,(\\mathrm{ccm})"))
+ (para ($ "e =") (cellophane ($ "x\\,|\\,\\lambda x.e\\,|\\,(e\\,e)") 0.75) ($ "|\\,(\\mathrm{wcm}\\,e\\,e)\\,|\\,(\\mathrm{ccm})"))
  (para "Contexts")
- (para ($ "E = (\\mathrm{wcm}\\,v\\,F)\\,|\\,F")
-       ($ "F = (\\mathrm{wcm}\\,E\\,e)\\,|\\,(E\\,e)\\,|\\,(v\\,E)\\,|\\,\\bullet"))
+ (para ($ "E = (\\mathrm{wcm}\\,v\\,F)\\,|\\,F") (blank 256 0) ;hack
+       ($ "F = (\\mathrm{wcm}\\,E\\,e)") (cellophane ($ "|\\,(E\\,e)\\,|\\,(v\\,E)\\,|\\,\\bullet") 0.75))
  (para "Reduction rules " ($ "\\rightarrow_{cm}"))
- (para ($ "E[(\\lambda x.e'\\,v)]\\rightarrow E[e'[x\\leftarrow v]]")
+ (para (cellophane ($ "E[(\\lambda x.e'\\,v)]\\rightarrow E[e'[x\\leftarrow v]]") 0.75)
        ($ "E[(\\mathrm{wcm}\\,v\\,(\\mathrm{wcm}\\,v'\\,e))]\\rightarrow E[(\\mathrm{wcm}\\,v'\\,e)]")
        ($ "E[(\\mathrm{wcm}\\,v\\,v')]\\rightarrow E[v']") (blank 64 0) ;hack
        ($ "E[(\\mathrm{ccm})]\\rightarrow E[\\chi(E)]")))
@@ -365,7 +365,9 @@
 
 (slide
  ($ "\\mathcal{C}[\\lambda x.e]=\\lambda \\mathit{marks}.\\lambda x.\\mathcal{C}[e]")
- ($ "\\mathcal{C}[(e\\,f)]=((e\\,\\mathit{marks})\\,(f\\,\\mathit{marks}))\\,\\mathit{marks})"))
+ ($ "\\mathcal{C}[(e\\,f)]=((e\\,\\mathit{marks})\\,(f\\,\\mathit{marks}))\\,\\mathit{marks})")
+ 'next
+ (t "mark-passing style"))
  
  ;#:title "Mark-passing style"
  ;(t "Transform")
@@ -374,7 +376,7 @@
  ;($ "(f\\,x)\\mapsto((f\\,\\mathit{marks})\\,x)"))
 
 (slide
- #:title "This accounts for"
+ (t "Mark-passing style accounts for")
  'alts
  (list (list (para (frame/blue (inset ($ "E[(\\lambda x.e'\\,v)]\\rightarrow E[e'[x\\leftarrow v]]") 16 4))
                    (inset ($ "E[(\\mathrm{wcm}\\,v\\,(\\mathrm{wcm}\\,v'\\,e))]\\rightarrow E[(\\mathrm{wcm}\\,v'\\,e)]") 16 4)
