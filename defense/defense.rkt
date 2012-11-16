@@ -5,6 +5,10 @@
 (require slideshow/code)
 (require (planet jaymccarthy/slideshow-latex:1:1))
 
+;(putenv "TEXINPUTS" "/usr/racket/collects/slatex")
+;(latex-path (find-executable-path "slatex"))
+;(add-preamble "\\usepackage{slatex}")
+
 (define (underline p)
   (refocus
    (vc-append p (colorize (linewidth 4 (hline (pict-width p) 0)) "red"))
@@ -300,8 +304,8 @@
  #:title "Thesis"
  (para "A CPS-like transformation can transform the "
        (underline (hc-append ($ "\\lambda") (t "-calculus with continuation marks")))
-       "into the"
-       (underline (hc-append (t "plain ") ($ "\\lambda") (t "-calculus")))
+       "into the" (underline (t "plain")) 
+       (underline (hc-append ($ "\\lambda") (t "-calculus")))
        "in a meaning-preserving way."))
 
 (slide
@@ -369,14 +373,32 @@
  ;(t "and")
  ;($ "(f\\,x)\\mapsto((f\\,\\mathit{marks})\\,x)"))
 
-
+(slide
+ #:title "This accounts for"
+ 'alts
+ (list (list (para (frame/blue (inset ($ "E[(\\lambda x.e'\\,v)]\\rightarrow E[e'[x\\leftarrow v]]") 16 4))
+                   (inset ($ "E[(\\mathrm{wcm}\\,v\\,(\\mathrm{wcm}\\,v'\\,e))]\\rightarrow E[(\\mathrm{wcm}\\,v'\\,e)]") 16 4)
+                   (inset ($ "E[(\\mathrm{wcm}\\,v\\,v')]\\rightarrow E[v']") 16 4) (blank 64 0) ;hack
+                   (inset ($ "E[(\\mathrm{ccm})]\\rightarrow E[\\chi(E)]") 16 4)))
+       (list (para (inset ($ "E[(\\lambda x.e'\\,v)]\\rightarrow E[e'[x\\leftarrow v]]") 16 4)
+                   (frame/blue (inset ($ "E[(\\mathrm{wcm}\\,v\\,(\\mathrm{wcm}\\,v'\\,e))]\\rightarrow E[(\\mathrm{wcm}\\,v'\\,e)]") 16 4))
+                   (inset ($ "E[(\\mathrm{wcm}\\,v\\,v')]\\rightarrow E[v']") 16 4) (blank 64 0) ;hack
+                   (inset ($ "E[(\\mathrm{ccm})]\\rightarrow E[\\chi(E)]") 16 4)))
+       (list (para (inset ($ "E[(\\lambda x.e'\\,v)]\\rightarrow E[e'[x\\leftarrow v]]") 16 4)
+                   (inset (strike ($ "E[(\\mathrm{wcm}\\,v\\,(\\mathrm{wcm}\\,v'\\,e))]\\rightarrow E[(\\mathrm{wcm}\\,v'\\,e)]")) 16 4)
+                   (frame/blue (inset ($ "E[(\\mathrm{wcm}\\,v\\,v')]\\rightarrow E[v']") 16 4)) (blank 64 0) ;hack
+                   (inset ($ "E[(\\mathrm{ccm})]\\rightarrow E[\\chi(E)]") 16 4)))
+       (list (para (inset ($ "E[(\\lambda x.e'\\,v)]\\rightarrow E[e'[x\\leftarrow v]]") 16 4)
+                   (inset (strike ($ "E[(\\mathrm{wcm}\\,v\\,(\\mathrm{wcm}\\,v'\\,e))]\\rightarrow E[(\\mathrm{wcm}\\,v'\\,e)]")) 16 4)
+                   (inset ($ "E[(\\mathrm{wcm}\\,v\\,v')]\\rightarrow E[v']") 16 4) (blank 64 0) ;hack
+                   (frame/blue (inset ($ "E[(\\mathrm{ccm})]\\rightarrow E[\\chi(E)]") 16 4))))))
+ 
 
 (slide
  #:title "Tail position"
  (para "Marks placed in tail position annotate the newest part"
        "of the continuation, overwriting previous marks (if they"
        "exist).")
- (para "put the three rules that work and the one rule that don't")
  ; this makes tail position observable, albeit indirectly
  )
 
@@ -499,7 +521,7 @@
 
 
 (slide
- (para ($ "\\mathcal{C}") " is defined over terms " ($ "E"))
+ (para ($ "\\mathcal{C}") " is defined over terms " ($ "e"))
  'next
  (para "Extend " ($ "\\mathcal{C}") " over")
  (item "contexts " ($ "E"))
@@ -535,14 +557,20 @@
  'next
  (para ($ "E[(\\mathrm{wcm}\\,v\\,v')]\\rightarrow E[v']"))
  'next
- (item "by definition of " ($ "\\mathcal{C}[E[e]]"))
+ (item "by construction of " ($ "\\mathcal{C}[E[e]]"))
  'next
  (para ($ "E[(\\mathrm{ccm})]\\rightarrow E[\\chi(E)]"))
  'next
  (item ($ "\\mathcal{C}[(\\mathrm{ccm})]=\\lambda k.\\lambda f.\\lambda m.(k\\,m)")))
 
+; a2ps --output=proof.ps --pages=41-44 -1 dissertation.dvi
+; a2ps --output=appendex.ps --pages=49-72 -1 dissertation.dvi
+; after leaving out conclusion/bibliography in TeX dvi generation
+; a2ps --output=proof-appendix.ps --pages=41-72 --rows=4 --columns=7 --major=row dissertation.dvi
+
 (slide
- (t "QED and put the proof pages up"))
+ (rb-superimpose (scale (rotate (bitmap "proof-appendix.png") (* 3 (/ pi 2))) 19/64)
+                 (inset (t-s "QED" 48) 0 0 20 75)))
 
 (slide
  #:title (para (strike (t "Thesis")) (t "Fact"))
