@@ -5,9 +5,6 @@
 (require slideshow/code)
 (require (planet jaymccarthy/slideshow-latex:1:1))
 
-;(putenv "TEXINPUTS" "/usr/racket/collects/slatex")
-;(latex-path (find-executable-path "slatex"))
-;(add-preamble "\\usepackage{slatex}")
 
 (define (underline p)
   (refocus
@@ -33,17 +30,18 @@
 (define (underline-each picts)
   (select-and-collect underline picts))
 
-(define (select-them-inner before-and-after? combiner f . xs)
+(define (select-them-inner before? after? combiner f . xs)
   (let ([ys (select-and-collect f xs)])
     (map (λ (xs)
            (apply combiner xs))
-         (if before-and-after? (cons xs (append ys (list xs))) ys))))
+         (let ([tail (if after? (append ys (list xs)) ys)])
+           (if before? (cons xs tail) tail)))))
 
-(define (select-them before-and-after? combiner f . xs)
-  (map list (apply select-them-inner before-and-after? combiner f xs)))
+(define (select-them before? after? combiner f . xs)
+  (map list (apply select-them-inner before? after? combiner f xs)))
 
 (define (underline-them display-first? combiner . items)
-  (apply select-them display-first? combiner underline items))
+  (apply select-them display-first? display-first? combiner underline items))
 
 (define (pin-arrows-lines arrow-size pict locs [prefix empty])
   (if (empty? locs)
@@ -54,13 +52,7 @@
 
 (define (item2 . args)
   (inset (apply item args) 16 4))
-;  (inset (apply hc-append (map (λ (arg)
-;                                 (cond
-;                                   [(string? arg) (t arg)]
-;                                   [else arg]))
-;                               args)) 16 4))
 
-;(define-syntax (slide/reduction
 
 (define c-diagram ($ "\\begin{array}{ccc}p & \\rightarrow_{cm}^{*} & v\\\\\\downarrow_\\mathcal{C} & & \\downarrow_\\mathcal{C}\\\\\\mathcal{C}[p] & \\rightarrow_{v}^{*} & \\mathcal{C}[v]\\end{array}"))
 
@@ -72,17 +64,6 @@
              (colorize (tt inner) "black")
              (colorize (tt r) "gray")))
 
-#;(slide
-   (let ([s1 (emphasize "" "(fac 2)" "")]
-         [s2 (emphasize "" "(if0 2 1 (wcm 2 (* 2 (fac (- 2 1))))" "")]
-         [s3 (emphasize "" "(wcm 2 (* 2 (fac (- 2 1))))" "")]
-         [s4 (emphasize "(wcm 2 " "(* 2 (fac (- 2 1)))" ")")]
-         [s5 (emphasize "(wcm 2 (* 2 " "(fac (- 2 1))" "))")]
-         [s6 (emphasize "(wcm 2 (* 2 " "(if0 1 1 (wcm 1 (* 1 (fac 0))" "))")])
-     (vc-append s1 s2 s3)))
-
-
-
 (define (strike pict)
   (refocus (cc-superimpose pict (linewidth 4 (hline (pict-width pict) (pict-height pict)))) pict))
 
@@ -91,61 +72,86 @@
  (t-s "Kimball Germane" (* (current-font-size) 3/4))
  (t-s "with Jay McCarthy advising" (* (current-font-size) 3/4)))
 
+; to begin, I will talk about the lambda-calculus
+
 (slide
  #:title "Thesis"
  (para "A CPS-like transformation can transform the" ($ "\\lambda") "-calculus"
        "with continuation marks into the plain" ($ "\\lambda") "-calculus in a"
        "meaning-preserving way."))
 
-; a Turing machine is a machine model of computation
-; we fix the program and feed input to the machine
-; computation is performed as the machine goes from state to state
-; the lambda-calculus is a Turing-complete system of logic
-; akin to algebra. program and data are combined into a term
-; computation is performed as the term reduces and evolves
+; the lambda-calculus is a Turing-complete system of logic that provides a 
+; a language model of computation. whereas Turing-machines fix programs and
+; operate on data fed into the machine, the lambda-calculus combines code and 
+; data into a language term. Turing machine computation is effected by 
+; machine state transitions. lambda-calculus computation is effected by 
+; language term reduction.
+
 (slide
- #:title (para "What is the " ($ "\\lambda") "-calculus?")
+ #:title (para "The " ($ "\\lambda") "-calculus")
  (t-s "A language model of computation" 48))
+
+; terms in this language are defined inductively
+
+; variables x correspond to mathematical variables in that we don't think of assigning 
+; values to variables but rather substituting variables with values
+
+; abstractions \x.e (where e is itself a lambda calculus term) correspond to functions: 
+; x is the parameter and e is the body of the function
+
+; applications--the juxtaposition of terms e_0 and e_1-- correspond to function application.
+; e_0 represents the function or operator and e_1 represents the argument or operand.
 
 (slide
  #:title (para ($ "\\lambda") "-calculus")
  (para "Terms " ($ "e") " take the form of")
- ; terms in this language are defined inductively
  'alts
- (select-them #t vc-append/gap frame/blue
+ (select-them #t #f vc-append/gap frame/blue
               (item2 "variables " ($ "x"))
-              ; these correspond to mathematical variables
-              ; in other words, we don't think of assigning values to variables
-              ; but rather substituting variables with values
               (item2 "abstractions " ($ "\\lambda x.e"))
-              ; ...where e is itself a lambda calculus term
-              ; this is the first of two ways we see the inductive structure of lambda calculus terms
-              ; these correspond to functions: x is the parameter of the function and e is the body of
-              ; the function
+              
               (item2 "applications " ($ "(e_0\\,e_1)"))
-              ; ...where e_0 and e_1 are lambda calculus terms
-              ; this form corresponds to application; e_0 represents the function and e_1
-              ; represents the argument
+              
               ))
+
+; evaluation of a lambda calculus term is defined recursively
+
+; variables are substituted with their value in the environment
+
+; abstractions evaluate to themselves and capture the values of their free variables 
+; from the environment. these values are called closures.
+
+; applications are evaluated by recursively evaluating the e_0 then e_1 and then substituting
 
 (slide
  #:title (para ($ "\\lambda") "-calculus evaluation")
- ; evaluation of the lambda calculus is defined recursively
- ; which parallels its inductive definition
  (para "Evaluation of a term " ($ "e") "depends on its form")
  'alts
- (select-them #t vc-append/gap frame/blue
-              (item2 "variables " ($ "x") " are substituted with their binding in the environment")
-              ; lone variables are unbound and we consider unbound variables an error
+ (select-them #t #f vc-append/gap frame/blue
+              (item2 "variables " ($ "x") " are substituted with their value in the environment")
               (item2 "abstractions " ($ "\\lambda x.e") " evaluate to closures")
-              (item2 "applications " ($ "(e_0\\,e_1)") " are evaluated by recursively evaluating " ($ "e_0")
-                     " then " ($ "e_1") " and then substituting")))
+              (item2 "applications " ($ "(e_0\\,e_1)") " are evaluated recursively before substitution")))
 
 (slide
  #:title (para ($ "\\lambda") "-calculus substitution")
  (para "When a term of the form " ($ "(\\lambda x.e' v)") " is encountered in evaluation,"
        "it is" (it "reduced") "by the rule " ($ "(\\lambda x.e' v)\\rightarrow e'[x\\leftarrow v]") ".")
  )
+
+; here is the evaluatation of a nested lambda-calculus term
+; like nested arithmetic expressions, subexpressions are evaluated first
+; as we proceed deeper into subexpressions, we accumulate computation
+; to perform once we have evaluated the current subexpression--this is shown in gray. this is called
+; the evaluation context or continuation of the subexpression.
+
+; once we have an abstraction and a value--in this case, a number--we apply the 
+; abstraction to the value. this replaces occurrences of the bound variable with the 
+; value.
+
+; evaluation proceeds until a value is obtained in an empty context
+; this is roughly the extent of evaluation in the lambda-calculus
+
+; fix alignment
 
 (slide
  #:title (para "Example " ($ "\\lambda") "-calculus evaluation")
@@ -158,147 +164,34 @@
   (emphasize "((λx.λy.y ((" "λx.λy.x" " 1) 2)) 3)")
   (emphasize "((λx.λy.y ((λx.λy.x " "1" ") 2)) 3)")
   (emphasize "((λx.λy.y (" "(λx.λy.x 1)" " 2)) 3)")
-  (emphasize "((λx.λy.y (" "λy.1" " 2)) 3)")
-  (emphasize "((λx.λy.y (λy.1 " "2" ")) 3)")
-  (emphasize "((λx.λy.y " "(λy.1 2)" ") 3)")
-  (emphasize "((λx.λy.y " "1" ") 3)")
-  (emphasize "(" "(λx.λy.y 1)" " 3)")
-  (emphasize "(" "λy.y" " 3)")
-  ;(tt "...")
-  (emphasize "(λy.y " "3" ")")
-  (emphasize "" "(λy.y 3)" "")
-  (emphasize "" "3" "")))
-
-#;(slide
-   #:title (para ($ "\\lambda") "-calculus evaluation contexts")
-   ; there is a formal definition for these contexts
-   ; the recursive evaluation strategy gives rise to an inductive definition
-   (para "An evaluation context " ($ "E") " takes the form of")
-   'alts
-   (select-them #t vc-append/gap frame/blue
-                (item2 "a hole " ($ "\\bullet") " to be filled with a value or more context")
-                (item2 ($ "(E\\,e)"))
-                ; the evaluation of the function or operator
-                (item2 ($ "(v\\,E)"))
-                ; the evaluation of the argument or operand
-                ))
+  (emphasize "    ((λx.λy.y (" "λy.1" " 2)) 3)")
+  (emphasize "    ((λx.λy.y (λy.1 " "2" ")) 3)")
+  (emphasize "    ((λx.λy.y " "(λy.1 2)" ") 3)")
+  (emphasize "        ((λx.λy.y " "1" ") 3)")
+  (emphasize "        (" "(λx.λy.y 1)" " 3)")
+  (emphasize "            (" "λy.y" " 3)")
+  (emphasize "            (λy.y " "3" ")")
+  (emphasize "            " "(λy.y 3)" "")
+  (emphasize "                " "3" "")))
 
 
 
+; continuation marks enhance it
 
+; --
 
-(slide
- (t "A quick refresher on continuation marks"))
+; --
 
 (slide
  (para "Continuation marks allow you to:")
  'alts
- (select-them #t vc-append/gap frame/blue
+ (select-them #t #f vc-append/gap frame/blue
               (item2 "mark the continuation with " ($ "(\\mathrm{wcm}\\,e_0\\,e_1)"))
               (item2 "obtain the current marks with " ($ "(\\mathrm{ccm})"))))
 
-#;(slide
-   (t "Suppose")
-   (tt "(fac n)")
-   (t "is defined as")
-   'alts
-   (list (list (emphasize "" "(if0 n (begin (print (ccm)) 1) (wcm n (* n (fac (- n 1))))" ""))
-         (list (emphasize "(if0 n " "(begin (print (ccm)) 1)" " (wcm n (* n (fac (- n 1))))"))
-         (list (emphasize "(if0 n (begin (print (ccm)) 1) " "(wcm n (* n (fac (- n 1)))" ")"))
-         (list (emphasize "" "(if0 n (begin (print (ccm)) 1) (wcm n (* n (fac (- n 1))))" ""))))
-
-#;(slide
-   'alts
-   (select-them #f vc-append frame/blue
-                (emphasize "" "(fac 2)" "")
-                (emphasize "" "(if0 2 ... (wcm 2 (* 2 (fac (- 2 1))))" "")
-                (emphasize "(if0 " "2" " ... (wcm 2 (* 2 (fac (- 2 1)))))")
-                (emphasize "" "(wcm 2 (* 2 (fac (- 2 1))))" "")
-                (emphasize "(wcm " "2" " (* 2 (fac (- 2 1))))")
-                (emphasize "(wcm 2 " "(* 2 (fac (- 2 1)))" ")")
-                (emphasize "(wcm 2 (* " "2" " (fac (- 2 1))))")
-                (emphasize "(wcm 2 (* 2 " "(fac (- 2 1))" "))")
-                (emphasize "(wcm 2 (* 2 (" "fac" " (- 2 1))))")
-                (emphasize "(wcm 2 (* 2 (fac " "(- 2 1)" ")))")
-                (emphasize "(wcm 2 (* 2 (fac (- " "2" " 1))))")
-                (emphasize "(wcm 2 (* 2 (fac (- 2 " "1" "))))")
-                (emphasize "(wcm 2 (* 2 (fac " "1" ")))")
-                (emphasize "(wcm 2 (* 2 " "(fac 1)" "))")
-                (emphasize "(wcm 2 (* 2 " "(if0 1 ... (wcm 1 (* 1 (fac (- 1 1)))))" "))")
-                (emphasize "(wcm 2 (* 2 (if0 " "1" " ... (wcm 1 (* 1 (fac (- 1 1)))))))")
-                (emphasize "(wcm 2 (* 2 " "(wcm 1 (* 1 (fac (- 1 1))))" "))")
-                (emphasize "(wcm 2 (* 2 (wcm " "1" " (* 1 (fac (- 1 1))))))")
-                (emphasize "(wcm 2 (* 2 (wcm 1 " "(* 1 (fac (- 1 1)))" ")))")
-                (emphasize "(wcm 2 (* 2 (wcm 1 (* " "1" " (fac (- 1 1))))))")
-                (emphasize "(wcm 2 (* 2 (wcm 1 (* 1 " "(fac (- 1 1))" "))))")
-                (emphasize "(wcm 2 (* 2 (wcm 1 (* 1 (" "fac" " (- 1 1))))))")
-                (emphasize "(wcm 2 (* 2 (wcm 1 (* 1 (fac " "(- 1 1)" ")))))")
-                (emphasize "(wcm 2 (* 2 (wcm 1 (* 1 (fac (- " "1" " 1))))))")
-                (emphasize "(wcm 2 (* 2 (wcm 1 (* 1 (fac (- 1 " "1" "))))))")
-                (emphasize "(wcm 2 (* 2 (wcm 1 (* 1 (fac " "(- 1 1)" ")))))")
-                (emphasize "(wcm 2 (* 2 (wcm 1 (* 1 (fac " "0" ")))))")
-                (emphasize "(wcm 2 (* 2 (wcm 1 (* 1 " "(fac 0)" "))))")
-                (emphasize "(wcm 2 (* 2 (wcm 1 (* 1 " "(if0 0 (begin (print (ccm)) 1) ...)" "))))")
-                (emphasize "(wcm 2 (* 2 (wcm 1 (* 1 (if0 " "0" " (begin (print (ccm)) 1) ...)))))")
-                (emphasize "(wcm 2 (* 2 (wcm 1 (* 1 " "(begin (print (ccm)) 1)" "))))")
-                (emphasize "(wcm 2 (* 2 (wcm 1 (* 1 (begin " "(print (ccm))" " 1)))))")
-                (emphasize "(wcm 2 (* 2 (wcm 1 (* 1 (begin (" "print" " (ccm)) 1)))))")
-                (emphasize "(wcm 2 (* 2 (wcm 1 (* 1 (begin (print " "(ccm)" ") 1)))))")
-                (emphasize "(wcm 2 (* 2 (wcm 1 (* 1 (begin (print " "(cons 2 (cons 1 nil))" ") 1)))))")
-                (emphasize "(wcm 2 (* 2 (wcm 1 (* 1 (begin " "(print (cons 2 (cons 1 nil)))" " 1)))))")
-                (emphasize "(wcm 2 (* 2 (wcm 1 (* 1 (begin " "<void>" " 1)))))")
-                (emphasize "(wcm 2 (* 2 (wcm 1 (* 1 " "(begin <void> 1)" "))))")
-                (emphasize "(wcm 2 (* 2 (wcm 1 (* 1 " "(begin 1)" "))))")
-                (emphasize "(wcm 2 (* 2 (wcm 1 (* 1 " "1" "))))")
-                (emphasize "(wcm 2 (* 2 (wcm 1 " "(* 1 1)" ")))")
-                (emphasize "(wcm 2 (* 2 (wcm 1 " "1" ")))")
-                (emphasize "(wcm 2 (* 2 " "(wcm 1 1)" "))")
-                (emphasize "(wcm 2 (* 2 " "1" "))")
-                (emphasize "(wcm 2 " "(* 2 1)" ")")
-                (emphasize "(wcm 2 " "2" ")")
-                (emphasize "" "(wcm 2 2)" "")
-                (emphasize "" "2" "")))
-
-#;(slide
-   (text "Suppose we have a module in our system with a function")
-   (code (explode-death-star)))
-
-;(slide/reduction '(fac 2))
-
-; review single-argument lambda calculus briefly
-; \x.x is like function(x) { return x; }
-; if f is \x.x, (f y) is like f(y)
-; review continuation-passing style
-; introduce lambda cm
-
-#;(slide
-   #:title "Languages"
-   ; the first thing we must do is formally define the languages we are working with
-   'alts
-   (select-them #t vc-append/gap frame/blue
-                (inset (vl-append gap-size
-                                  ($ "\\lambda_{v}")
-                                  (para ($ "e = x\\,|\\,\\lambda x.e\\,|\\,(e\\,e)"))
-                                  (para ($ "E = (E\\,e)\\,|\\,(v\\,E)\\,|\\,\\bullet"))
-                                  (para "Reduction rules")
-                                  (para ($ "(\\lambda x.e'\\,v)\\rightarrow e'[x\\leftarrow v]")))
-                       16)
-                ; the first language is the call-by-value lambda calculus we just discussed
-                ; e defines terms in the language and E defines evaluation contexts 
-                (inset (vl-append gap-size
-                                  ($ "\\lambda_{cm}")
-                                  (para ($ "e = x\\,|\\,\\lambda x.e\\,|\\,(e\\,e)\\,|\\,(\\mathrm{wcm}\\,e\\,e)\\,|\\,(\\mathrm{ccm})"))
-                                  (para ($ "E = (\\mathrm{wcm}\\,v\\,F)\\,|\\,F")
-                                        ($ "F = (\\mathrm{wcm}\\,E\\,e)\\,|\\,(E\\,e)\\,|\\,(v\\,E)\\,|\\,\\bullet")))
-                       16)
-                ; the second language is the call-by-value lambda calculus with continuation 
-                ; marks. see the two additional forms that terms can take, wcm and ccm
-                ; contexts E are defined in such a way that two (wcm v F) contexts cannot be 
-                ; directly nested within one another
-                ))
-
-#;(slide
-   (t-s "Languages" 64))
+; my thesis is about a transformation from one language to another, specifically, the lambda-
+; calculus with continuation marks and the plain lambda-calculus. a formal transformation 
+; requires a formal definition of these languages.
 
 (slide
  #:title "Thesis"
@@ -307,6 +200,13 @@
        "into the" (underline (t "plain")) 
        (underline (hc-append ($ "\\lambda") (t "-calculus")))
        "in a meaning-preserving way."))
+
+; lambda_v is the plain lambda calculus and is what we have focused on so far. the terms 
+; have the familiar form. contexts are defined recursively by the given grammar. the 
+; first term represents evaluation of the operator of an application; the second term 
+; represents evaluation of the operand. the third, a hole, denote an empty context.
+; lambda_v has only one reduction rule, beta reduction or substitution, which defines
+; a reduction relation on lambda_v terms denoted by arrow_v.
 
 (slide
  #:title (para ($ "\\lambda_{v}"))
@@ -321,28 +221,70 @@
        (ghost ($ "E[(\\mathrm{wcm}\\,v\\,v')]\\rightarrow E[v']")) (blank 64 0) ;hack
        (ghost ($ "E[(\\mathrm{ccm})]\\rightarrow E[\\chi(E)]"))))
 
+; lambda_cm, the lambda calculus with continuation marks, is an extension of lambda_v. it has
+; two additional terms, wcm and ccm, as seen earlier. additional context forms are added which 
+; accommodate wcm forms. we add another category to impose a structural constraint duscussed later .
+
+; the substitution rule is inherited from lambda_v. the second rule states that wcm terms take 
+; on the value of the body. the third rule states that ccm terms take on the value of chi(E), 
+; a function of the context; the chi function conceptually walks the context accumulating a 
+; list of the continuation marks. the last rule states that when one wcm form is nested 
+; directly within another, the outer one is discarded. the additional contextual category 
+; ensures that valid evaluation contexts cannot contain directly nested wcm forms. these 
+; four rules define a reduction relation on lambda_cm terms denoted by arrow_cm.
+
 (slide
  #:title (para ($ "\\lambda_{cm}"))
  (para "Terms")
  (para ($ "e =") (cellophane ($ "x\\,|\\,\\lambda x.e\\,|\\,(e\\,e)") 0.75) ($ "|\\,(\\mathrm{wcm}\\,e\\,e)\\,|\\,(\\mathrm{ccm})"))
  (para "Contexts")
  (para ($ "E = (\\mathrm{wcm}\\,v\\,F)\\,|\\,F") (blank 256 0) ;hack
-       ($ "F = (\\mathrm{wcm}\\,E\\,e)") (cellophane ($ "|\\,(E\\,e)\\,|\\,(v\\,E)\\,|\\,\\bullet") 0.75))
+       ($ "F = (\\mathrm{wcm}\\,E\\,e)\\,|") (cellophane ($ "(E\\,e)\\,|\\,(v\\,E)\\,|\\,\\bullet") 0.75))
  (para "Reduction rules " ($ "\\rightarrow_{cm}"))
  (para (cellophane ($ "E[(\\lambda x.e'\\,v)]\\rightarrow E[e'[x\\leftarrow v]]") 0.75)
-       ($ "E[(\\mathrm{wcm}\\,v\\,(\\mathrm{wcm}\\,v'\\,e))]\\rightarrow E[(\\mathrm{wcm}\\,v'\\,e)]")
        ($ "E[(\\mathrm{wcm}\\,v\\,v')]\\rightarrow E[v']") (blank 64 0) ;hack
-       ($ "E[(\\mathrm{ccm})]\\rightarrow E[\\chi(E)]")))
+       ($ "E[(\\mathrm{ccm})]\\rightarrow E[\\chi(E)]")
+       ($ "E[(\\mathrm{wcm}\\,v\\,(\\mathrm{wcm}\\,v'\\,e))]\\rightarrow E[(\\mathrm{wcm}\\,v'\\,e)]"))
+       )
+
+; with formal definitions of the source language, lambda_cm, and target language, lambda_v, 
+; we can define a transformation.
 
 (slide
- #:title (para "A transformation " ($ "\\mathcal{C}"))
+ (t-s "Transformation" 64))
+
+; our transformation from lambda_cm terms to lambda_v terms must preserve meaning.
+; that is, if a lambda_cm term reduces in a finite number of steps to a lambda_cm value, 
+; the transformed term should reduce in a finite number of steps to a corresponding value.
+; the diagram captures this property. in other words, the transformation commutes with 
+; evaluation.
+
+(slide
+ (para "Our transformation " ($ "\\mathcal{C}"))
  ($ "\\mathcal{C}:\\lambda_{cm}\\rightarrow\\lambda_{v}")
- (t "and should satisfy")
+ (para "should satisfy")
  c-diagram)
 
+; a transformation must address the essential differences between lambda_v and lambda_cm
+
+; terms in lambda_v have access to their environment or, in other words, the values of 
+; free variables within the term.
+
+; terms in lambda_cm have access to their environment...
+
+; emphasize only
+
+; give example re machine compilation
+
+; and context, via the ccm form.
+
+; the only way we can do it 
+; this provides some guidance on what the transformation should do: pass contextual 
+; information to terms as arguments, thereby introducing it into their environment.
 
 (slide
- #:title (para "What makes this difficult?")
+ #:title "Essential differences"
+ 'next
  (para "Terms in " ($ "\\lambda_{v}") " have access to their environment")
  'alts
  (list (list (para "Terms in " ($ "\\lambda_{cm}") " have access to their environment"))
@@ -350,59 +292,100 @@
  'next
  (blank 0 32)
  (para "Intuition")
- (para "Pass contextual information explicitly to terms as arguments, introducing"
-       "it into the environment."))
+ (para "Pass contextual information explicitly to terms as arguments, thereby"
+       "introducing it into their environment."))
+
+; we must determine what contextual information is essential to preserve meaning.
+
+; for this purpose, our guiding principle is to pass any information the original 
+; program could observe. this ensures we have at least the necessary information 
+; to preserve meaning.
+
+; this certainly includes the list of current continuation marks defined by chi(E)
 
 (slide
  (para "What information do we pass?")
  'next
  (para "Anything the original " ($ "\\lambda_{cm}") " program could observe")
- ; this is our guiding principle
  'next
  (item "the list of current continuation marks " ($ "\\chi(E)"))
- ; certainly the continuation marks. these are observable in the original program with (ccm)
  )
 
-(slide
- ($ "\\mathcal{C}[\\lambda x.e]=\\lambda \\mathit{marks}.\\lambda x.\\mathcal{C}[e]")
- ($ "\\mathcal{C}[(e\\,f)]=((e\\,\\mathit{marks})\\,(f\\,\\mathit{marks}))\\,\\mathit{marks})")
- 'next
- (t "mark-passing style"))
- 
- ;#:title "Mark-passing style"
- ;(t "Transform")
- ;($ "\\lambda x.\\dots\\mapsto\\lambda\\mathit{marks}.\\lambda x.\\dots")
- ;(t "and")
- ;($ "(f\\,x)\\mapsto((f\\,\\mathit{marks})\\,x)"))
+; we effect this information passing by adding a formal parameter to every function and 
+; argument to every call site representing the list of current continuation marks. the 
+; payoff of this invasive approach is a succinct definition of ccm.
+; this mark-passing style approach is common and is similar in nature to continuation-
+; passing style, store-passing style, and security-passing style
 
 (slide
- (t "Mark-passing style accounts for")
- 'alts
- (list (list (para (frame/blue (inset ($ "E[(\\lambda x.e'\\,v)]\\rightarrow E[e'[x\\leftarrow v]]") 16 4))
-                   (inset ($ "E[(\\mathrm{wcm}\\,v\\,(\\mathrm{wcm}\\,v'\\,e))]\\rightarrow E[(\\mathrm{wcm}\\,v'\\,e)]") 16 4)
-                   (inset ($ "E[(\\mathrm{wcm}\\,v\\,v')]\\rightarrow E[v']") 16 4) (blank 64 0) ;hack
-                   (inset ($ "E[(\\mathrm{ccm})]\\rightarrow E[\\chi(E)]") 16 4)))
-       (list (para (inset ($ "E[(\\lambda x.e'\\,v)]\\rightarrow E[e'[x\\leftarrow v]]") 16 4)
-                   (frame/blue (inset ($ "E[(\\mathrm{wcm}\\,v\\,(\\mathrm{wcm}\\,v'\\,e))]\\rightarrow E[(\\mathrm{wcm}\\,v'\\,e)]") 16 4))
-                   (inset ($ "E[(\\mathrm{wcm}\\,v\\,v')]\\rightarrow E[v']") 16 4) (blank 64 0) ;hack
-                   (inset ($ "E[(\\mathrm{ccm})]\\rightarrow E[\\chi(E)]") 16 4)))
-       (list (para (inset ($ "E[(\\lambda x.e'\\,v)]\\rightarrow E[e'[x\\leftarrow v]]") 16 4)
-                   (inset (strike ($ "E[(\\mathrm{wcm}\\,v\\,(\\mathrm{wcm}\\,v'\\,e))]\\rightarrow E[(\\mathrm{wcm}\\,v'\\,e)]")) 16 4)
-                   (frame/blue (inset ($ "E[(\\mathrm{wcm}\\,v\\,v')]\\rightarrow E[v']") 16 4)) (blank 64 0) ;hack
-                   (inset ($ "E[(\\mathrm{ccm})]\\rightarrow E[\\chi(E)]") 16 4)))
-       (list (para (inset ($ "E[(\\lambda x.e'\\,v)]\\rightarrow E[e'[x\\leftarrow v]]") 16 4)
-                   (inset (strike ($ "E[(\\mathrm{wcm}\\,v\\,(\\mathrm{wcm}\\,v'\\,e))]\\rightarrow E[(\\mathrm{wcm}\\,v'\\,e)]")) 16 4)
-                   (inset ($ "E[(\\mathrm{wcm}\\,v\\,v')]\\rightarrow E[v']") 16 4) (blank 64 0) ;hack
-                   (frame/blue (inset ($ "E[(\\mathrm{ccm})]\\rightarrow E[\\chi(E)]") 16 4))))))
+ #:title "Mark-passing style"
+ ($ "\\mathcal{C}[\\lambda x.e]=\\lambda\\mathit{marks}.\\lambda x.\\mathcal{C}[e]")
+ ($ "\\mathcal{C}[(e\\,f)]=((e\\,\\mathit{marks})\\,(f\\,\\mathit{marks}))\\,\\mathit{marks})")
+ ($ "c(ccm)=\\lambda\\mathit{marks}.marks"))
  
+
+; the mark-passing style approach must respect each reduction rule to preserve meaning
+
+; each additional formal parameter introduced by this approach is met with an argument, so 
+; it preserves the substitution rule
+
+; marks don't appear in the tail position (get returned) of the term
+
+; the approach is designed to explicitly preserve this rule, which it does simply and directly
+
+; this is controversial but necessary (peeps might want v and v')
+; stack traces in Racket
+; tail calls not preserved  
+
+; this rule, which defines the collapse of an outer wcm form under a certain condition, is 
+; /not/ preserved by this approach. this rule concerns the space safety of the lambda_cm
+; language. without it, programs that require constant space in lambda_cm can require 
+; unbounded space in lambda_v.
+
+(slide
+ #:title (para ($ "\\chi(E)") " passing accounts for")
+ 'alts
+ (list (list (para (inset ($ "E[(\\lambda x.e'\\,v)]\\rightarrow E[e'[x\\leftarrow v]]") 16 4)
+                   (inset ($ "E[(\\mathrm{wcm}\\,v\\,v')]\\rightarrow E[v']") 16 4) (blank 64 0) ;hack
+                   (inset ($ "E[(\\mathrm{ccm})]\\rightarrow E[\\chi(E)]") 16 4)
+                   (inset ($ "E[(\\mathrm{wcm}\\,v\\,(\\mathrm{wcm}\\,v'\\,e))]\\rightarrow E[(\\mathrm{wcm}\\,v'\\,e)]") 16 4)))
+       (list (para (frame/blue (inset ($ "E[(\\lambda x.e'\\,v)]\\rightarrow E[e'[x\\leftarrow v]]") 16 4))
+                   (inset ($ "E[(\\mathrm{wcm}\\,v\\,v')]\\rightarrow E[v']") 16 4) (blank 64 0) ;hack
+                   (inset ($ "E[(\\mathrm{ccm})]\\rightarrow E[\\chi(E)]") 16 4)
+                   (inset ($ "E[(\\mathrm{wcm}\\,v\\,(\\mathrm{wcm}\\,v'\\,e))]\\rightarrow E[(\\mathrm{wcm}\\,v'\\,e)]") 16 4)))
+       (list (para (inset ($ "E[(\\lambda x.e'\\,v)]\\rightarrow E[e'[x\\leftarrow v]]") 16 4)
+                   (frame/blue (inset ($ "E[(\\mathrm{wcm}\\,v\\,v')]\\rightarrow E[v']") 16 4)) (blank 64 0) ;hack
+                   (inset ($ "E[(\\mathrm{ccm})]\\rightarrow E[\\chi(E)]") 16 4)
+                   (inset ($ "E[(\\mathrm{wcm}\\,v\\,(\\mathrm{wcm}\\,v'\\,e))]\\rightarrow E[(\\mathrm{wcm}\\,v'\\,e)]") 16 4)))
+       (list (para (inset ($ "E[(\\lambda x.e'\\,v)]\\rightarrow E[e'[x\\leftarrow v]]") 16 4)
+                   (inset ($ "E[(\\mathrm{wcm}\\,v\\,v')]\\rightarrow E[v']") 16 4) (blank 64 0) ;hack
+                   (frame/blue (inset ($ "E[(\\mathrm{ccm})]\\rightarrow E[\\chi(E)]") 16 4))
+                   (inset ($ "E[(\\mathrm{wcm}\\,v\\,(\\mathrm{wcm}\\,v'\\,e))]\\rightarrow E[(\\mathrm{wcm}\\,v'\\,e)]") 16 4)))
+       (list (para (inset ($ "E[(\\lambda x.e'\\,v)]\\rightarrow E[e'[x\\leftarrow v]]") 16 4)
+                   (inset ($ "E[(\\mathrm{wcm}\\,v\\,v')]\\rightarrow E[v']") 16 4) (blank 64 0) ;hack
+                   (inset ($ "E[(\\mathrm{ccm})]\\rightarrow E[\\chi(E)]") 16 4)
+                   (frame/blue (inset ($ "E[(\\mathrm{wcm}\\,v\\,(\\mathrm{wcm}\\,v'\\,e))]\\rightarrow E[(\\mathrm{wcm}\\,v'\\,e)]") 16 4))))
+       (list (para (inset ($ "E[(\\lambda x.e'\\,v)]\\rightarrow E[e'[x\\leftarrow v]]") 16 4)
+                   (inset ($ "E[(\\mathrm{wcm}\\,v\\,v')]\\rightarrow E[v']") 16 4) (blank 64 0) ;hack
+                   (inset ($ "E[(\\mathrm{ccm})]\\rightarrow E[\\chi(E)]") 16 4)
+                   (inset (strike ($ "E[(\\mathrm{wcm}\\,v\\,(\\mathrm{wcm}\\,v'\\,e))]\\rightarrow E[(\\mathrm{wcm}\\,v'\\,e)]")) 16 4)))))
+       
+; this rule captures the behavior of marks placed in tail position: a mark so placed 
+; overwrites the previous mark there, if it exists. this makes tail position observable, 
+; albeit indirectly.
 
 (slide
  #:title "Tail position"
  (para "Marks placed in tail position annotate the newest part"
        "of the continuation, overwriting previous marks (if they"
        "exist).")
- ; this makes tail position observable, albeit indirectly
  )
+
+; it seems that there is another piece of essential information...
+
+; a flag which encodes tail position information which we define over contexts E as xi.
+; as a mnemonic device, note that xi looks like a curly pig tail and is used to denote 
+; the tail position information
 
 (slide
  #:title "What information do we pass?"
@@ -413,59 +396,52 @@
        (list (item "a flag reflecting tail position " ($ "\\xi(E)"))))
  )
 
-; now we would like to verify
-; proof is expensive
-; so we test
-; testing is like the naive approach to solving the halting problem
+; the addition of tail position information does not affect the first three rules 
+; (significantly)...
 
-#;(slide
-   #:title (para "Definition of " ($ "\\mathcal{C}"))
-   )
+; and allows us to preserve the fourth rule.
 
+(slide
+ #:title (para ($ "\\chi(E)") " and " ($ "\\xi(E)") " passing account for")
+ 'alts
+ (list (list (para (inset ($ "E[(\\lambda x.e'\\,v)]\\rightarrow E[e'[x\\leftarrow v]]") 16 4)
+                   (inset ($ "E[(\\mathrm{wcm}\\,v\\,v')]\\rightarrow E[v']") 16 4) (blank 64 0) ;hack
+                   (inset ($ "E[(\\mathrm{ccm})]\\rightarrow E[\\chi(E)]") 16 4)
+                   (inset (strike ($ "E[(\\mathrm{wcm}\\,v\\,(\\mathrm{wcm}\\,v'\\,e))]\\rightarrow E[(\\mathrm{wcm}\\,v'\\,e)]")) 16 4)))
+       (list (para (inset ($ "E[(\\lambda x.e'\\,v)]\\rightarrow E[e'[x\\leftarrow v]]") 16 4)
+                   (inset ($ "E[(\\mathrm{wcm}\\,v\\,v')]\\rightarrow E[v']") 16 4) (blank 64 0) ;hack
+                   (inset ($ "E[(\\mathrm{ccm})]\\rightarrow E[\\chi(E)]") 16 4)
+                   (frame/blue (inset ($ "E[(\\mathrm{wcm}\\,v\\,(\\mathrm{wcm}\\,v'\\,e))]\\rightarrow E[(\\mathrm{wcm}\\,v'\\,e)]") 16 4))))))
 
-#;(slide
-   #:title (para ($ "\\mathcal{C}[(\\mathit{rator_expr}\\,\\mathit{rand_expr})]"))
-   (code (λ (flags)
-           (λ (marks)
-             (((((C[rator_expr] FALSE) marks)
-                ((C[rand_expr] FALSE) marks))
-               flags)
-              marks)))))
+; with the four rules preserved in theory, we can formally verify that the transformation 
+; preserves meaning. true verification, formal proof, is an expensive process and to 
+; prevent undue expense, we would like to have some confidence that our transformation is 
+; correct before we embark on a proof. randomized testing is a good way to do this.
 
-#;(slide
-   #:title (para ($ "\\mathcal{C}[(\\mathrm{wcm}\\,\\mathit{mark_expr}\\,\\mathit{body_expr})]"))
-   (code (λ (flag)
-           (λ (marks)
-             ((C[body_expr] TRUE)
-              (((λ (mark-value) (λ (rest-marks) C[((CONS mark-value) rest-marks)]))
-                ((C[mark-expr] FALSE) marks))
-               ((flag C[(SND marks)]) marks))))))
-   )
+(slide
+ (t-s "Verification" 64))
 
+; redex is a domain-specific language for exploring language semantics which we used to 
+; perform automated randomized testing. the testing process proceeds like this:
 
-; so we provide to each redex contextual information--anything that the corresponding 
-; cm program could observe
-; took the approach of mark-passing style
-; naive mark-passing is not enough
-; observe: (fac 2) -> (list 1 2), (fac-tr 2) -> (list 1 2)
-; this approach does not preserve correct tail-call behavior
-; this aspect of the continuation is observable, so we must pass it to the term
-; fortunately, this isn't a lot of information: we just need a flag
-; these two pieces of information--a flag and a list of marks--capture all contextual information
-; now, the tranformation is fairly straightforward:
-; variables are abstracted:
-; x -> \f m.x
-; values are independent of their context and so ignore that information:
-; \x.e -> \f m.\x.C[e]
-; application:
-; evaluate the operator with contextual information
-; evaluate the operand with contextual information
-; does evaluation of either of these occur in the body of a wcm?
-; no, let the flags reflect that
-; what is the list of marks at this point?
-; whatever it was before evaluation of this application began
-; pass the marks unaltered
-; note: this list is persistent (in a data structures sense)
+; first, we generate a random lambda_cm program. redex produces this automatically from the 
+; grammar of the language.
+
+; second, we reduce the program and transform the result. this process follows the path 
+; along the top and right sides of the diagram.
+
+; third, we transform the program and reduce the result. this process follows the path 
+; along the left and bottom sides of the diagram.
+
+; fourth, we ensure that they ended up at the same place. if they didn't, we have a 
+; counterexample and know the transformation is not correct. if they did, we repeat the 
+; process, gradually increasing the size of the programs.
+
+; our experience was that, while the approach of the transformation was straightforward, 
+; it had many technicalities that were refined in the testing process. it would have 
+; been expensive and difficult to discover these subtleties in the proving process.
+
+; be specific, add 10,000 times, mention Jay's paper
 
 (slide
  #:title "Testing with Redex"
@@ -474,38 +450,27 @@
  (map list
       (map (λ (pict) (hc-append pict c-diagram))
            (parameterize ([current-para-width (- (current-para-width) (pict-width c-diagram))])
-             (select-them-inner #t vc-append/gap frame/blue
+             (select-them-inner #t #t vc-append/gap frame/blue
                                 (inset (para "1. generate a random " ($ "\\lambda_{cm}") " program") 16 4)
                                 (inset (para "2. reduce according to " ($ "\\rightarrow_{cm}") " and transform the result") 16 4)
                                 (inset (para "3. transform the program and reduce according to " ($ "\\rightarrow_{v}")) 16 4)
                                 (inset (para "4. compare the results") 16 4)))))
- 'next
- (t "Repeat 10,000 times")
  )
 
-; after that's done, you end up with something like this:
-; show all the terms
-
-; once a transform withstood 10,000 tests, we considered it for...
-
-(slide
- (t-s "Proof" 64))
-
-; we prove that the continuation-passing style transformation preserves meaning
+; with some confidence in the transformation, we can prove the meaning-preservation property.
+; we unfold the commutativity diagram to obtain our main theorem of correctness.
+; <read theorem statement>
 
 (slide
  c-diagram
  (t "unfolds to")
  ($ "p\\rightarrow^{*}_{cm} v\\Rightarrow\\mathcal{C}[p]\\rightarrow^{*}_{v}\\mathcal{C}[v]"))
 
-; there's a problem with this:
-; the transformation abstracts each term so it won't reduce
+; however, a transformation over terms alone does not allow us to reason about the process 
+; of evaluation--only the end result. it would be helpful to be able to reason about each 
+; step of evaluation.
 
-; change this to 
-#;(slide
- ($ "\\mathcal{T}[(e\\,f)]=\\lambda k.(\\mathcal{T}[e]\\,\\lambda e'.(\\mathcal{T}[f]\\,\\lambda f'.((e'\\,f')\\,k)))"))
-
-; we address this problem with our proof strategy
+; say more
 
 (let ([cmb ($ "E[e]")]
       [cma ($ "E'[e']")]
@@ -514,35 +479,50 @@
   (let ([cm-rr (hc-append 8 cmb ($ "\\rightarrow_{cm}") cma)]
         [v-rr (hc-append 8 vb ($ "\\rightarrow_{v}^{*}") va)])
     (slide
-     #:title "Proof strategy"
-     (t "Show simulation")
+     (vc-append cm-rr (blank 0 128) (ghost v-rr)))))
+
+; so, we extend C over expressions and context-expression pairs
+
+; this second definition is simple, and utilizes all the essential terms
+
+(slide
+ (para "Extend " ($ "\\mathcal{C}") " over")
+ (item "contexts " ($ "E"))
+ (item "context-expression pairs " ($ "E[e]"))
+ 'next
+ (blank 0 16)
+ ($ "\\mathcal{C}[E[e]]=(((\\mathcal{C}[e]\\,\\mathcal{C}[E])\\,\\xi(E))\\,\\mathcal{C}[\\chi(E)])"))
+
+; by extending C as we have, we can put terms (unclear) in correspondence. this allows us to show 
+; that the transformed terms simulate the original terms by taking some finite number 
+; of evaluation steps for each step of the original term.
+
+(let ([cmb ($ "E[e]")]
+      [cma ($ "E'[e']")]
+      [vb ($ "\\mathcal{C}[E[e]]")]
+      [va ($ "\\mathcal{C}[E'[e']]")])
+  (let ([cm-rr (hc-append 8 cmb ($ "\\rightarrow_{cm}") cma)]
+        [v-rr (hc-append 8 vb ($ "\\rightarrow_{v}^{*}") va)])
+    (slide
      (linewidth 8 (pin-arrows-lines 24
                                     (vc-append cm-rr (blank 0 128) v-rr)
                                     (list (list (list cm-rr cmb) cb-find (list v-rr vb) ct-find)
                                           (list (list cm-rr cma) cb-find (list v-rr va) ct-find)))))))
 
-
-(slide
- (para ($ "\\mathcal{C}") " is defined over terms " ($ "e"))
- 'next
- (para "Extend " ($ "\\mathcal{C}") " over")
- (item "contexts " ($ "E"))
- (item "context-expression pairs " ($ "(E,e)") " (which we write as " ($ "E[e]") ")")
- 'next
- (blank 0 16)
- ($ "\\mathcal{C}[E[e]]=(((\\mathcal{C}[e]\\,\\mathcal{C}[E])\\,\\xi(E))\\,\\mathcal{C}[\\chi(E)])")
- 'next
- ($ "\\mathcal{C}[\\bullet[p]]=(((\\mathcal{C}[p]\\,\\mathcal{C}[\\bullet])\\,\\xi(\\bullet))\\,\\mathcal{C}[\\chi(\\bullet)])"))
+; there are two classes of reduction steps that we must simulate: context manipulation and 
+; bonafide reduction rules.
 
 (slide
  (para "We must simulate")
  (item "context manipulation")
  (item "reduction rules"))
 
+; context manipulation 
+
 (slide
  #:title "Context manipulation"
  'alts
- (select-them #t vc-append/gap frame/blue
+ (select-them #t #t vc-append/gap frame/blue
               (item2 ($ "E[(e_0\\,e_1)]\\rightarrow E[(\\bullet\\,e_1)][e_0]"))
               (item2 ($ "E[(\\bullet\\,e_1)][v_0]\\rightarrow E[(v_0\\,\\bullet)][e_1]")))
  (item2 "etc."))
