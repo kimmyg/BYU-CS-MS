@@ -107,7 +107,8 @@ Finally, we define ``filling the hole'', the insertion of a value in the context
 
 With each significant step of native evaluation formally related with the transformation, we can express a simulation lemma.
 
-\begin{lemma}[Simulation]
+\begin{lemma}
+\label{single-step-simulation}
 For all contexts $E\in\lambda_{cm}$ and expressions $e\in\lambda_{cm}$, $E[e]\cmrr E'[e']\implies\Ccps{E[e]}\lvrrs\Ccps{E'[e']}$
 \end{lemma}
 
@@ -158,17 +159,19 @@ Otherwise, $\Ccps{E'[\wcm{\hole}{e_1}][v_0]}\lvrrs\Ccps{E'[\wcm{v_0}{\hole}][e_1
 By definition, $\Ccps{E[v_1]}=\Ccps{E'[v_1]}$.
 \end{proof}
 
-\begin{lemma}
-\label{lem:great}
-For all contexts $E$ and terms $e\in\lambda_{cm}$, if $E[e]\cmrrs v$, then $\Ccps{E[e]}\lvrrs\Cpcps{v}$.
-\end{lemma}
+\begin{theorem}[Simulation]
+\label{thm:simulation}
+For all contexts $E$ and terms $e\in\lambda_{cm}$, if $E[e]\cmrrs \hole[v]$, then $\Ccps{E[e]}\lvrrs\Ccps{\hole[v]}$.
+\end{theorem}
+By induction on the number $n$ of reduction steps by $\cmrr$, we show that the $\mathcal{C}_{cps}$ preserves $\cmrr$.
+\begin{proof}{Case $n=0$}
+\\
+This is the case that $E[e]=\hole[v]$ and holds immediately.
+\end{proof}
 
-\begin{proof}
-If $E[e]\cmrrs v$, then $E[e]\cmrrs\hole[v]\cmrr v$.
-
-By simulation, $E[e]\cmrrs\hole[v]\implies\Ccps{E[e]}\lvrrs\Ccps{\hole[v]}$.
-
-By definition, $\Ccps{\hole[v]}=\app{\app{\app{\Ccps{v}}{\Ccps{\hole}}}{\xi(\hole)}}{\Cpcps{\chi(\hole)}}\lvrrs\Cpcps{v}$, which is what we sought.
+\begin{proof}{Case $n=k$}
+\\
+Suppose that $E[e]\cmrr E_1[e_1]\cmrr\cdots\cmrr E_k[e_k]$ in $k$ steps. Then $\Ccps{E[e]}\lvrrs\Ccps{E_1[e_1]}\lvrrs\cdots\lvrrs\Ccps{E_k[e_k]}$ in some finite number of steps, by the inductive hypothesis. If $E_k[e_k]=\hole[v]$, it holds. Otherwise, by lemma \ref{single-step-simulation}, if $E_k[e_k]\cmrr E_{k+1}[e_{k+1}]$, then $\Ccps{E_k[e_k]}\lvrrs\Ccps{E_{k+1}[e_{k+1}]}$. Thus, it holds for $n=k+1$.
 \end{proof}
 
 \newtheorem*{maintheorem}{Correctness of $\hat{\mathcal{C}}$}
@@ -180,18 +183,19 @@ For all programs $p\in\lambda_{cm}$, $\Chcps{\mathrm{eval}_{cm}(p)}\equiv\mathrm
 
 \begin{align*}
 p\cmrrs v &\implies\mathrm{eval}_{cm}(p)=v &\text{by definition of $\mathrm{eval}_{cm}$}\\
-          &\implies\Ch{\mathrm{eval}_{cm}(p)}\lvrrs\Cp{v} &\text{by definition of $\hat{\mathcal{C}}$}\\
-          &\implies\Ch{\mathrm{eval}_{cm}(p)}\equiv\Cp{v} &\text{by definition of equivalency}\\
+          &\implies\Chcps{\mathrm{eval}_{cm}(p)}\lvrrs\Cpcps{v} &\text{by definition of $\hat{\mathcal{C}}_{cps}$}\\
+          &\implies\Chcps{\mathrm{eval}_{cm}(p)}\equiv\Cpcps{v}\\
 \end{align*}
 
 \begin{align*}
-p\cmrrs v &\implies\hole[p]\cmrrs v &\text{(since $p\cmrr\hole[p]$)}\\
-          &\implies\C{\hole[p]}\lvrrs\Cp{v} &\text{(by lemma \ref{lem:great})}\\
-          &\implies\app{\app{\app{\C{p}}{\C{\hole}}}{\xi(\hole)}}{\Cp{\chi(\hole)}}\lvrrs\C{v}&\text{by definition of $\mathcal{C}$}\\
-          &\implies\Ch{p}\lvrrs\C{v}&\text{(by definition of $\hat{\mathcal{C}}$)}\\
-          &\implies\mathrm{eval}_{v}(\Ch{p})=\Cp{v} &\text{(by definition of $\mathrm{eval}_v$)}
+p\cmrrs v &\implies\hole[p]\cmrrs \hole[v]\\
+          &\implies\Ccps{\hole[p]}\lvrrs\Ccps{\hole[v]} &\text{(by theorem \ref{thm:simulation})}\\
+          &\implies\Ccps{\hole[p]}\lvrrs\Cpcps{v} &\text{(by definition of $\mathcal{C}_{cps}$)}\\
+          &\implies\app{\app{\app{\Ccps{p}}{\Ccps{\hole}}}{\xi(\hole)}}{\Cpcps{\chi(\hole)}}\lvrrs\Cpcps{v}&\text{(by definition of $\mathcal{C}_{cps}$)}\\
+          &\implies\Chcps{p}\lvrrs\Cpcps{v}&\text{(by definition of $\hat{\mathcal{C}}_{cps}$)}\\
+          &\implies\mathrm{eval}_{v}(\Chcps{p})=\Cpcps{v} &\text{(by definition of $\mathrm{eval}_v$)}
 \end{align*}
 
-Therefore, $\C{\mathrm{eval}_{cm}(p)}\equiv\mathrm{eval}_{v}(\C{p})$.
+Therefore, $\Chcps{\mathrm{eval}_{cm}(p)}\equiv\mathrm{eval}_{v}(\Chcps{p})$.
 \end{proof}
 
