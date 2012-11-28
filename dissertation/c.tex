@@ -15,7 +15,7 @@ for any program $p\in\lambda_{cm}$.
 
 The burden of demonstration is then reduced to the existence of $\mathcal{C}$. We do this by construction.
 
-\subsection{Intuition}
+\section{Intuition}
 
 The essence of \cm\ is that programs can apply information to and observe information about the context in which they are evaluated. Programs in \lv\ have no such facility. We can simulate this facility by explicitly passing contextual information to each term as it is evaluated. We can define $\mathcal{C}$ to transform \scheme'wcm' directives to manipulate this information and \scheme'ccm' directives to access it. Intuitively, we can transform \cm\ programs to mark-passing style.
 
@@ -25,7 +25,7 @@ However, marks alone do not account for the tail-call behavior specified by rule
 
 These two pieces of information suffice to correctly simulate continuation marks.
 
-\subsection{Concept}
+\section{Concept}
 
 The definition of $\mathcal{C}$ entails transformation over each syntactic form of \cm.
 
@@ -135,7 +135,7 @@ $\nil=\false$
 \end{definition}
 \end{figure}
 
-\subsection{Initiation}
+\section{Initiation}
 
 Abstracting terms has the effect of suspending evaluation. When an entire program is transformed, all evaluation is suspended, and awaits arguments representing contextual information. At the top level, the context is empty, so we pass the contextual information for the empty context: \scheme'FALSE', indicating evaluation is \emph{not} occurring in \scheme'wcm' tail position and \scheme'NIL', an empty list of marks.
 
@@ -154,7 +154,7 @@ which is equivalent to
 \app{\app{\C{\evalcm{p}}}{\false}}{\nil}=\evalv{\app{\app{\C{p}}{\false}}{\nil}}
 \end{equation}
 
-\subsection{Some Final Subtleties}
+\section{Some Final Subtleties}
 
 Our choice to keep the core language small by omitting lists as primitive values has the consequence of complicating our transform somewhat. Because lists are defined in terms of \lc\ values which are themselves touched by the transform and because of the commutativity property that $\mathcal{C}$ must satisfy, we cannot deal with a list of continuation marks directly--we must instead deal with a transformed list of transformed continuation marks, and manipulation of this list within transformed terms must occur at the transformed level.
 
@@ -167,7 +167,7 @@ and we adjust $\hat{\mathcal{C}}$ so that
 \Ch{p}=\app{\app{\C{p}}{\false}}{\Cp{\nil}}
 \end{equation}
 
-\subsection{Definition of $\mathcal{C}$}
+\section{Definition of $\mathcal{C}$}
 
 Finally, we present the definition of $\mathcal{C}$ over the five syntactic forms of \cm.
 
@@ -237,7 +237,7 @@ Variables have the property that, when substitution occurs, they reconstitute tr
 \end{schemeblock}
 \end{schemedefinition}
 
-\subsection{Definition of $\mathcal{C}$ in CPS}
+\section{Definition of $\mathcal{C}$ in CPS}
 
 We present a continuation mark transformation integrated in CPS.
 
@@ -325,7 +325,7 @@ We include corresponding definitions for $\mathcal{C}'$ and $\hat{\mathcal{C}}$.
 \end{schemeblock}
 \end{schemedefinition}
 
-\subsection{Example}
+\section{Example}
 
 To better illustrate what the transformation does, we step through the reduction of a program which exhibits its more interesting aspects. One \cm\ program suited to this purpose is \scheme|(wcm 0 ((lambda (x) (wcm x (ccm))) 1))|. It reduces according to \cm\ semantics as
 \begin{schemeblock}
